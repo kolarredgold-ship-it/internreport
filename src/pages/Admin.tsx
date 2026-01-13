@@ -74,6 +74,8 @@ const Admin = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [screenshotSignedUrl, setScreenshotSignedUrl] = useState<string | null>(null);
+  const [loadingScreenshot, setLoadingScreenshot] = useState(false);
   
   // User management state
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -157,6 +159,59 @@ const Admin = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  // Extract file path from the screenshot URL
+  const getFilePathFromUrl = (url: string): string | null => {
+    try {
+      // URL format: .../storage/v1/object/public/payment-screenshots/user-id/filename.jpg
+      const match = url.match(/payment-screenshots\/(.+)$/);
+      return match ? match[1] : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Generate signed URL when payment is selected
+  const loadScreenshotSignedUrl = async (screenshotUrl: string) => {
+    setLoadingScreenshot(true);
+    setScreenshotSignedUrl(null);
+    
+    const filePath = getFilePathFromUrl(screenshotUrl);
+    if (!filePath) {
+      setLoadingScreenshot(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('payment-screenshots')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+      if (error) throw error;
+      setScreenshotSignedUrl(data.signedUrl);
+    } catch (error: any) {
+      console.error('Error generating signed URL:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load screenshot.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingScreenshot(false);
+    }
+  };
+
+  const handleSelectPayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    if (payment.screenshot_url) {
+      loadScreenshotSignedUrl(payment.screenshot_url);
+    }
+  };
+
+  const handleClosePaymentDialog = () => {
+    setSelectedPayment(null);
+    setScreenshotSignedUrl(null);
   };
 
   const handleUpdatePassword = async () => {
@@ -453,7 +508,7 @@ const Admin = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => setSelectedPayment(payment)}
+                                  onClick={() => handleSelectPayment(payment)}
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Button>
@@ -558,7 +613,7 @@ const Admin = () => {
       </main>
 
       {/* Payment Details Dialog */}
-      <Dialog open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
+      <Dialog open={!!selectedPayment} onOpenChange={handleClosePaymentDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display">Payment Details</DialogTitle>
@@ -601,11 +656,21 @@ const Admin = () => {
               {selectedPayment.screenshot_url && (
                 <div>
                   <p className="text-muted-foreground text-sm mb-2">Payment Screenshot</p>
-                  <img
-                    src={selectedPayment.screenshot_url}
-                    alt="Payment screenshot"
-                    className="w-full rounded-lg border"
-                  />
+                  {loadingScreenshot ? (
+                    <div className="w-full h-48 rounded-lg border flex items-center justify-center bg-muted">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : screenshotSignedUrl ? (
+                    <img
+                      src={screenshotSignedUrl}
+                      alt="Payment screenshot"
+                      className="w-full rounded-lg border"
+                    />
+                  ) : (
+                    <div className="w-full h-48 rounded-lg border flex items-center justify-center bg-muted">
+                      <p className="text-muted-foreground text-sm">Failed to load screenshot</p>
+                    </div>
+                  )}
                 </div>
               )}
 
