@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ArrowLeft, Loader2, Download, Sparkles } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard } from 'lucide-react';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx';
 import { saveAs } from 'file-saver';
+import PaymentModal from '@/components/PaymentModal';
 
 interface FormData {
   studentName: string;
@@ -53,6 +54,9 @@ const CreateReport = () => {
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
   const [canGenerate, setCanGenerate] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [pendingReportId, setPendingReportId] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'none' | 'pending' | 'verified'>('none');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -90,17 +94,7 @@ const CreateReport = () => {
     return 499;                     // Above 20 pages: ₹499
   };
 
-  const handleGenerate = async () => {
-    if (!canGenerate) {
-      toast({
-        title: 'Generation limit reached',
-        description: 'Please top up to continue generating reports.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate required fields
+  const validateForm = () => {
     const requiredFields = [
       'studentName', 'registerNumber', 'course', 'collegeName', 
       'university', 'guideName', 'internshipTitle', 'companyName',
@@ -114,9 +108,73 @@ const CreateReport = () => {
           description: 'Please fill in all required fields.',
           variant: 'destructive',
         });
-        return;
+        return false;
       }
     }
+    return true;
+  };
+
+  const handleProceedToPayment = async () => {
+    if (!validateForm()) return;
+
+    try {
+      // Create a pending report first
+      const { data: reportData, error: reportError } = await supabase
+        .from('reports')
+        .insert({
+          user_id: user?.id,
+          student_name: formData.studentName,
+          register_number: formData.registerNumber,
+          course: formData.course,
+          college_name: formData.collegeName,
+          university: formData.university,
+          guide_name: formData.guideName,
+          internship_title: formData.internshipTitle,
+          company_name: formData.companyName,
+          company_location: formData.companyLocation,
+          internship_duration: formData.internshipDuration,
+          academic_year: formData.academicYear,
+          topic_specialization: formData.topicSpecialization,
+          pages_count: formData.pagesCount,
+          status: 'pending_payment',
+        })
+        .select()
+        .single();
+
+      if (reportError) throw reportError;
+
+      setPendingReportId(reportData.id);
+      setShowPaymentModal(true);
+    } catch (error: any) {
+      console.error('Create report error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create report. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    setPaymentStatus('pending');
+    setShowPaymentModal(false);
+    toast({
+      title: 'Payment submitted!',
+      description: 'Your payment is under review. Report will be generated after verification.',
+    });
+  };
+
+  const handleGenerate = async () => {
+    if (!canGenerate) {
+      toast({
+        title: 'Generation limit reached',
+        description: 'Please top up to continue generating reports.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!validateForm()) return;
 
     setGenerating(true);
 
@@ -527,26 +585,32 @@ const CreateReport = () => {
                   </div>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="hero"
-                  size="xl"
-                  className="w-full"
-                  onClick={handleGenerate}
-                  disabled={generating || !canGenerate}
-                >
-                  {generating ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Generating Report...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-5 h-5" />
-                      Generate Report
-                    </>
-                  )}
-                </Button>
+                {paymentStatus === 'pending' ? (
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
+                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <CreditCard className="w-6 h-6 text-amber-600" />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1">Payment Under Review</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Your payment is being verified. Your report will be generated once payment is approved.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Status: <span className="text-amber-600 font-medium">Inactive (Waiting for payment verification)</span>
+                    </p>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="hero"
+                    size="xl"
+                    className="w-full"
+                    onClick={handleProceedToPayment}
+                    disabled={generating}
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    Proceed to Payment - ₹{calculatePrice()}
+                  </Button>
+                )}
 
                 {!canGenerate && (
                   <p className="text-center text-sm text-muted-foreground">
@@ -558,6 +622,16 @@ const CreateReport = () => {
           </Card>
         )}
       </main>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={calculatePrice()}
+        reportId={pendingReportId || ''}
+        userId={user?.id || ''}
+        onSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };
