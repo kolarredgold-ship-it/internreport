@@ -14,7 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          id: string
+          payment_type: string
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          report_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          id?: string
+          payment_type?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          report_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          id?: string
+          payment_type?: string
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          report_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          college_name: string | null
+          course: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          generations_used: number | null
+          id: string
+          phone: string | null
+          register_number: string | null
+          university: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          college_name?: string | null
+          course?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          generations_used?: number | null
+          id?: string
+          phone?: string | null
+          register_number?: string | null
+          university?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          college_name?: string | null
+          course?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          generations_used?: number | null
+          id?: string
+          phone?: string | null
+          register_number?: string | null
+          university?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          academic_year: string
+          college_name: string
+          company_location: string
+          company_name: string
+          course: string
+          created_at: string
+          file_url: string | null
+          guide_name: string
+          id: string
+          internship_duration: string
+          internship_title: string
+          pages_count: number
+          register_number: string
+          report_content: string | null
+          status: string
+          student_name: string
+          topic_specialization: string
+          university: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          academic_year: string
+          college_name: string
+          company_location: string
+          company_name: string
+          course: string
+          created_at?: string
+          file_url?: string | null
+          guide_name: string
+          id?: string
+          internship_duration: string
+          internship_title: string
+          pages_count?: number
+          register_number: string
+          report_content?: string | null
+          status?: string
+          student_name: string
+          topic_specialization: string
+          university: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          academic_year?: string
+          college_name?: string
+          company_location?: string
+          company_name?: string
+          course?: string
+          created_at?: string
+          file_url?: string | null
+          guide_name?: string
+          id?: string
+          internship_duration?: string
+          internship_title?: string
+          pages_count?: number
+          register_number?: string
+          report_content?: string | null
+          status?: string
+          student_name?: string
+          topic_specialization?: string
+          university?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
