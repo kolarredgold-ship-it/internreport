@@ -542,7 +542,7 @@ const Admin = () => {
                                 }}
                               >
                                 <Key className="w-4 h-4 mr-2" />
-                                Reset Password
+                                Edit Password
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -641,7 +641,7 @@ const Admin = () => {
           <DialogHeader>
             <DialogTitle className="font-display flex items-center gap-2">
               <Key className="w-5 h-5" />
-              Reset Password
+              Edit Password
             </DialogTitle>
           </DialogHeader>
           {selectedUser && (
