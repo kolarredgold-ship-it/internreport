@@ -11,7 +11,8 @@ import {
   History, 
   User,
   Zap,
-  AlertCircle
+  AlertCircle,
+  Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,6 +28,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -37,6 +39,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      checkAdminStatus();
     }
   }, [user]);
 
@@ -54,6 +57,18 @@ const Dashboard = () => {
       console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .rpc('has_role', { _user_id: user?.id, _role: 'admin' });
+
+      if (error) throw error;
+      setIsAdmin(data || false);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
     }
   };
 
@@ -85,6 +100,14 @@ const Dashboard = () => {
             <span className="font-display font-bold text-xl">IPRG</span>
           </Link>
           <div className="flex items-center gap-4">
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Button>
+              </Link>
+            )}
             <span className="text-sm text-muted-foreground hidden sm:block">
               {user?.email}
             </span>
