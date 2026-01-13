@@ -1,61 +1,60 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  FileText, 
-  Shield, 
-  Zap, 
-  Download, 
-  CheckCircle2, 
-  GraduationCap,
-  BookOpen,
-  Clock,
-  Star,
-  ArrowRight
-} from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-
 const Index = () => {
-  const { user } = useAuth();
-
-  const features = [
-    {
-      icon: Zap,
-      title: 'AI-Powered Generation',
-      description: 'Advanced AI creates exam-ready, university-compliant reports in minutes'
-    },
-    {
-      icon: GraduationCap,
-      title: 'University Format',
-      description: 'Follows Indian university patterns including Bengaluru North University'
-    },
-    {
-      icon: Download,
-      title: 'DOCX Download',
-      description: 'Get perfectly formatted Word documents ready for submission'
-    },
-    {
-      icon: Shield,
-      title: 'Plagiarism Free',
-      description: 'Each report is uniquely generated for your specific internship'
-    }
-  ];
-
-  const pricing = [
-    { pages: '3-10', price: 99, popular: false },
-    { pages: '11-20', price: 299, popular: true },
-    { pages: '21-40', price: 499, popular: false },
-  ];
-
-  const steps = [
-    { step: 1, title: 'Create Account', description: 'Quick signup with email' },
-    { step: 2, title: 'Fill Details', description: 'Enter internship information' },
-    { step: 3, title: 'Make Payment', description: 'Secure Razorpay checkout' },
-    { step: 4, title: 'Download Report', description: 'Get DOCX file instantly' },
-  ];
-
-  return (
-    <div className="min-h-screen hero-gradient">
+  const {
+    user
+  } = useAuth();
+  const features = [{
+    icon: Zap,
+    title: 'AI-Powered Generation',
+    description: 'Advanced AI creates exam-ready, university-compliant reports in minutes'
+  }, {
+    icon: GraduationCap,
+    title: 'University Format',
+    description: 'Follows Indian university patterns including Bengaluru North University'
+  }, {
+    icon: Download,
+    title: 'DOCX Download',
+    description: 'Get perfectly formatted Word documents ready for submission'
+  }, {
+    icon: Shield,
+    title: 'Plagiarism Free',
+    description: 'Each report is uniquely generated for your specific internship'
+  }];
+  const pricing = [{
+    pages: '3-10',
+    price: 99,
+    popular: false
+  }, {
+    pages: '11-20',
+    price: 299,
+    popular: true
+  }, {
+    pages: '21-40',
+    price: 499,
+    popular: false
+  }];
+  const steps = [{
+    step: 1,
+    title: 'Create Account',
+    description: 'Quick signup with email'
+  }, {
+    step: 2,
+    title: 'Fill Details',
+    description: 'Enter internship information'
+  }, {
+    step: 3,
+    title: 'Make Payment',
+    description: 'Secure Razorpay checkout'
+  }, {
+    step: 4,
+    title: 'Download Report',
+    description: 'Get DOCX file instantly'
+  }];
+  return <div className="min-h-screen hero-gradient">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -63,23 +62,19 @@ const Index = () => {
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">IPRG</span>
+            <span className="font-display font-bold text-xl">IPRG  - Internship Project Report Generator</span>
           </div>
           <div className="flex items-center gap-4">
-            {user ? (
-              <Link to="/dashboard">
+            {user ? <Link to="/dashboard">
                 <Button variant="gradient">Dashboard</Button>
-              </Link>
-            ) : (
-              <>
+              </Link> : <>
                 <Link to="/auth">
                   <Button variant="ghost">Login</Button>
                 </Link>
                 <Link to="/auth?signup=true">
                   <Button variant="gradient">Get Started</Button>
                 </Link>
-              </>
-            )}
+              </>}
           </div>
         </div>
       </nav>
@@ -129,8 +124,9 @@ const Index = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-soft animate-scale-in" style={{ animationDelay: `${index * 100}ms` }}>
+          {features.map((feature, index) => <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-soft animate-scale-in" style={{
+          animationDelay: `${index * 100}ms`
+        }}>
               <CardContent className="p-6">
                 <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-6 h-6 text-primary-foreground" />
@@ -138,8 +134,7 @@ const Index = () => {
                 <h3 className="font-display font-semibold text-lg mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground text-sm">{feature.description}</p>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </section>
 
@@ -152,18 +147,16 @@ const Index = () => {
           <p className="text-muted-foreground">Simple 4-step process to get your report</p>
         </div>
         <div className="grid md:grid-cols-4 gap-8">
-          {steps.map((step, index) => (
-            <div key={index} className="text-center relative animate-fade-in" style={{ animationDelay: `${index * 150}ms` }}>
+          {steps.map((step, index) => <div key={index} className="text-center relative animate-fade-in" style={{
+          animationDelay: `${index * 150}ms`
+        }}>
               <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 shadow-glow">
                 <span className="font-display font-bold text-2xl text-primary-foreground">{step.step}</span>
               </div>
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-8 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />
-              )}
+              {index < steps.length - 1 && <div className="hidden md:block absolute top-8 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />}
               <h3 className="font-display font-semibold mb-2">{step.title}</h3>
               <p className="text-muted-foreground text-sm">{step.description}</p>
-            </div>
-          ))}
+            </div>)}
         </div>
       </section>
 
@@ -176,18 +169,10 @@ const Index = () => {
           <p className="text-muted-foreground">Pay only for what you need. No hidden charges.</p>
         </div>
         <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {pricing.map((plan, index) => (
-            <Card 
-              key={index} 
-              className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl ${
-                plan.popular ? 'border-primary shadow-glow scale-105' : 'border-0 shadow-soft'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute top-0 left-0 right-0 gradient-bg text-center py-1 text-xs font-semibold text-primary-foreground">
+          {pricing.map((plan, index) => <Card key={index} className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl ${plan.popular ? 'border-primary shadow-glow scale-105' : 'border-0 shadow-soft'}`}>
+              {plan.popular && <div className="absolute top-0 left-0 right-0 gradient-bg text-center py-1 text-xs font-semibold text-primary-foreground">
                   MOST POPULAR
-                </div>
-              )}
+                </div>}
               <CardContent className={`p-6 ${plan.popular ? 'pt-10' : ''}`}>
                 <div className="text-center">
                   <p className="text-muted-foreground text-sm mb-2">{plan.pages} Pages</p>
@@ -201,8 +186,7 @@ const Index = () => {
                   </Link>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
         <div className="text-center mt-8">
           <p className="text-muted-foreground text-sm">
@@ -275,8 +259,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
