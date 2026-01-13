@@ -112,6 +112,7 @@ const Admin = () => {
 
       setIsAdmin(true);
       fetchPayments();
+      fetchUsers();
     } catch (error: any) {
       console.error('Admin check error:', error);
       navigate('/dashboard');
@@ -136,6 +137,75 @@ const Admin = () => {
         description: 'Failed to load payments.',
         variant: 'destructive',
       });
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error: any) {
+      console.error('Fetch users error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load users.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!selectedUser || !newPassword) return;
+
+    if (newPassword.length < 6) {
+      toast({
+        title: 'Invalid Password',
+        description: 'Password must be at least 6 characters.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('admin-update-password', {
+        body: {
+          userId: selectedUser.user_id,
+          newPassword: newPassword,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to update password');
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast({
+        title: 'Password Updated',
+        description: `Password for ${selectedUser.email || 'user'} has been updated.`,
+      });
+
+      setSelectedUser(null);
+      setNewPassword('');
+    } catch (error: any) {
+      console.error('Password update error:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update password.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdatingPassword(false);
     }
   };
 
@@ -255,155 +325,236 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold mb-2">Payment Management</h1>
-          <p className="text-muted-foreground">Verify and manage user payments</p>
+          <h1 className="font-display text-3xl font-bold mb-2">Admin Panel</h1>
+          <p className="text-muted-foreground">Manage payments and users</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-xs text-muted-foreground">Total Payments</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.pending}</p>
-                  <p className="text-xs text-muted-foreground">Pending</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.verified}</p>
-                  <p className="text-xs text-muted-foreground">Verified</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <IndianRupee className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">₹{stats.totalAmount}</p>
-                  <p className="text-xs text-muted-foreground">Revenue</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Tabs defaultValue="payments" className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="payments" className="gap-2">
+              <IndianRupee className="w-4 h-4" />
+              Payments
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="w-4 h-4" />
+              Users
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Payments Table */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="font-display">All Payments</CardTitle>
-              <CardDescription>Review and approve pending payments</CardDescription>
+          <TabsContent value="payments" className="space-y-6">
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{stats.total}</p>
+                      <p className="text-xs text-muted-foreground">Total Payments</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{stats.pending}</p>
+                      <p className="text-xs text-muted-foreground">Pending</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{stats.verified}</p>
+                      <p className="text-xs text-muted-foreground">Verified</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                      <IndianRupee className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">₹{stats.totalAmount}</p>
+                      <p className="text-xs text-muted-foreground">Revenue</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            <Button variant="outline" size="sm" onClick={fetchPayments}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Mobile</TableHead>
-                    <TableHead>Transaction #</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No payments found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    payments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="whitespace-nowrap">
-                          {new Date(payment.created_at).toLocaleDateString('en-IN', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </TableCell>
-                        <TableCell>{payment.payer_name || '-'}</TableCell>
-                        <TableCell>{payment.payer_mobile || '-'}</TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {payment.transaction_number || '-'}
-                        </TableCell>
-                        <TableCell className="font-semibold">₹{payment.amount}</TableCell>
-                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedPayment(payment)}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            {payment.status === 'pending' && (
-                              <>
-                                <Button
-                                  variant="default"
-                                  size="sm"
-                                  onClick={() => handleApprove(payment.id)}
-                                  disabled={processing === payment.id}
-                                >
-                                  <CheckCircle2 className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => handleReject(payment.id)}
-                                  disabled={processing === payment.id}
-                                >
-                                  <XCircle className="w-4 h-4" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
+
+            {/* Payments Table */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="font-display">All Payments</CardTitle>
+                  <CardDescription>Review and approve pending payments</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={fetchPayments}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Mobile</TableHead>
+                        <TableHead>Transaction #</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {payments.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            No payments found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        payments.map((payment) => (
+                          <TableRow key={payment.id}>
+                            <TableCell className="whitespace-nowrap">
+                              {new Date(payment.created_at).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </TableCell>
+                            <TableCell>{payment.payer_name || '-'}</TableCell>
+                            <TableCell>{payment.payer_mobile || '-'}</TableCell>
+                            <TableCell className="font-mono text-sm">
+                              {payment.transaction_number || '-'}
+                            </TableCell>
+                            <TableCell className="font-semibold">₹{payment.amount}</TableCell>
+                            <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedPayment(payment)}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                                {payment.status === 'pending' && (
+                                  <>
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleApprove(payment.id)}
+                                      disabled={processing === payment.id}
+                                    >
+                                      <CheckCircle2 className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      onClick={() => handleReject(payment.id)}
+                                      disabled={processing === payment.id}
+                                    >
+                                      <XCircle className="w-4 h-4" />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-6">
+            {/* Users Table */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="font-display">All Users</CardTitle>
+                  <CardDescription>Manage user accounts and reset passwords</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={fetchUsers}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Joined</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                            No users found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        users.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell className="whitespace-nowrap">
+                              {new Date(u.created_at).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </TableCell>
+                            <TableCell>{u.email || '-'}</TableCell>
+                            <TableCell>{u.full_name || '-'}</TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setNewPassword('');
+                                }}
+                              >
+                                <Key className="w-4 h-4 mr-2" />
+                                Reset Password
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Payment Details Dialog */}
@@ -479,6 +630,65 @@ const Admin = () => {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Key className="w-5 h-5" />
+              Reset Password
+            </DialogTitle>
+          </DialogHeader>
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="text-sm">
+                <p className="text-muted-foreground">User Email</p>
+                <p className="font-medium">{selectedUser.email || 'No email'}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  placeholder="Enter new password (min 6 characters)"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={updatingPassword}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  className="flex-1"
+                  onClick={handleUpdatePassword}
+                  disabled={updatingPassword || newPassword.length < 6}
+                >
+                  {updatingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Key className="w-4 h-4 mr-2" />
+                      Update Password
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedUser(null)}
+                  disabled={updatingPassword}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
