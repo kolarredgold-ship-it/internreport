@@ -52,11 +52,11 @@ serve(async (req) => {
       );
     }
 
-    // Generate report using DeepSeek API
-    const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
+    // Generate report using Lovable AI Gateway
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
-    if (!DEEPSEEK_API_KEY) {
-      throw new Error("DeepSeek API key not configured");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("Lovable API key not configured");
     }
 
     const prompt = `You are an expert academic report writer specializing in Indian university internship project reports. Generate a comprehensive internship project report with the following details:
@@ -145,14 +145,16 @@ Generate a detailed, exam-ready internship project report following the Indian u
 
 Write in formal academic English suitable for Indian university evaluation. Be detailed and thorough. Each section should be well-developed with proper paragraphs. The content must be unique, plagiarism-free, and human-like in writing style. Focus on the topic: ${topicSpecialization}`;
 
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
+    console.log("Calling Lovable AI Gateway...");
+    
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",
@@ -170,11 +172,13 @@ Write in formal academic English suitable for Indian university evaluation. Be d
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("DeepSeek API error:", response.status, errorText);
-      throw new Error(`DeepSeek API error: ${response.status}`);
+      console.error("Lovable AI Gateway error:", response.status, errorText);
+      throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log("AI response received successfully");
+    
     const generatedContent = data.choices[0]?.message?.content;
 
     if (!generatedContent) {
@@ -216,6 +220,8 @@ Write in formal academic English suitable for Indian university evaluation. Be d
       .from("profiles")
       .update({ generations_used: newCount })
       .eq("user_id", userId);
+
+    console.log("Report generated and saved successfully");
 
     return new Response(
       JSON.stringify({
