@@ -141,24 +141,24 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check generation limit
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("generations_used")
-      .eq("user_id", userId)
-      .single();
+    // Atomically claim a generation slot before processing (prevents race condition)
+    const { data: claimResult, error: claimError } = await supabase
+      .rpc('claim_generation_slot', { p_user_id: userId });
 
-    if (profileError) {
-      console.error("Profile fetch error:", profileError);
-      throw new Error("Failed to fetch user profile");
+    if (claimError) {
+      console.error('Failed to claim generation slot:', claimError);
+      throw new Error('Failed to verify generation limit');
     }
 
-    if (profile.generations_used >= 3) {
+    if (!claimResult.success) {
       return new Response(
-        JSON.stringify({ error: "Generation limit reached. Please top up." }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: claimResult.error }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const newCount = claimResult.generations_used;
+    console.log(`Generation slot claimed. User now has ${newCount} generations used.`);
 
     // Generate report using DeepSeek AI
     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
@@ -321,13 +321,6 @@ Write in formal academic English suitable for Indian university evaluation. Be d
       console.error("Report save error:", reportError);
       throw new Error("Failed to save report");
     }
-
-    // Update generations count
-    const newCount = profile.generations_used + 1;
-    await supabase
-      .from("profiles")
-      .update({ generations_used: newCount })
-      .eq("user_id", userId);
 
     console.log("Report generated and saved successfully for user:", userId);
 
