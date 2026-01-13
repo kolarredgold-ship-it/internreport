@@ -33,3 +33,6 @@ enable_confirmations = false
 
 [functions.generate-report]
 verify_jwt = false
+
+[functions.admin-update-password]
+verify_jwt = false
