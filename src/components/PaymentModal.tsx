@@ -12,12 +12,13 @@ interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   amount: number;
-  reportId: string;
+  reportId?: string | null;
   userId: string;
   onSuccess: () => void;
+  paymentType?: 'report' | 'topup';
 }
 
-const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess }: PaymentModalProps) => {
+const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess, paymentType = 'report' }: PaymentModalProps) => {
   const { toast } = useToast();
   const [step, setStep] = useState<'qr' | 'form' | 'submitted'>('qr');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
@@ -142,7 +143,7 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess }: 
     try {
       // Upload screenshot
       const fileExt = screenshotFile.name.split('.').pop();
-      const fileName = `${userId}/${reportId}_${Date.now()}.${fileExt}`;
+      const fileName = `${userId}/${reportId || 'topup'}_${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('payment-screenshots')
@@ -160,10 +161,10 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess }: 
         .from('payments')
         .insert({
           user_id: userId,
-          report_id: reportId,
+          report_id: reportId || null,
           amount: amount,
           currency: 'INR',
-          payment_type: 'report',
+          payment_type: paymentType,
           status: 'pending',
           transaction_number: formData.transactionNumber,
           payer_name: formData.payerName,

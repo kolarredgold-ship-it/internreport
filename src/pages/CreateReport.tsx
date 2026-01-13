@@ -57,6 +57,10 @@ const CreateReport = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pendingReportId, setPendingReportId] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<'none' | 'pending' | 'verified'>('none');
+  const [hasApprovedPayment, setHasApprovedPayment] = useState(false);
+  const [generationsUsed, setGenerationsUsed] = useState(0);
+  const [needsTopup, setNeedsTopup] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -66,19 +70,94 @@ const CreateReport = () => {
 
   useEffect(() => {
     if (user) {
-      checkGenerationLimit();
+      checkUserStatus();
     }
   }, [user]);
 
-  const checkGenerationLimit = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('generations_used')
-      .eq('user_id', user?.id)
-      .maybeSingle();
-    
-    if (data && data.generations_used >= 3) {
-      setCanGenerate(false);
+  const checkUserStatus = async () => {
+    setCheckingStatus(true);
+    try {
+      // Check generations used
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('generations_used')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+      
+      const usedCount = profileData?.generations_used || 0;
+      setGenerationsUsed(usedCount);
+
+      // Check if user has any verified payment
+      const { data: paymentData } = await supabase
+        .from('payments')
+        .select('id, status')
+        .eq('user_id', user?.id)
+        .eq('status', 'verified')
+        .limit(1);
+
+      const hasVerifiedPayment = paymentData && paymentData.length > 0;
+      setHasApprovedPayment(hasVerifiedPayment);
+
+      // User can generate if: has verified payment AND used < 3
+      // OR: no payment yet (first 3 are free after first payment)
+      if (hasVerifiedPayment && usedCount < 3) {
+        setCanGenerate(true);
+        setNeedsTopup(false);
+      } else if (hasVerifiedPayment && usedCount >= 3) {
+        // Check if they have a topup payment verified after reaching limit
+        const { data: topupPayments } = await supabase
+          .from('payments')
+          .select('id, created_at')
+          .eq('user_id', user?.id)
+          .eq('status', 'verified')
+          .eq('payment_type', 'topup')
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (topupPayments && topupPayments.length > 0) {
+          // Check how many reports generated after latest topup
+          const { count: reportsAfterTopup } = await supabase
+            .from('reports')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user?.id)
+            .eq('status', 'completed')
+            .gt('created_at', topupPayments[0].created_at);
+
+          if ((reportsAfterTopup || 0) < 3) {
+            setCanGenerate(true);
+            setNeedsTopup(false);
+          } else {
+            setCanGenerate(false);
+            setNeedsTopup(true);
+          }
+        } else {
+          setCanGenerate(false);
+          setNeedsTopup(true);
+        }
+      } else if (!hasVerifiedPayment) {
+        // No verified payment yet - need to pay first
+        setCanGenerate(false);
+        setNeedsTopup(false);
+      }
+
+      // Check for pending payments
+      const { data: pendingPayment } = await supabase
+        .from('payments')
+        .select('id, report_id')
+        .eq('user_id', user?.id)
+        .eq('status', 'pending')
+        .limit(1);
+
+      if (pendingPayment && pendingPayment.length > 0) {
+        setPaymentStatus('pending');
+        if (pendingPayment[0].report_id) {
+          setPendingReportId(pendingPayment[0].report_id);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking user status:', error);
+    } finally {
+      setCheckingStatus(false);
     }
   };
 
@@ -153,6 +232,11 @@ const CreateReport = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleTopupPayment = () => {
+    setPendingReportId(null); // No specific report for topup
+    setShowPaymentModal(true);
   };
 
   const handlePaymentSuccess = () => {
@@ -567,25 +651,41 @@ const CreateReport = () => {
                   </div>
                 </div>
 
-                {/* Price Display */}
-                <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-display font-semibold text-lg">Report Price</p>
-                      <p className="text-muted-foreground text-sm">
-                        {formData.pagesCount} pages • AI-generated content
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-display text-3xl font-bold text-primary">₹{calculatePrice()}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {formData.pagesCount <= 10 ? '3-10 pages' : formData.pagesCount <= 20 ? '11-20 pages' : 'Above 20 pages'}
-                      </p>
-                    </div>
+                {/* Status & Action Section */}
+                {checkingStatus ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <span className="ml-2 text-muted-foreground">Checking your status...</span>
                   </div>
-                </div>
-
-                {paymentStatus === 'pending' ? (
+                ) : needsTopup ? (
+                  // User has used 3 generations, needs topup
+                  <div className="space-y-4">
+                    <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
+                      <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <CreditCard className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <h3 className="font-semibold text-lg mb-1">Generation Limit Reached</h3>
+                      <p className="text-muted-foreground text-sm mb-3">
+                        You've used all 3 report generations. Top up to continue generating reports.
+                      </p>
+                      <div className="bg-primary/10 rounded-lg p-4 mb-4">
+                        <p className="font-display text-2xl font-bold text-primary">₹499</p>
+                        <p className="text-xs text-muted-foreground">for 3 more generations</p>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="hero"
+                      size="xl"
+                      className="w-full"
+                      onClick={handleTopupPayment}
+                    >
+                      <CreditCard className="w-5 h-5" />
+                      Top Up - ₹499
+                    </Button>
+                  </div>
+                ) : paymentStatus === 'pending' ? (
+                  // Payment is pending verification
                   <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
                     <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
                       <CreditCard className="w-6 h-6 text-amber-600" />
@@ -598,24 +698,66 @@ const CreateReport = () => {
                       Status: <span className="text-amber-600 font-medium">Inactive (Waiting for payment verification)</span>
                     </p>
                   </div>
+                ) : hasApprovedPayment && canGenerate ? (
+                  // User has approved payment and can generate
+                  <div className="space-y-4">
+                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
+                      <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                        ✓ Payment verified • {3 - (generationsUsed % 3)} generations remaining
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="hero"
+                      size="xl"
+                      className="w-full"
+                      onClick={handleGenerate}
+                      disabled={generating}
+                    >
+                      {generating ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Generating Report...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-5 h-5" />
+                          Generate Report
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 ) : (
-                  <Button
-                    type="button"
-                    variant="hero"
-                    size="xl"
-                    className="w-full"
-                    onClick={handleProceedToPayment}
-                    disabled={generating}
-                  >
-                    <CreditCard className="w-5 h-5" />
-                    Proceed to Payment - ₹{calculatePrice()}
-                  </Button>
-                )}
-
-                {!canGenerate && (
-                  <p className="text-center text-sm text-muted-foreground">
-                    You've used all free generations. <Link to="/dashboard" className="text-primary hover:underline">Top up</Link> to continue.
-                  </p>
+                  // User needs to make first payment
+                  <div className="space-y-4">
+                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-display font-semibold text-lg">Report Price</p>
+                          <p className="text-muted-foreground text-sm">
+                            {formData.pagesCount} pages • AI-generated content
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-display text-3xl font-bold text-primary">₹{calculatePrice()}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {formData.pagesCount <= 10 ? '3-10 pages' : formData.pagesCount <= 20 ? '11-20 pages' : 'Above 20 pages'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="hero"
+                      size="xl"
+                      className="w-full"
+                      onClick={handleProceedToPayment}
+                      disabled={generating}
+                    >
+                      <CreditCard className="w-5 h-5" />
+                      Proceed to Payment - ₹{calculatePrice()}
+                    </Button>
+                  </div>
                 )}
               </form>
             </CardContent>
@@ -627,10 +769,11 @@ const CreateReport = () => {
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        amount={calculatePrice()}
-        reportId={pendingReportId || ''}
+        amount={needsTopup ? 499 : calculatePrice()}
+        reportId={pendingReportId}
         userId={user?.id || ''}
         onSuccess={handlePaymentSuccess}
+        paymentType={needsTopup ? 'topup' : 'report'}
       />
     </div>
   );
