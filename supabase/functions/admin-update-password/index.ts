@@ -1,106 +1,119 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.2";
+import { createClient } from "npm:@supabase/supabase-js@2.90.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const json = (status: number, body: Record<string, unknown>) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+const isUuid = (value: unknown): value is string =>
+  typeof value === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify authorization header
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Create Supabase client with user's token to verify they're authenticated
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
+    console.log("admin-update-password: request received", {
+      method: req.method,
+      hasAuthHeader: !!req.headers.get("Authorization"),
     });
 
-    // Get the requesting user
-    const { data: { user: requestingUser }, error: userError } = await userClient.auth.getUser();
-    if (userError || !requestingUser) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return json(401, { error: "Unauthorized" });
     }
 
-    // Check if requesting user is an admin using service role
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-    
-    const { data: isAdmin, error: roleError } = await adminClient
-      .rpc('has_role', { _user_id: requestingUser.id, _role: 'admin' });
+    const token = authHeader.slice("Bearer ".length);
 
-    if (roleError || !isAdmin) {
-      return new Response(
-        JSON.stringify({ error: "Admin access required" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+      console.error("admin-update-password: missing env vars");
+      return json(500, { error: "Server misconfigured" });
     }
 
-    // Parse request body
-    const { userId, newPassword } = await req.json();
+    // Verify JWT with signing keys (works with verify_jwt=false)
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-    // Validate inputs
-    if (!userId || typeof userId !== 'string') {
-      return new Response(
-        JSON.stringify({ error: "User ID is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.error("admin-update-password: invalid token", claimsError?.message);
+      return json(401, { error: "Unauthorized" });
     }
 
-    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
-      return new Response(
-        JSON.stringify({ error: "Password must be at least 6 characters" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const requesterUserId = claimsData.claims.sub;
+
+    // Service client for privileged ops
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const { data: isAdmin, error: roleError } = await adminClient.rpc("has_role", {
+      _user_id: requesterUserId,
+      _role: "admin",
+    });
+
+    if (roleError) {
+      console.error("admin-update-password: role check error", roleError.message);
+      return json(500, { error: "Failed to verify admin role" });
     }
 
-    if (newPassword.length > 72) {
-      return new Response(
-        JSON.stringify({ error: "Password must be less than 72 characters" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!isAdmin) {
+      return json(403, { error: "Admin access required" });
     }
 
-    // Update user password using admin client
-    const { error: updateError } = await adminClient.auth.admin.updateUserById(
-      userId,
-      { password: newPassword }
-    );
+    const body = await req.json().catch(() => null) as null | {
+      userId?: unknown;
+      newPassword?: unknown;
+    };
+
+    const userId = body?.userId;
+    const newPassword = body?.newPassword;
+
+    if (!isUuid(userId)) {
+      return json(400, { error: "Valid userId (uuid) is required" });
+    }
+
+    if (typeof newPassword !== "string") {
+      return json(400, { error: "newPassword is required" });
+    }
+
+    const password = newPassword.trim();
+    if (password.length < 6) {
+      return json(400, { error: "Password must be at least 6 characters" });
+    }
+    if (password.length > 72) {
+      return json(400, { error: "Password must be less than 72 characters" });
+    }
+
+    const { error: updateError } = await adminClient.auth.admin.updateUserById(userId, {
+      password,
+    });
 
     if (updateError) {
-      console.error("Password update error:", updateError);
-      return new Response(
-        JSON.stringify({ error: updateError.message }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error("admin-update-password: update error", updateError.message);
+      return json(400, { error: updateError.message });
     }
 
-    return new Response(
-      JSON.stringify({ success: true, message: "Password updated successfully" }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
+    console.log("admin-update-password: password updated", { targetUserId: userId });
+    return json(200, { success: true });
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("admin-update-password: unexpected error", error);
+    return json(500, { error: "Internal server error" });
   }
 });
+
