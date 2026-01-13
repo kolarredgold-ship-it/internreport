@@ -504,7 +504,7 @@ const CreateReport = () => {
                         name="studentName"
                         value={formData.studentName}
                         onChange={handleInputChange}
-                        placeholder="John Doe"
+                        placeholder="Enter your full name"
                       />
                     </div>
                     <div className="space-y-2">
@@ -514,7 +514,7 @@ const CreateReport = () => {
                         name="registerNumber"
                         value={formData.registerNumber}
                         onChange={handleInputChange}
-                        placeholder="21BCA001"
+                        placeholder="Enter your register number"
                       />
                     </div>
                     <div className="space-y-2">
@@ -524,7 +524,7 @@ const CreateReport = () => {
                         name="course"
                         value={formData.course}
                         onChange={handleInputChange}
-                        placeholder="B.Com, BBA, BCA, MBA..."
+                        placeholder="Enter your course"
                       />
                     </div>
                     <div className="space-y-2">
@@ -534,7 +534,7 @@ const CreateReport = () => {
                         name="academicYear"
                         value={formData.academicYear}
                         onChange={handleInputChange}
-                        placeholder="2023-2024"
+                        placeholder="Enter academic year"
                       />
                     </div>
                   </div>
@@ -551,7 +551,7 @@ const CreateReport = () => {
                         name="collegeName"
                         value={formData.collegeName}
                         onChange={handleInputChange}
-                        placeholder="ABC College of Commerce"
+                        placeholder="Enter your college name"
                       />
                     </div>
                     <div className="space-y-2">
@@ -561,7 +561,7 @@ const CreateReport = () => {
                         name="university"
                         value={formData.university}
                         onChange={handleInputChange}
-                        placeholder="Bengaluru North University"
+                        placeholder="Enter your university name"
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
@@ -571,7 +571,7 @@ const CreateReport = () => {
                         name="guideName"
                         value={formData.guideName}
                         onChange={handleInputChange}
-                        placeholder="Dr. Jane Smith"
+                        placeholder="Enter guide/supervisor name"
                       />
                     </div>
                   </div>
@@ -588,7 +588,7 @@ const CreateReport = () => {
                         name="internshipTitle"
                         value={formData.internshipTitle}
                         onChange={handleInputChange}
-                        placeholder="A Study on Digital Marketing Strategies"
+                        placeholder="Enter internship title"
                       />
                     </div>
                     <div className="space-y-2">
@@ -598,7 +598,7 @@ const CreateReport = () => {
                         name="companyName"
                         value={formData.companyName}
                         onChange={handleInputChange}
-                        placeholder="XYZ Technologies Pvt. Ltd."
+                        placeholder="Enter company name"
                       />
                     </div>
                     <div className="space-y-2">
@@ -608,7 +608,7 @@ const CreateReport = () => {
                         name="companyLocation"
                         value={formData.companyLocation}
                         onChange={handleInputChange}
-                        placeholder="Bangalore, Karnataka"
+                        placeholder="Enter company location"
                       />
                     </div>
                     <div className="space-y-2">
@@ -618,7 +618,7 @@ const CreateReport = () => {
                         name="internshipDuration"
                         value={formData.internshipDuration}
                         onChange={handleInputChange}
-                        placeholder="2 months (June - July 2024)"
+                        placeholder="Enter internship duration"
                       />
                     </div>
                     <div className="space-y-2">
@@ -645,7 +645,7 @@ const CreateReport = () => {
                       name="topicSpecialization"
                       value={formData.topicSpecialization}
                       onChange={handleInputChange}
-                      placeholder="Describe the main focus area of your internship, key responsibilities, and what you learned..."
+                      placeholder="Enter the topic or specialization"
                       rows={4}
                     />
                   </div>
