@@ -43,9 +43,8 @@ const Index = () => {
 
   const pricing = [
     { pages: '3-10', price: 99, popular: false },
-    { pages: '11-20', price: 149, popular: true },
-    { pages: '21-30', price: 199, popular: false },
-    { pages: '31-40', price: 249, popular: false },
+    { pages: '11-20', price: 299, popular: true },
+    { pages: '21-40', price: 499, popular: false },
   ];
 
   const steps = [
@@ -176,7 +175,7 @@ const Index = () => {
           </h2>
           <p className="text-muted-foreground">Pay only for what you need. No hidden charges.</p>
         </div>
-        <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {pricing.map((plan, index) => (
             <Card 
               key={index} 
