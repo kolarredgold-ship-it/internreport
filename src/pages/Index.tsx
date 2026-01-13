@@ -1,12 +1,281 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { 
+  FileText, 
+  Shield, 
+  Zap, 
+  Download, 
+  CheckCircle2, 
+  GraduationCap,
+  BookOpen,
+  Clock,
+  Star,
+  ArrowRight
+} from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const { user } = useAuth();
+
+  const features = [
+    {
+      icon: Zap,
+      title: 'AI-Powered Generation',
+      description: 'Advanced AI creates exam-ready, university-compliant reports in minutes'
+    },
+    {
+      icon: GraduationCap,
+      title: 'University Format',
+      description: 'Follows Indian university patterns including Bengaluru North University'
+    },
+    {
+      icon: Download,
+      title: 'DOCX Download',
+      description: 'Get perfectly formatted Word documents ready for submission'
+    },
+    {
+      icon: Shield,
+      title: 'Plagiarism Free',
+      description: 'Each report is uniquely generated for your specific internship'
+    }
+  ];
+
+  const pricing = [
+    { pages: '3-10', price: 99, popular: false },
+    { pages: '11-20', price: 149, popular: true },
+    { pages: '21-30', price: 199, popular: false },
+    { pages: '31-40', price: 249, popular: false },
+  ];
+
+  const steps = [
+    { step: 1, title: 'Create Account', description: 'Quick signup with email' },
+    { step: 2, title: 'Fill Details', description: 'Enter internship information' },
+    { step: 3, title: 'Make Payment', description: 'Secure Razorpay checkout' },
+    { step: 4, title: 'Download Report', description: 'Get DOCX file instantly' },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen hero-gradient">
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="font-display font-bold text-xl">IPRG</span>
+          </div>
+          <div className="flex items-center gap-4">
+            {user ? (
+              <Link to="/dashboard">
+                <Button variant="gradient">Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="ghost">Login</Button>
+                </Link>
+                <Link to="/auth?signup=true">
+                  <Button variant="gradient">Get Started</Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-20 lg:py-32">
+        <div className="max-w-4xl mx-auto text-center animate-slide-up">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
+            <Star className="w-4 h-4" />
+            <span className="text-sm font-medium">Trusted by 10,000+ Students</span>
+          </div>
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            Generate <span className="gradient-text">Internship Reports</span>
+            <br />in Minutes, Not Days
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            AI-powered report generator that creates university-compliant internship project reports. 
+            Perfect formatting, academic writing style, exam-ready content.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to={user ? "/dashboard" : "/auth?signup=true"}>
+              <Button variant="hero" size="xl" className="w-full sm:w-auto">
+                Generate Report Now
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <a href="#pricing">
+              <Button variant="outline" size="xl" className="w-full sm:w-auto">
+                View Pricing
+              </Button>
+            </a>
+          </div>
+          <p className="text-sm text-muted-foreground mt-4">
+            ₹99 onwards • 3 Free Generations • Instant Download
+          </p>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+            Why Choose IPRG?
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Built specifically for Indian university students with deep understanding of academic requirements
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
+            <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-soft animate-scale-in" style={{ animationDelay: `${index * 100}ms` }}>
+              <CardContent className="p-6">
+                <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <feature.icon className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <h3 className="font-display font-semibold text-lg mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm">{feature.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="container mx-auto px-4 py-20 bg-secondary/30 rounded-3xl my-8">
+        <div className="text-center mb-12">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+            How It Works
+          </h2>
+          <p className="text-muted-foreground">Simple 4-step process to get your report</p>
+        </div>
+        <div className="grid md:grid-cols-4 gap-8">
+          {steps.map((step, index) => (
+            <div key={index} className="text-center relative animate-fade-in" style={{ animationDelay: `${index * 150}ms` }}>
+              <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 shadow-glow">
+                <span className="font-display font-bold text-2xl text-primary-foreground">{step.step}</span>
+              </div>
+              {index < steps.length - 1 && (
+                <div className="hidden md:block absolute top-8 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />
+              )}
+              <h3 className="font-display font-semibold mb-2">{step.title}</h3>
+              <p className="text-muted-foreground text-sm">{step.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="container mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+            Simple, Transparent Pricing
+          </h2>
+          <p className="text-muted-foreground">Pay only for what you need. No hidden charges.</p>
+        </div>
+        <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {pricing.map((plan, index) => (
+            <Card 
+              key={index} 
+              className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl ${
+                plan.popular ? 'border-primary shadow-glow scale-105' : 'border-0 shadow-soft'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute top-0 left-0 right-0 gradient-bg text-center py-1 text-xs font-semibold text-primary-foreground">
+                  MOST POPULAR
+                </div>
+              )}
+              <CardContent className={`p-6 ${plan.popular ? 'pt-10' : ''}`}>
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm mb-2">{plan.pages} Pages</p>
+                  <div className="flex items-baseline justify-center gap-1 mb-4">
+                    <span className="text-4xl font-display font-bold">₹{plan.price}</span>
+                  </div>
+                  <Link to={user ? "/dashboard" : "/auth?signup=true"}>
+                    <Button variant={plan.popular ? "gradient" : "outline"} className="w-full">
+                      Get Started
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center mt-8">
+          <p className="text-muted-foreground text-sm">
+            Need more than 3 generations? Top up for ₹499 for 5 additional reports.
+          </p>
+        </div>
+      </section>
+
+      {/* Trust Badges */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid md:grid-cols-3 gap-8 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <CheckCircle2 className="w-10 h-10 text-success" />
+            <h3 className="font-display font-semibold">100% Secure Payments</h3>
+            <p className="text-muted-foreground text-sm">Powered by Razorpay</p>
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <BookOpen className="w-10 h-10 text-primary" />
+            <h3 className="font-display font-semibold">Academic Quality</h3>
+            <p className="text-muted-foreground text-sm">University-approved format</p>
+          </div>
+          <div className="flex flex-col items-center gap-3">
+            <Clock className="w-10 h-10 text-accent" />
+            <h3 className="font-display font-semibold">Instant Delivery</h3>
+            <p className="text-muted-foreground text-sm">Download within minutes</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 mt-20">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <span className="font-display font-bold text-xl">IPRG</span>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                AI-powered internship project report generator for Indian university students.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-display font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
+                <li><Link to="/auth" className="hover:text-primary transition-colors">Login</Link></li>
+                <li><Link to="/auth?signup=true" className="hover:text-primary transition-colors">Sign Up</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-display font-semibold mb-4">Policies</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
+                <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/refund" className="hover:text-primary transition-colors">Refund Policy</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-display font-semibold mb-4">Contact</h4>
+              <p className="text-sm text-muted-foreground">
+                support@iprg.in
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-border/50 mt-8 pt-8 text-center text-sm text-muted-foreground">
+            <p>© 2024 IPRG. All rights reserved. AI-assisted academic reference tool.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
