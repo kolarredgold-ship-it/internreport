@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { 
   ArrowLeft, 
@@ -15,7 +17,9 @@ import {
   Eye,
   RefreshCw,
   Users,
-  IndianRupee
+  IndianRupee,
+  Key,
+  Loader2
 } from 'lucide-react';
 import {
   Table,
@@ -31,6 +35,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
 
 interface Payment {
   id: string;
@@ -47,6 +57,14 @@ interface Payment {
   verified_at: string | null;
 }
 
+interface UserProfile {
+  id: string;
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  created_at: string;
+}
+
 const Admin = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -56,6 +74,12 @@ const Admin = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
+  
+  // User management state
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
