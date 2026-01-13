@@ -85,11 +85,10 @@ const CreateReport = () => {
 
   const calculatePrice = () => {
     const pages = formData.pagesCount;
-    if (pages <= 20) return 0; // Free for up to 20 pages
-    return 499; // ₹499 for above 20 pages
+    if (pages <= 10) return 99;    // 3-10 pages: ₹99
+    if (pages <= 20) return 299;   // 11-20 pages: ₹299
+    return 499;                     // Above 20 pages: ₹499
   };
-
-  const requiresPayment = () => formData.pagesCount > 20;
 
   const handleGenerate = async () => {
     if (!canGenerate) {
@@ -511,28 +510,19 @@ const CreateReport = () => {
                 </div>
 
                 {/* Price Display */}
-                <div className={`border rounded-xl p-6 ${requiresPayment() ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800' : 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800'}`}>
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-display font-semibold text-lg">
-                        {requiresPayment() ? 'Premium Report' : 'Free Report'}
-                      </p>
+                      <p className="font-display font-semibold text-lg">Report Price</p>
                       <p className="text-muted-foreground text-sm">
                         {formData.pagesCount} pages • AI-generated content
                       </p>
                     </div>
                     <div className="text-right">
-                      {requiresPayment() ? (
-                        <>
-                          <p className="font-display text-3xl font-bold text-amber-600 dark:text-amber-400">₹499</p>
-                          <p className="text-xs text-muted-foreground">Payment required for 20+ pages</p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-display text-3xl font-bold text-green-600 dark:text-green-400">FREE</p>
-                          <p className="text-xs text-muted-foreground">Up to 20 pages included</p>
-                        </>
-                      )}
+                      <p className="font-display text-3xl font-bold text-primary">₹{calculatePrice()}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formData.pagesCount <= 10 ? '3-10 pages' : formData.pagesCount <= 20 ? '11-20 pages' : 'Above 20 pages'}
+                      </p>
                     </div>
                   </div>
                 </div>
