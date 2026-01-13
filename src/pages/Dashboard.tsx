@@ -81,12 +81,12 @@ const Dashboard = () => {
 
   const checkAccountStatus = async () => {
     try {
-      // Check if user has any approved payment
+      // Check if user has any verified payment (admin sets status to 'verified')
       const { data, error } = await supabase
         .from('payments')
         .select('id, status')
         .eq('user_id', user?.id)
-        .eq('status', 'approved')
+        .eq('status', 'verified')
         .limit(1);
 
       if (error) throw error;
