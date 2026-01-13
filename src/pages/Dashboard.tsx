@@ -22,6 +22,11 @@ interface Profile {
   email: string | null;
 }
 
+interface AccountStatus {
+  isActive: boolean;
+  label: string;
+}
+
 const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +34,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [accountStatus, setAccountStatus] = useState<AccountStatus>({ isActive: false, label: 'Inactive - Payment Pending' });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -40,6 +46,7 @@ const Dashboard = () => {
     if (user) {
       fetchProfile();
       checkAdminStatus();
+      checkAccountStatus();
     }
   }, [user]);
 
@@ -69,6 +76,40 @@ const Dashboard = () => {
       setIsAdmin(data || false);
     } catch (error) {
       console.error('Error checking admin status:', error);
+    }
+  };
+
+  const checkAccountStatus = async () => {
+    try {
+      // Check if user has any approved payment
+      const { data, error } = await supabase
+        .from('payments')
+        .select('id, status')
+        .eq('user_id', user?.id)
+        .eq('status', 'approved')
+        .limit(1);
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        setAccountStatus({ isActive: true, label: 'Active' });
+      } else {
+        // Check if there's a pending payment
+        const { data: pendingData } = await supabase
+          .from('payments')
+          .select('id, status')
+          .eq('user_id', user?.id)
+          .eq('status', 'pending')
+          .limit(1);
+
+        if (pendingData && pendingData.length > 0) {
+          setAccountStatus({ isActive: false, label: 'Payment Under Review' });
+        } else {
+          setAccountStatus({ isActive: false, label: 'Inactive - Payment Pending' });
+        }
+      }
+    } catch (error) {
+      console.error('Error checking account status:', error);
     }
   };
 
@@ -159,11 +200,13 @@ const Dashboard = () => {
           <Card className="border-0 shadow-soft">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center">
-                  <User className="w-6 h-6 text-success" />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accountStatus.isActive ? 'bg-success/10' : 'bg-warning/10'}`}>
+                  <User className={`w-6 h-6 ${accountStatus.isActive ? 'text-success' : 'text-warning'}`} />
                 </div>
                 <div>
-                  <p className="text-2xl font-display font-bold">Active</p>
+                  <p className={`text-lg font-display font-bold ${accountStatus.isActive ? 'text-success' : 'text-warning'}`}>
+                    {accountStatus.label}
+                  </p>
                   <p className="text-sm text-muted-foreground">Account Status</p>
                 </div>
               </div>
