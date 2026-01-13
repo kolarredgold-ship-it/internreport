@@ -85,11 +85,11 @@ const CreateReport = () => {
 
   const calculatePrice = () => {
     const pages = formData.pagesCount;
-    if (pages <= 10) return 99;
-    if (pages <= 20) return 149;
-    if (pages <= 30) return 199;
-    return 249;
+    if (pages <= 20) return 0; // Free for up to 20 pages
+    return 499; // ₹499 for above 20 pages
   };
+
+  const requiresPayment = () => formData.pagesCount > 20;
 
   const handleGenerate = async () => {
     if (!canGenerate) {
@@ -511,15 +511,28 @@ const CreateReport = () => {
                 </div>
 
                 {/* Price Display */}
-                <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
+                <div className={`border rounded-xl p-6 ${requiresPayment() ? 'bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800' : 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800'}`}>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-display font-semibold text-lg">Report Price</p>
-                      <p className="text-muted-foreground text-sm">{formData.pagesCount} pages • AI-generated content</p>
+                      <p className="font-display font-semibold text-lg">
+                        {requiresPayment() ? 'Premium Report' : 'Free Report'}
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        {formData.pagesCount} pages • AI-generated content
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-display text-3xl font-bold text-primary">₹{calculatePrice()}</p>
-                      <p className="text-xs text-muted-foreground">One-time payment</p>
+                      {requiresPayment() ? (
+                        <>
+                          <p className="font-display text-3xl font-bold text-amber-600 dark:text-amber-400">₹499</p>
+                          <p className="text-xs text-muted-foreground">Payment required for 20+ pages</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-display text-3xl font-bold text-green-600 dark:text-green-400">FREE</p>
+                          <p className="text-xs text-muted-foreground">Up to 20 pages included</p>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
