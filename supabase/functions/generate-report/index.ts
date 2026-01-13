@@ -12,25 +12,132 @@ serve(async (req) => {
   }
 
   try {
-    const {
-      userId,
-      studentName,
-      registerNumber,
-      course,
-      collegeName,
-      university,
-      guideName,
-      internshipTitle,
-      companyName,
-      companyLocation,
-      internshipDuration,
-      academicYear,
-      topicSpecialization,
-      pagesCount,
-    } = await req.json();
+    // ========== AUTHENTICATION ==========
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error("Missing or invalid Authorization header");
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    // Create client with user's auth context
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Validate the JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
+      console.error("JWT validation failed:", claimsError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    if (!userId) {
+      console.error("No user ID in token claims");
+      return new Response(
+        JSON.stringify({ error: 'Invalid token: no user ID' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log("Authenticated user:", userId);
+
+    // ========== INPUT VALIDATION ==========
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Define required fields (excluding userId - comes from JWT)
+    const requiredFields = [
+      'studentName', 'registerNumber', 'course', 'collegeName',
+      'university', 'guideName', 'internshipTitle', 'companyName',
+      'companyLocation', 'internshipDuration', 'academicYear',
+      'topicSpecialization', 'pagesCount'
+    ];
+
+    // Check all required fields exist
+    for (const field of requiredFields) {
+      if (body[field] === undefined || body[field] === null || body[field] === '') {
+        return new Response(
+          JSON.stringify({ error: `Missing required field: ${field}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Validate pagesCount type and range
+    if (typeof body.pagesCount !== 'number' || !Number.isInteger(body.pagesCount)) {
+      return new Response(
+        JSON.stringify({ error: 'pagesCount must be an integer' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (body.pagesCount < 3 || body.pagesCount > 40) {
+      return new Response(
+        JSON.stringify({ error: 'pagesCount must be between 3 and 40' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate string fields
+    const maxLength = 200;
+    for (const field of requiredFields) {
+      if (field === 'pagesCount') continue;
+      
+      if (typeof body[field] !== 'string') {
+        return new Response(
+          JSON.stringify({ error: `${field} must be a string` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (body[field].length > maxLength) {
+        return new Response(
+          JSON.stringify({ error: `${field} exceeds maximum length of ${maxLength} characters` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Sanitize and trim strings
+    const sanitize = (str: string) => str.trim().substring(0, maxLength);
+
+    const studentName = sanitize(body.studentName);
+    const registerNumber = sanitize(body.registerNumber);
+    const course = sanitize(body.course);
+    const collegeName = sanitize(body.collegeName);
+    const university = sanitize(body.university);
+    const guideName = sanitize(body.guideName);
+    const internshipTitle = sanitize(body.internshipTitle);
+    const companyName = sanitize(body.companyName);
+    const companyLocation = sanitize(body.companyLocation);
+    const internshipDuration = sanitize(body.internshipDuration);
+    const academicYear = sanitize(body.academicYear);
+    const topicSpecialization = sanitize(body.topicSpecialization);
+    const pagesCount = body.pagesCount;
+
+    console.log("Input validation passed for user:", userId);
+
+    // ========== BUSINESS LOGIC ==========
+    // Initialize Supabase admin client for database operations
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -42,6 +149,7 @@ serve(async (req) => {
       .single();
 
     if (profileError) {
+      console.error("Profile fetch error:", profileError);
       throw new Error("Failed to fetch user profile");
     }
 
@@ -221,7 +329,7 @@ Write in formal academic English suitable for Indian university evaluation. Be d
       .update({ generations_used: newCount })
       .eq("user_id", userId);
 
-    console.log("Report generated and saved successfully");
+    console.log("Report generated and saved successfully for user:", userId);
 
     return new Response(
       JSON.stringify({
