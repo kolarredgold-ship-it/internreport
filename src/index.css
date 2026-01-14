@@ -240,3 +240,8 @@
     transform: scale(1);
   }
 }
+
+/* Hide Lovable badge globally */
+#lovable-badge {
+  display: none !important;
+}
