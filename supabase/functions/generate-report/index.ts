@@ -167,7 +167,18 @@ serve(async (req) => {
       throw new Error("DeepSeek API key not configured");
     }
 
-    const prompt = `You are an expert academic report writer specializing in Indian university internship project reports. Generate a comprehensive internship project report with the following details:
+    // Calculate word count based on pages (approximately 300-350 words per page for academic reports)
+    const targetWordCount = pagesCount * 350;
+    
+    const prompt = `You are an expert academic report writer specializing in Indian university internship project reports. Your task is to generate an EXTREMELY DETAILED and COMPREHENSIVE internship project report.
+
+CRITICAL REQUIREMENTS:
+- Target Length: ${pagesCount} pages (approximately ${targetWordCount} words minimum)
+- Each chapter MUST be extensively detailed with multiple paragraphs
+- Every subsection should contain 500-800 words of detailed content
+- Include real-world examples, case studies, and practical applications
+- Use formal academic language with proper citations style
+- Write elaborate explanations, not brief summaries
 
 Student Information:
 - Name: ${studentName}
@@ -185,75 +196,154 @@ Internship Details:
 - Academic Year: ${academicYear}
 - Topic/Specialization: ${topicSpecialization}
 
-Target Pages: ${pagesCount} pages
-
-Generate a detailed, exam-ready internship project report following the Indian university format. Include these sections:
+Generate an EXHAUSTIVELY DETAILED internship project report. Each section must be FULLY ELABORATED with extensive content:
 
 # CERTIFICATE
-(Write a formal certificate with proper formatting)
+(Write a formal certificate of 150+ words with proper institutional formatting, signatures placeholders, and official language)
 
 # DECLARATION
-(Student declaration statement)
+(Student declaration statement of 200+ words with formal legal language)
 
 # ACKNOWLEDGEMENT
-(Professional acknowledgment section)
+(Professional acknowledgment section of 300+ words thanking institution, guide, company, family, and colleagues individually with specific mentions)
+
+# ABSTRACT
+(Comprehensive abstract of 400+ words summarizing the entire internship experience, methodology, key findings, and conclusions)
 
 # TABLE OF CONTENTS
+(Detailed table with all chapters, sections, and page numbers)
 
-# CHAPTER 1: INTRODUCTION
+# LIST OF FIGURES
+# LIST OF TABLES
+# LIST OF ABBREVIATIONS
+
+# CHAPTER 1: INTRODUCTION (Minimum 1500 words)
 ## 1.1 Background of the Study
+(Elaborate on the industry context, historical development, current trends, and relevance of ${topicSpecialization} in today's market - minimum 400 words)
 ## 1.2 Objectives of the Internship
+(List and explain at least 8-10 specific objectives with detailed descriptions - minimum 300 words)
 ## 1.3 Scope of the Study
+(Define boundaries, limitations, and coverage area in detail - minimum 300 words)
 ## 1.4 Need for the Study
+(Justify the importance with market data, industry requirements, and academic relevance - minimum 300 words)
+## 1.5 Research Methodology
+(Explain the approach, data collection methods, and analysis techniques used - minimum 200 words)
 
-# CHAPTER 2: COMPANY PROFILE
-## 2.1 About ${companyName}
-## 2.2 Vision and Mission
-## 2.3 Products/Services
-## 2.4 Organizational Structure
+# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Minimum 2000 words)
+## 2.1 Industry Overview
+(Detailed analysis of the ${topicSpecialization} industry, market size, growth trends, key players - minimum 500 words)
+## 2.2 About ${companyName}
+(Comprehensive company history, founding story, milestones, achievements - minimum 400 words)
+## 2.3 Vision, Mission, and Core Values
+(Elaborate on company philosophy and guiding principles - minimum 200 words)
+## 2.4 Products and Services Portfolio
+(Detailed description of all offerings with features and benefits - minimum 400 words)
+## 2.5 Organizational Structure and Hierarchy
+(Explain departments, reporting structure, team compositions - minimum 300 words)
+## 2.6 SWOT Analysis
+(Comprehensive strengths, weaknesses, opportunities, threats analysis - minimum 300 words)
 
-# CHAPTER 3: LITERATURE REVIEW
-## 3.1 Theoretical Background
-## 3.2 Previous Studies
-## 3.3 Industry Trends
+# CHAPTER 3: LITERATURE REVIEW (Minimum 2500 words)
+## 3.1 Theoretical Framework
+(Discuss relevant theories, models, and frameworks related to ${topicSpecialization} - minimum 600 words)
+## 3.2 Review of Previous Studies
+(Cite and discuss at least 10-15 relevant academic studies with findings - minimum 800 words)
+## 3.3 Industry Best Practices
+(Document current industry standards and methodologies - minimum 400 words)
+## 3.4 Technological Advancements
+(Discuss latest technologies and innovations in the field - minimum 400 words)
+## 3.5 Research Gap Analysis
+(Identify gaps in existing knowledge that this internship addresses - minimum 300 words)
 
-# CHAPTER 4: INTERNSHIP ACTIVITIES
-## 4.1 Roles and Responsibilities
-## 4.2 Daily Activities
-## 4.3 Projects Undertaken
-## 4.4 Skills Applied
+# CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (Minimum 3000 words)
+## 4.1 Department Overview
+(Detailed description of the department where internship was conducted - minimum 300 words)
+## 4.2 Roles and Responsibilities Assigned
+(Comprehensive list of all duties with detailed explanations - minimum 500 words)
+## 4.3 Week-wise Activity Log
+(Detailed week-by-week account of activities for entire ${internshipDuration} - minimum 800 words)
+## 4.4 Projects Undertaken
+(Describe 3-5 major projects with objectives, methodology, and outcomes - minimum 700 words)
+## 4.5 Tools and Technologies Used
+(List and explain all software, tools, and technologies with usage context - minimum 400 words)
+## 4.6 Team Collaboration and Communication
+(Describe teamwork experiences, meetings, and coordination - minimum 300 words)
 
-# CHAPTER 5: LEARNING OUTCOMES
-## 5.1 Technical Skills Gained
+# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (Minimum 2000 words)
+## 5.1 Technical Skills Acquired
+(Detailed description of each technical skill with proficiency levels - minimum 500 words)
 ## 5.2 Soft Skills Developed
-## 5.3 Industry Exposure
-## 5.4 Practical Applications
+(Communication, leadership, time management, etc. with examples - minimum 400 words)
+## 5.3 Domain Knowledge Enhancement
+(Specific knowledge gained about ${topicSpecialization} - minimum 400 words)
+## 5.4 Professional Competencies
+(Industry-specific competencies developed - minimum 400 words)
+## 5.5 Certifications and Training
+(Any training programs or certifications completed - minimum 300 words)
 
-# CHAPTER 6: FINDINGS AND ANALYSIS
-## 6.1 Key Observations
-## 6.2 Analysis of Work Done
-## 6.3 Challenges Faced
-## 6.4 Solutions Implemented
+# CHAPTER 6: DATA ANALYSIS AND FINDINGS (Minimum 2500 words)
+## 6.1 Data Collection Methodology
+(Explain how data was gathered during internship - minimum 400 words)
+## 6.2 Analysis Framework
+(Describe analytical methods and tools used - minimum 300 words)
+## 6.3 Key Findings and Observations
+(Present 8-10 major findings with detailed explanations - minimum 800 words)
+## 6.4 Comparative Analysis
+(Compare findings with industry standards and literature - minimum 500 words)
+## 6.5 Interpretation of Results
+(Discuss implications and significance of findings - minimum 500 words)
 
-# CHAPTER 7: SUGGESTIONS AND RECOMMENDATIONS
-## 7.1 Recommendations for the Company
-## 7.2 Areas for Improvement
-## 7.3 Future Scope
+# CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (Minimum 1500 words)
+## 7.1 Technical Challenges Encountered
+(Describe technical difficulties faced with detailed context - minimum 400 words)
+## 7.2 Organizational Challenges
+(Workplace and process-related challenges - minimum 300 words)
+## 7.3 Problem-Solving Approaches
+(Methods used to overcome each challenge - minimum 400 words)
+## 7.4 Lessons Learned
+(Key takeaways from challenges faced - minimum 400 words)
 
-# CHAPTER 8: CONCLUSION
-## 8.1 Summary
-## 8.2 Learning Summary
-## 8.3 Future Aspirations
+# CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (Minimum 1500 words)
+## 8.1 Recommendations for ${companyName}
+(5-7 specific, actionable recommendations with justifications - minimum 500 words)
+## 8.2 Process Improvement Suggestions
+(Detailed suggestions for operational improvements - minimum 400 words)
+## 8.3 Technology Adoption Recommendations
+(Suggest new technologies and their benefits - minimum 300 words)
+## 8.4 Future Scope and Opportunities
+(Identify growth areas and opportunities - minimum 300 words)
+
+# CHAPTER 9: CONCLUSION (Minimum 1000 words)
+## 9.1 Summary of Internship Experience
+(Comprehensive summary of the entire experience - minimum 300 words)
+## 9.2 Achievement of Objectives
+(Map achievements against initial objectives - minimum 300 words)
+## 9.3 Personal and Professional Growth
+(Reflect on development during internship - minimum 200 words)
+## 9.4 Future Career Aspirations
+(Connect internship learning to career goals - minimum 200 words)
 
 # BIBLIOGRAPHY
-(Include relevant academic references)
+(Include 20-25 properly formatted academic references in APA style including journals, books, websites, and industry reports)
 
 # ANNEXURES
-(Any additional materials)
+## Annexure A: Sample Work Documents
+## Annexure B: Photographs from Internship
+## Annexure C: Completion Certificate
+## Annexure D: Weekly Report Samples
+## Annexure E: Feedback Form
 
-Write in formal academic English suitable for Indian university evaluation. Be detailed and thorough. Each section should be well-developed with proper paragraphs. The content must be unique, plagiarism-free, and human-like in writing style. Focus on the topic: ${topicSpecialization}`;
+IMPORTANT INSTRUCTIONS:
+1. Write EXTENSIVE, DETAILED content for EVERY section - no brief overviews
+2. Each paragraph should be 100-150 words minimum
+3. Use formal academic English with proper grammar
+4. Include specific examples, statistics, and data points
+5. Make content relevant to ${topicSpecialization} and ${companyName}
+6. Ensure content is unique, plagiarism-free, and human-like
+7. Total word count MUST be at least ${targetWordCount} words
+8. DO NOT skip any section - all must be fully elaborated`;
 
-    console.log("Calling DeepSeek API...");
+    console.log("Calling DeepSeek API for detailed report generation...");
     
     const response = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
@@ -266,15 +356,26 @@ Write in formal academic English suitable for Indian university evaluation. Be d
         messages: [
           {
             role: "system",
-            content: "You are an expert academic writer who creates professional internship project reports for Indian university students. Your reports follow university-prescribed formats, use formal academic language, and are exam-ready. Each report you generate is unique and plagiarism-free."
+            content: `You are an expert academic writer who creates EXTREMELY DETAILED and COMPREHENSIVE internship project reports for Indian university students. 
+
+Your reports are:
+- Minimum ${targetWordCount} words (${pagesCount} pages at 350 words/page)
+- Extensively elaborated with no section less than the specified word count
+- Following strict university-prescribed formats
+- Using formal academic language with proper citations
+- Exam-ready and publication quality
+- Each section fully developed with multiple detailed paragraphs
+- Including real examples, case studies, and practical applications
+
+CRITICAL: You must write LONG, DETAILED content. Never give brief summaries. Every section must be exhaustively elaborated. If asked for 30-40 pages, you must generate content that fills 30-40 pages when formatted.`
           },
           {
             role: "user",
             content: prompt
           }
         ],
-        max_tokens: 8000,
-        temperature: 0.7,
+        max_tokens: 32000,
+        temperature: 0.75,
       }),
     });
 
