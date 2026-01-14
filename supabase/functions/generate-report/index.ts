@@ -345,50 +345,98 @@ IMPORTANT INSTRUCTIONS:
 
     console.log("Calling DeepSeek API for detailed report generation...");
     
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          {
-            role: "system",
-            content: `You are an expert academic writer who creates EXTREMELY DETAILED and COMPREHENSIVE internship project reports for Indian university students. 
+    // DeepSeek API has max_tokens limit of 8192, so we make multiple calls for long reports
+    const chaptersPerCall = pagesCount <= 10 ? 9 : 3; // Split into multiple calls for longer reports
+    const numCalls = pagesCount <= 10 ? 1 : 3; // 1 call for short, 3 calls for long reports
+    
+    let fullContent = "";
+    
+    // Define chapter groups for multiple calls
+    const chapterGroups = [
+      // Group 1: Front matter + Chapters 1-3
+      `Generate the following sections with FULL DETAIL for an internship report:
 
-Your reports are:
-- Minimum ${targetWordCount} words (${pagesCount} pages at 350 words/page)
-- Extensively elaborated with no section less than the specified word count
-- Following strict university-prescribed formats
-- Using formal academic language with proper citations
-- Exam-ready and publication quality
-- Each section fully developed with multiple detailed paragraphs
-- Including real examples, case studies, and practical applications
+# CERTIFICATE (150+ words)
+# DECLARATION (200+ words)  
+# ACKNOWLEDGEMENT (300+ words)
+# ABSTRACT (400+ words)
+# TABLE OF CONTENTS
+# LIST OF FIGURES
+# LIST OF TABLES
+# LIST OF ABBREVIATIONS
 
-CRITICAL: You must write LONG, DETAILED content. Never give brief summaries. Every section must be exhaustively elaborated. If asked for 30-40 pages, you must generate content that fills 30-40 pages when formatted.`
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 32000,
-        temperature: 0.75,
-      }),
-    });
+# CHAPTER 1: INTRODUCTION (1500+ words with all subsections 1.1-1.5)
+# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (2000+ words with all subsections 2.1-2.6)
+# CHAPTER 3: LITERATURE REVIEW (2500+ words with all subsections 3.1-3.5)`,
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("DeepSeek API error:", response.status, errorText);
-      throw new Error(`DeepSeek API error: ${response.status}`);
+      // Group 2: Chapters 4-6
+      `Continue the internship report with these chapters with FULL DETAIL:
+
+# CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (3000+ words with subsections 4.1-4.6)
+# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words with subsections 5.1-5.5)
+# CHAPTER 6: DATA ANALYSIS AND FINDINGS (2500+ words with subsections 6.1-6.5)`,
+
+      // Group 3: Chapters 7-9 + Back matter
+      `Complete the internship report with these final sections with FULL DETAIL:
+
+# CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (1500+ words with subsections 7.1-7.4)
+# CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (1500+ words with subsections 8.1-8.4)
+# CHAPTER 9: CONCLUSION (1000+ words with subsections 9.1-9.4)
+# BIBLIOGRAPHY (20-25 APA references)
+# ANNEXURES (A-E with descriptions)`
+    ];
+
+    const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
+College: ${collegeName}, University: ${university}, Guide: ${guideName}
+Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
+Duration: ${internshipDuration}, Year: ${academicYear}, Topic: ${topicSpecialization}
+Target: ${pagesCount} pages total`;
+
+    for (let i = 0; i < numCalls; i++) {
+      const chapterPrompt = numCalls === 1 ? prompt : `${baseContext}\n\n${chapterGroups[i]}`;
+      
+      console.log(`Making DeepSeek API call ${i + 1} of ${numCalls}...`);
+      
+      const response = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            {
+              role: "system",
+              content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries.`
+            },
+            {
+              role: "user",
+              content: chapterPrompt
+            }
+          ],
+          max_tokens: 8000,
+          temperature: 0.75,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("DeepSeek API error:", response.status, errorText);
+        throw new Error(`DeepSeek API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const partContent = data.choices[0]?.message?.content;
+      
+      if (partContent) {
+        fullContent += (fullContent ? "\n\n" : "") + partContent;
+      }
+      
+      console.log(`Call ${i + 1} completed successfully`);
     }
 
-    const data = await response.json();
-    console.log("AI response received successfully");
-    
-    const generatedContent = data.choices[0]?.message?.content;
+    const generatedContent = fullContent;
 
     if (!generatedContent) {
       throw new Error("No content generated");
