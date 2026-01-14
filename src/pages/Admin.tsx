@@ -503,6 +503,7 @@ const Admin = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Mobile</TableHead>
                         <TableHead>Transaction #</TableHead>
@@ -514,7 +515,7 @@ const Admin = () => {
                     <TableBody>
                       {payments.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                             No payments found
                           </TableCell>
                         </TableRow>
@@ -527,6 +528,11 @@ const Admin = () => {
                                 month: 'short',
                                 year: 'numeric',
                               })}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={payment.payment_type === 'topup' ? 'secondary' : 'outline'}>
+                                {payment.payment_type === 'topup' ? 'Top-up' : 'Report'}
+                              </Badge>
                             </TableCell>
                             <TableCell>{payment.payer_name || '-'}</TableCell>
                             <TableCell>{payment.payer_mobile || '-'}</TableCell>
