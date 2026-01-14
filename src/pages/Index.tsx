@@ -249,9 +249,9 @@ const Index = () => {
             </div>
             <div>
               <h4 className="font-display font-semibold mb-4">Contact</h4>
-              <p className="text-sm text-muted-foreground">
-                support@iprg.in
-              </p>
+              <p className="text-sm text-muted-foreground">support@iprg.in
++91 9738959525
+Omlaytechnologies@gmail.com</p>
             </div>
           </div>
           <div className="border-t border-border/50 mt-8 pt-8 text-center text-sm text-muted-foreground">
