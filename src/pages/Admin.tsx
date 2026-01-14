@@ -48,6 +48,7 @@ interface Payment {
   report_id: string | null;
   amount: number;
   status: string;
+  payment_type: string;
   transaction_number: string | null;
   payer_name: string | null;
   payer_mobile: string | null;
@@ -267,6 +268,10 @@ const Admin = () => {
   const handleApprove = async (paymentId: string) => {
     setProcessing(paymentId);
     try {
+      // First get the payment details to check payment type and user
+      const payment = payments.find(p => p.id === paymentId);
+      if (!payment) throw new Error('Payment not found');
+
       const { error } = await supabase
         .from('payments')
         .update({ 
@@ -278,9 +283,36 @@ const Admin = () => {
 
       if (error) throw error;
 
+      // If this is a topup payment, add 3 more generations to the user's profile
+      if (payment.payment_type === 'topup') {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('generations_used')
+          .eq('user_id', payment.user_id)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+        } else {
+          // Subtract 3 from generations_used (giving them 3 more generations)
+          const newGenerationsUsed = Math.max(0, (profile.generations_used || 0) - 3);
+          
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ generations_used: newGenerationsUsed })
+            .eq('user_id', payment.user_id);
+
+          if (updateError) {
+            console.error('Error updating generations:', updateError);
+          }
+        }
+      }
+
       toast({
         title: 'Payment Approved',
-        description: 'The payment has been verified and activated.',
+        description: payment.payment_type === 'topup' 
+          ? 'Payment verified and 3 generations added to user account.' 
+          : 'The payment has been verified and activated.',
       });
 
       fetchPayments();
