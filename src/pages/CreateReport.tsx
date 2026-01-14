@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx';
 import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
@@ -61,6 +62,8 @@ const CreateReport = () => {
   const [generationsUsed, setGenerationsUsed] = useState(0);
   const [needsTopup, setNeedsTopup] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationPhase, setGenerationPhase] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -261,6 +264,35 @@ const CreateReport = () => {
     if (!validateForm()) return;
 
     setGenerating(true);
+    setGenerationProgress(0);
+    setGenerationPhase('Initializing AI engine...');
+
+    // Simulate progress for better UX (actual generation takes 2-5 minutes for 30-40 pages)
+    const progressPhases = [
+      { progress: 5, phase: 'Preparing report structure...', delay: 2000 },
+      { progress: 10, phase: 'Generating Certificate & Declaration...', delay: 4000 },
+      { progress: 15, phase: 'Writing Acknowledgement & Abstract...', delay: 6000 },
+      { progress: 20, phase: 'Composing Chapter 1: Introduction...', delay: 10000 },
+      { progress: 30, phase: 'Composing Chapter 2: Company Profile...', delay: 20000 },
+      { progress: 40, phase: 'Writing Chapter 3: Literature Review...', delay: 35000 },
+      { progress: 50, phase: 'Detailing Chapter 4: Internship Activities...', delay: 50000 },
+      { progress: 60, phase: 'Writing Chapter 5: Technical Learning...', delay: 65000 },
+      { progress: 70, phase: 'Analyzing Chapter 6: Findings...', delay: 80000 },
+      { progress: 80, phase: 'Composing Chapter 7: Challenges...', delay: 95000 },
+      { progress: 85, phase: 'Writing Chapter 8: Recommendations...', delay: 110000 },
+      { progress: 90, phase: 'Completing Chapter 9: Conclusion...', delay: 125000 },
+      { progress: 95, phase: 'Adding Bibliography & Annexures...', delay: 140000 },
+    ];
+
+    // Start progress simulation
+    const progressIntervals: NodeJS.Timeout[] = [];
+    progressPhases.forEach(({ progress, phase, delay }) => {
+      const interval = setTimeout(() => {
+        setGenerationProgress(progress);
+        setGenerationPhase(phase);
+      }, delay);
+      progressIntervals.push(interval);
+    });
 
     try {
       // Call edge function to generate report
@@ -271,9 +303,14 @@ const CreateReport = () => {
         },
       });
 
+      // Clear all progress intervals
+      progressIntervals.forEach(clearTimeout);
+
       if (error) throw error;
 
       if (data.content) {
+        setGenerationProgress(100);
+        setGenerationPhase('Report completed!');
         setGeneratedContent(data.content);
         
         // Update generations count
@@ -288,6 +325,8 @@ const CreateReport = () => {
         });
       }
     } catch (error: any) {
+      // Clear all progress intervals
+      progressIntervals.forEach(clearTimeout);
       console.error('Generation error:', error);
       toast({
         title: 'Generation failed',
@@ -296,6 +335,8 @@ const CreateReport = () => {
       });
     } finally {
       setGenerating(false);
+      setGenerationProgress(0);
+      setGenerationPhase('');
     }
   };
 
@@ -706,6 +747,50 @@ const CreateReport = () => {
                         ✓ Payment verified • {3 - (generationsUsed % 3)} generations remaining
                       </p>
                     </div>
+                    
+                    {generating && (
+                      <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center animate-pulse">
+                            <Sparkles className="w-5 h-5 text-primary-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-foreground">Generating Your Report</p>
+                            <p className="text-sm text-muted-foreground">{generationPhase}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-display text-xl font-bold text-primary">{generationProgress}%</p>
+                          </div>
+                        </div>
+                        
+                        <Progress value={generationProgress} className="h-2" />
+                        
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          <span>
+                            {formData.pagesCount >= 30 
+                              ? 'Estimated time: 2-4 minutes for detailed 30-40 page report'
+                              : formData.pagesCount >= 20
+                              ? 'Estimated time: 1-2 minutes'
+                              : 'Estimated time: 30-60 seconds'}
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-2 pt-2">
+                          {[
+                            { label: 'Structure', done: generationProgress >= 15 },
+                            { label: 'Content', done: generationProgress >= 70 },
+                            { label: 'Finalize', done: generationProgress >= 95 },
+                          ].map((step, i) => (
+                            <div key={i} className={`flex items-center gap-1 text-xs ${step.done ? 'text-primary' : 'text-muted-foreground'}`}>
+                              {step.done ? <CheckCircle2 className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
+                              <span>{step.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <Button
                       type="button"
                       variant="hero"
@@ -717,12 +802,12 @@ const CreateReport = () => {
                       {generating ? (
                         <>
                           <Loader2 className="w-5 h-5 animate-spin" />
-                          Generating Report...
+                          Generating {formData.pagesCount}-Page Report...
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-5 h-5" />
-                          Generate Report
+                          Generate {formData.pagesCount}-Page Report
                         </>
                       )}
                     </Button>
