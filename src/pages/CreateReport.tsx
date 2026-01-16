@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2 } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx';
 import { saveAs } from 'file-saver';
@@ -47,13 +47,22 @@ const initialFormData: FormData = {
   pagesCount: 10,
 };
 
-type PartType = 'A1' | 'A2' | 'B1' | 'B2';
+// Chapters to generate (in order)
+const CHAPTERS = [
+  { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, TOC' },
+  { key: '1', label: 'Chapter 1', description: 'Introduction' },
+  { key: '2', label: 'Chapter 2', description: 'Industry & Company Profile' },
+  { key: '3', label: 'Chapter 3', description: 'Literature Review' },
+  { key: '4', label: 'Chapter 4', description: 'Internship Activities' },
+  { key: '5', label: 'Chapter 5', description: 'Technical Learning' },
+  { key: '6', label: 'Chapter 6', description: 'Data Analysis & Findings' },
+  { key: '7', label: 'Chapter 7', description: 'Challenges & Solutions' },
+  { key: '8', label: 'Chapter 8', description: 'Recommendations' },
+  { key: '9', label: 'Chapter 9', description: 'Conclusion & References' },
+];
 
-interface PartContent {
-  A1: string | null;
-  A2: string | null;
-  B1: string | null;
-  B2: string | null;
+interface ChapterContent {
+  [key: string]: string | null;
 }
 
 const CreateReport = () => {
@@ -62,13 +71,8 @@ const CreateReport = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [generating, setGenerating] = useState(false);
-  const [generatingPart, setGeneratingPart] = useState<PartType | null>(null);
-  const [partContent, setPartContent] = useState<PartContent>({
-    A1: null,
-    A2: null,
-    B1: null,
-    B2: null,
-  });
+  const [currentChapter, setCurrentChapter] = useState<string | null>(null);
+  const [chapterContent, setChapterContent] = useState<ChapterContent>({});
   const [canGenerate, setCanGenerate] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pendingReportId, setPendingReportId] = useState<string | null>(null);
@@ -79,9 +83,11 @@ const CreateReport = () => {
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState('');
+  const [failedChapters, setFailedChapters] = useState<string[]>([]);
 
-  const hasAnyContent = partContent.A1 || partContent.A2 || partContent.B1 || partContent.B2;
-  const hasAllContent = partContent.A1 && partContent.A2 && partContent.B1 && partContent.B2;
+  const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
+  const hasAnyContent = completedChapters.length > 0;
+  const hasAllContent = completedChapters.length === CHAPTERS.length;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -98,7 +104,6 @@ const CreateReport = () => {
   const checkUserStatus = async () => {
     setCheckingStatus(true);
     try {
-      // Check generations used
       const { data: profileData } = await supabase
         .from('profiles')
         .select('generations_used')
@@ -108,7 +113,6 @@ const CreateReport = () => {
       const usedCount = profileData?.generations_used || 0;
       setGenerationsUsed(usedCount);
 
-      // Check if user has any verified payment
       const { data: paymentData } = await supabase
         .from('payments')
         .select('id, status')
@@ -119,13 +123,10 @@ const CreateReport = () => {
       const hasVerifiedPayment = paymentData && paymentData.length > 0;
       setHasApprovedPayment(hasVerifiedPayment);
 
-      // User can generate if: has verified payment AND used < 3
-      // OR: no payment yet (first 3 are free after first payment)
       if (hasVerifiedPayment && usedCount < 3) {
         setCanGenerate(true);
         setNeedsTopup(false);
       } else if (hasVerifiedPayment && usedCount >= 3) {
-        // Check if they have a topup payment verified after reaching limit
         const { data: topupPayments } = await supabase
           .from('payments')
           .select('id, created_at')
@@ -136,7 +137,6 @@ const CreateReport = () => {
           .limit(1);
 
         if (topupPayments && topupPayments.length > 0) {
-          // Check how many reports generated after latest topup
           const { count: reportsAfterTopup } = await supabase
             .from('reports')
             .select('*', { count: 'exact', head: true })
@@ -156,12 +156,10 @@ const CreateReport = () => {
           setNeedsTopup(true);
         }
       } else if (!hasVerifiedPayment) {
-        // No verified payment yet - need to pay first
         setCanGenerate(false);
         setNeedsTopup(false);
       }
 
-      // Check for pending payments
       const { data: pendingPayment } = await supabase
         .from('payments')
         .select('id, report_id')
@@ -189,9 +187,9 @@ const CreateReport = () => {
 
   const calculatePrice = () => {
     const pages = formData.pagesCount;
-    if (pages <= 10) return 99;    // 3-10 pages: ₹99
-    if (pages <= 20) return 299;   // 11-20 pages: ₹299
-    return 499;                     // Above 20 pages: ₹499
+    if (pages <= 10) return 99;
+    if (pages <= 20) return 299;
+    return 499;
   };
 
   const validateForm = () => {
@@ -218,7 +216,6 @@ const CreateReport = () => {
     if (!validateForm()) return;
 
     try {
-      // Create a pending report first
       const { data: reportData, error: reportError } = await supabase
         .from('reports')
         .insert({
@@ -256,7 +253,7 @@ const CreateReport = () => {
   };
 
   const handleTopupPayment = () => {
-    setPendingReportId(null); // No specific report for topup
+    setPendingReportId(null);
     setShowPaymentModal(true);
   };
 
@@ -269,43 +266,27 @@ const CreateReport = () => {
     });
   };
 
-  const getProgressPhases = (part: PartType) => {
-    switch (part) {
-      case 'A1':
-        return [
-          { progress: 15, phase: 'Generating Certificate & Declaration...', delay: 3000 },
-          { progress: 35, phase: 'Writing Acknowledgement & Abstract...', delay: 8000 },
-          { progress: 55, phase: 'Creating Table of Contents...', delay: 15000 },
-          { progress: 75, phase: 'Composing Chapter 1: Introduction...', delay: 25000 },
-          { progress: 90, phase: 'Finalizing Part A1...', delay: 40000 },
-        ];
-      case 'A2':
-        return [
-          { progress: 20, phase: 'Analyzing Industry Overview...', delay: 5000 },
-          { progress: 45, phase: 'Writing Company Profile...', delay: 15000 },
-          { progress: 70, phase: 'Composing Literature Review...', delay: 30000 },
-          { progress: 90, phase: 'Finalizing Part A2...', delay: 45000 },
-        ];
-      case 'B1':
-        return [
-          { progress: 15, phase: 'Documenting Internship Activities...', delay: 5000 },
-          { progress: 35, phase: 'Writing Week-wise Log...', delay: 15000 },
-          { progress: 55, phase: 'Composing Technical Learning...', delay: 25000 },
-          { progress: 75, phase: 'Analyzing Findings...', delay: 40000 },
-          { progress: 90, phase: 'Finalizing Part B1...', delay: 55000 },
-        ];
-      case 'B2':
-        return [
-          { progress: 20, phase: 'Writing Challenges & Solutions...', delay: 5000 },
-          { progress: 40, phase: 'Composing Recommendations...', delay: 15000 },
-          { progress: 60, phase: 'Writing Conclusion...', delay: 25000 },
-          { progress: 80, phase: 'Adding Bibliography...', delay: 35000 },
-          { progress: 95, phase: 'Creating Annexures...', delay: 45000 },
-        ];
+  // Generate a single chapter
+  const generateChapter = async (chapterKey: string): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-report', {
+        body: {
+          ...formData,
+          userId: user?.id,
+          chapter: chapterKey,
+        },
+      });
+
+      if (error) throw error;
+      return data?.content || null;
+    } catch (error: any) {
+      console.error(`Error generating chapter ${chapterKey}:`, error);
+      return null;
     }
   };
 
-  const handleGeneratePart = async (part: PartType) => {
+  // Generate all chapters sequentially
+  const handleGenerateReport = async () => {
     if (!canGenerate) {
       toast({
         title: 'Generation limit reached',
@@ -318,151 +299,210 @@ const CreateReport = () => {
     if (!validateForm()) return;
 
     setGenerating(true);
-    setGeneratingPart(part);
-    setGenerationProgress(0);
-    setGenerationPhase(`Initializing AI engine for Part ${part}...`);
+    setFailedChapters([]);
+    const newContent: ChapterContent = {};
+    const failed: string[] = [];
 
-    const progressPhases = getProgressPhases(part);
+    for (let i = 0; i < CHAPTERS.length; i++) {
+      const chapter = CHAPTERS[i];
+      setCurrentChapter(chapter.key);
+      setGenerationProgress(Math.round((i / CHAPTERS.length) * 100));
+      setGenerationPhase(`Generating ${chapter.label}: ${chapter.description}...`);
 
-    // Start progress simulation
-    const progressIntervals: NodeJS.Timeout[] = [];
-    progressPhases.forEach(({ progress, phase, delay }) => {
-      const interval = setTimeout(() => {
-        setGenerationProgress(progress);
-        setGenerationPhase(phase);
-      }, delay);
-      progressIntervals.push(interval);
-    });
-
-    try {
-      // Call edge function to generate report part
-      const { data, error } = await supabase.functions.invoke('generate-report', {
-        body: {
-          ...formData,
-          userId: user?.id,
-          part: part,
-        },
-      });
-
-      // Clear all progress intervals
-      progressIntervals.forEach(clearTimeout);
-
-      if (error) throw error;
-
-      if (data.content) {
-        setGenerationProgress(100);
-        setGenerationPhase(`Part ${part} completed!`);
-        
-        setPartContent(prev => ({ ...prev, [part]: data.content }));
-        
-        // Update generations count if provided
-        if (data.generationsUsed !== undefined) {
-          await supabase
-            .from('profiles')
-            .update({ generations_used: data.generationsUsed })
-            .eq('user_id', user?.id);
-        }
-
-        toast({
-          title: `Part ${part} generated!`,
-          description: `Part ${part} of your report is ready for download.`,
-        });
+      const content = await generateChapter(chapter.key);
+      
+      if (content) {
+        newContent[chapter.key] = content;
+        setChapterContent(prev => ({ ...prev, [chapter.key]: content }));
+      } else {
+        failed.push(chapter.key);
       }
-    } catch (error: any) {
-      // Clear all progress intervals
-      progressIntervals.forEach(clearTimeout);
-      console.error('Generation error:', error);
+
+      // Small delay between chapters to avoid rate limiting
+      if (i < CHAPTERS.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    setFailedChapters(failed);
+    setGenerating(false);
+    setCurrentChapter(null);
+    setGenerationProgress(100);
+    setGenerationPhase('');
+
+    // Update generations count
+    if (Object.keys(newContent).length > 0) {
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('generations_used')
+          .eq('user_id', user?.id)
+          .maybeSingle();
+        
+        const newCount = (profileData?.generations_used || 0) + 1;
+        await supabase
+          .from('profiles')
+          .update({ generations_used: newCount })
+          .eq('user_id', user?.id);
+        
+        setGenerationsUsed(newCount);
+      } catch (e) {
+        console.error('Error updating generations count:', e);
+      }
+    }
+
+    if (failed.length === 0) {
       toast({
-        title: 'Generation failed',
-        description: error.message || 'Please try again later.',
+        title: 'Report generated successfully!',
+        description: 'All chapters have been generated. Download your report now.',
+      });
+    } else if (failed.length < CHAPTERS.length) {
+      toast({
+        title: 'Report partially generated',
+        description: `${CHAPTERS.length - failed.length} of ${CHAPTERS.length} chapters generated. You can retry failed chapters.`,
         variant: 'destructive',
       });
-    } finally {
-      setGenerating(false);
-      setGeneratingPart(null);
-      setGenerationProgress(0);
-      setGenerationPhase('');
+    } else {
+      toast({
+        title: 'Generation failed',
+        description: 'Failed to generate report. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
-  const downloadAsDocx = async (content: string, partLabel: string, includeTitle: boolean = false) => {
-    if (!content) return;
+  // Retry failed chapters
+  const handleRetryFailed = async () => {
+    if (failedChapters.length === 0) return;
 
-    const sections = content.split('\n\n');
+    setGenerating(true);
+    const stillFailed: string[] = [];
+
+    for (let i = 0; i < failedChapters.length; i++) {
+      const chapterKey = failedChapters[i];
+      const chapter = CHAPTERS.find(c => c.key === chapterKey);
+      if (!chapter) continue;
+
+      setCurrentChapter(chapterKey);
+      setGenerationProgress(Math.round((i / failedChapters.length) * 100));
+      setGenerationPhase(`Retrying ${chapter.label}: ${chapter.description}...`);
+
+      const content = await generateChapter(chapterKey);
+      
+      if (content) {
+        setChapterContent(prev => ({ ...prev, [chapterKey]: content }));
+      } else {
+        stillFailed.push(chapterKey);
+      }
+
+      if (i < failedChapters.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    setFailedChapters(stillFailed);
+    setGenerating(false);
+    setCurrentChapter(null);
+    setGenerationProgress(100);
+    setGenerationPhase('');
+
+    if (stillFailed.length === 0) {
+      toast({
+        title: 'All chapters generated!',
+        description: 'Your report is now complete.',
+      });
+    } else {
+      toast({
+        title: 'Some chapters still failed',
+        description: `${stillFailed.length} chapter(s) could not be generated.`,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Download full merged report
+  const downloadFullReport = async () => {
+    if (!hasAnyContent) return;
+
+    // Merge all chapters in order
+    const orderedContent = CHAPTERS
+      .map(ch => chapterContent[ch.key])
+      .filter(Boolean)
+      .join('\n\n---\n\n');
+
+    const sections = orderedContent.split('\n\n');
     const children: Paragraph[] = [];
 
-    // Title page (only for Part A1 or full report)
-    if (includeTitle) {
-      children.push(
-        new Paragraph({
-          children: [new TextRun({ text: formData.university.toUpperCase(), bold: true, size: 32 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 400 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: formData.collegeName, bold: true, size: 28 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 600 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 400 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `On`, size: 24 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `"${formData.internshipTitle}"`, bold: true, size: 28, italics: true })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 600 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `Submitted by`, size: 24 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: formData.studentName, bold: true, size: 28 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 100 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `Register No: ${formData.registerNumber}`, size: 24 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 400 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `Under the guidance of`, size: 24 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: formData.guideName, bold: true, size: 28 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 600 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `${formData.course}`, size: 24 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 100 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: `Academic Year: ${formData.academicYear}`, size: 24 })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 400 },
-        }),
-        new Paragraph({
-          children: [new PageBreak()],
-        })
-      );
-    }
+    // Title page
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: formData.university.toUpperCase(), bold: true, size: 32 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: formData.collegeName, bold: true, size: 28 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `On`, size: 24 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `"${formData.internshipTitle}"`, bold: true, size: 28, italics: true })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Submitted by`, size: 24 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: formData.studentName, bold: true, size: 28 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Register No: ${formData.registerNumber}`, size: 24 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Under the guidance of`, size: 24 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: formData.guideName, bold: true, size: 28 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `${formData.course}`, size: 24 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Academic Year: ${formData.academicYear}`, size: 24 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({
+        children: [new PageBreak()],
+      })
+    );
 
     // Parse and add content
     sections.forEach(section => {
-      if (section.trim()) {
+      if (section.trim() && section.trim() !== '---') {
         if (section.startsWith('# ')) {
           children.push(
             new Paragraph({
@@ -504,88 +544,13 @@ const CreateReport = () => {
     });
 
     const blob = await Packer.toBlob(doc);
-    const filename = `${formData.studentName.replace(/\s+/g, '_')}_Internship_Report_${partLabel}.docx`;
+    const filename = `${formData.studentName.replace(/\s+/g, '_')}_Internship_Report.docx`;
     saveAs(blob, filename);
 
     toast({
       title: 'Downloaded!',
-      description: `${partLabel} of your report has been downloaded as DOCX.`,
+      description: 'Your complete internship report has been downloaded.',
     });
-  };
-
-  const downloadFullReport = async () => {
-    if (!hasAllContent) return;
-    const fullContent = [partContent.A1, partContent.A2, partContent.B1, partContent.B2].join('\n\n');
-    await downloadAsDocx(fullContent, 'Full', true);
-  };
-
-  const getPartLabel = (part: PartType): string => {
-    switch (part) {
-      case 'A1': return 'Front Matter + Ch1';
-      case 'A2': return 'Chapters 2-3';
-      case 'B1': return 'Chapters 4-6';
-      case 'B2': return 'Chapters 7-9 + Refs';
-    }
-  };
-
-  const renderPartSection = (part: PartType) => {
-    const content = partContent[part];
-    const isGenerating = generatingPart === part;
-    
-    return (
-      <div key={part} className="border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold">Part {part} ({getPartLabel(part)})</h3>
-          {content ? (
-            <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">
-              ✓ Generated
-            </span>
-          ) : (
-            <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded">
-              Not generated
-            </span>
-          )}
-        </div>
-        {content && (
-          <div className="bg-muted/50 rounded-lg p-4 max-h-32 overflow-y-auto mb-3">
-            <pre className="whitespace-pre-wrap text-xs font-sans">{content.substring(0, 500)}...</pre>
-          </div>
-        )}
-        <div className="flex gap-2">
-          {content ? (
-            <Button 
-              variant="gradient" 
-              onClick={() => downloadAsDocx(content, `Part_${part}`, part === 'A1')} 
-              className="flex-1"
-              size="sm"
-            >
-              <Download className="w-4 h-4" />
-              Download Part {part}
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              onClick={() => handleGeneratePart(part)} 
-              disabled={generating}
-              className="flex-1"
-              size="sm"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Generate Part {part}
-                </>
-              )}
-            </Button>
-          )}
-        </div>
-      </div>
-    );
   };
 
   if (authLoading) {
@@ -625,29 +590,46 @@ const CreateReport = () => {
             <CardHeader>
               <CardTitle className="font-display flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
-                Report Parts
+                Report Generation Progress
               </CardTitle>
               <CardDescription>
-                Generate each part separately to avoid timeouts. Download individually or combine all parts.
+                {hasAllContent 
+                  ? 'All chapters generated! Download your complete report.'
+                  : `${completedChapters.length} of ${CHAPTERS.length} chapters generated.`}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Parts Grid */}
-              <div className="grid md:grid-cols-2 gap-4">
-                {(['A1', 'A2', 'B1', 'B2'] as PartType[]).map(renderPartSection)}
+              {/* Progress Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {CHAPTERS.map(chapter => {
+                  const isCompleted = !!chapterContent[chapter.key];
+                  const isCurrent = currentChapter === chapter.key;
+                  const isFailed = failedChapters.includes(chapter.key);
+                  
+                  return (
+                    <div 
+                      key={chapter.key}
+                      className={`p-2 rounded-lg text-center text-xs ${
+                        isCompleted 
+                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                          : isCurrent
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 animate-pulse'
+                          : isFailed
+                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      <div className="font-semibold">{chapter.label}</div>
+                      <div className="text-[10px] opacity-75 truncate">{chapter.description}</div>
+                      {isCompleted && <CheckCircle2 className="w-3 h-3 mx-auto mt-1" />}
+                      {isCurrent && <Loader2 className="w-3 h-3 mx-auto mt-1 animate-spin" />}
+                      {isFailed && !isCompleted && <AlertCircle className="w-3 h-3 mx-auto mt-1" />}
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Full Report Download */}
-              {hasAllContent && (
-                <div className="border-t pt-4">
-                  <Button variant="hero" onClick={downloadFullReport} className="w-full" size="lg">
-                    <Download className="w-5 h-5" />
-                    Download Full Report (All Parts Combined)
-                  </Button>
-                </div>
-              )}
-
-              {/* Progress indicator */}
+              {/* Progress indicator during generation */}
               {generating && (
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
                   <div className="flex items-center gap-3">
@@ -655,7 +637,7 @@ const CreateReport = () => {
                       <Sparkles className="w-4 h-4 text-primary-foreground" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-foreground text-sm">Generating Part {generatingPart}</p>
+                      <p className="font-semibold text-foreground text-sm">Generating Report</p>
                       <p className="text-xs text-muted-foreground">{generationPhase}</p>
                     </div>
                     <div className="text-right">
@@ -663,13 +645,54 @@ const CreateReport = () => {
                     </div>
                   </div>
                   <Progress value={generationProgress} className="h-2" />
+                  <p className="text-xs text-muted-foreground text-center">
+                    This may take 5-10 minutes. Please keep this page open.
+                  </p>
                 </div>
+              )}
+
+              {/* Failed chapters retry */}
+              {failedChapters.length > 0 && !generating && (
+                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600" />
+                    <span className="font-semibold text-amber-700 dark:text-amber-300">
+                      {failedChapters.length} chapter(s) failed to generate
+                    </span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRetryFailed}
+                    className="w-full"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Retry Failed Chapters
+                  </Button>
+                </div>
+              )}
+
+              {/* Download Button */}
+              {hasAnyContent && !generating && (
+                <Button 
+                  variant="hero" 
+                  onClick={downloadFullReport} 
+                  className="w-full" 
+                  size="lg"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Complete Report ({completedChapters.length}/{CHAPTERS.length} chapters)
+                </Button>
               )}
 
               <Button 
                 variant="outline" 
-                onClick={() => setPartContent({ A1: null, A2: null, B1: null, B2: null })} 
+                onClick={() => {
+                  setChapterContent({});
+                  setFailedChapters([]);
+                }} 
                 className="w-full"
+                disabled={generating}
               >
                 Create Another Report
               </Button>
@@ -850,7 +873,6 @@ const CreateReport = () => {
                     <span className="ml-2 text-muted-foreground">Checking your status...</span>
                   </div>
                 ) : needsTopup ? (
-                  // User has used 3 generations, needs topup
                   <div className="space-y-4">
                     <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
                       <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -880,7 +902,6 @@ const CreateReport = () => {
                     </Button>
                   </div>
                 ) : paymentStatus === 'pending' ? (
-                  // Payment is pending verification
                   <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
                     <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Clock className="w-6 h-6 text-amber-600" />
@@ -892,7 +913,6 @@ const CreateReport = () => {
                     </p>
                   </div>
                 ) : hasApprovedPayment && canGenerate ? (
-                  // Can generate - show generate buttons
                   <div className="space-y-4">
                     <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
                       <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -903,21 +923,23 @@ const CreateReport = () => {
                     </div>
                     <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                       <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-2">
-                        📋 Report will be split into 4 parts to avoid timeouts:
+                        📋 Your report will include 10 sections:
                       </p>
-                      <ul className="text-xs text-muted-foreground space-y-1 ml-4">
-                        <li>• <strong>Part A1:</strong> Front Matter + Chapter 1</li>
-                        <li>• <strong>Part A2:</strong> Chapters 2-3 (Company Profile + Literature)</li>
-                        <li>• <strong>Part B1:</strong> Chapters 4-6 (Activities + Skills + Findings)</li>
-                        <li>• <strong>Part B2:</strong> Chapters 7-9 + Bibliography</li>
-                      </ul>
+                      <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
+                        {CHAPTERS.map(ch => (
+                          <div key={ch.key}>• {ch.label}</div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        ⏱️ Generation takes 5-10 minutes. Please keep this page open.
+                      </p>
                     </div>
                     <Button
                       type="button"
                       variant="hero"
                       size="xl"
                       className="w-full"
-                      onClick={() => handleGeneratePart('A1')}
+                      onClick={handleGenerateReport}
                       disabled={generating}
                     >
                       {generating ? (
@@ -928,13 +950,12 @@ const CreateReport = () => {
                       ) : (
                         <>
                           <Sparkles className="w-5 h-5" />
-                          Start with Part A1
+                          Generate Complete Report
                         </>
                       )}
                     </Button>
                   </div>
                 ) : (
-                  // First time user - needs to pay
                   <div className="space-y-4">
                     <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-6">
                       <div className="flex justify-between items-center mb-4">
