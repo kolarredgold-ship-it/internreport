@@ -25,12 +25,10 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     
-    // Create client with user's auth context
     const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Validate the JWT token
     const token = authHeader.replace('Bearer ', '');
     const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
     
@@ -64,7 +62,6 @@ serve(async (req) => {
       );
     }
 
-    // Define required fields (excluding userId - comes from JWT)
     const requiredFields = [
       'studentName', 'registerNumber', 'course', 'collegeName',
       'university', 'guideName', 'internshipTitle', 'companyName',
@@ -72,7 +69,6 @@ serve(async (req) => {
       'topicSpecialization', 'pagesCount'
     ];
 
-    // Check all required fields exist
     for (const field of requiredFields) {
       if (body[field] === undefined || body[field] === null || body[field] === '') {
         return new Response(
@@ -82,7 +78,6 @@ serve(async (req) => {
       }
     }
 
-    // Validate pagesCount type and range
     if (typeof body.pagesCount !== 'number' || !Number.isInteger(body.pagesCount)) {
       return new Response(
         JSON.stringify({ error: 'pagesCount must be an integer' }),
@@ -97,7 +92,6 @@ serve(async (req) => {
       );
     }
 
-    // Validate string fields
     const maxLength = 200;
     for (const field of requiredFields) {
       if (field === 'pagesCount') continue;
@@ -117,7 +111,6 @@ serve(async (req) => {
       }
     }
 
-    // Sanitize and trim strings
     const sanitize = (str: string) => str.trim().substring(0, maxLength);
 
     const studentName = sanitize(body.studentName);
@@ -133,20 +126,18 @@ serve(async (req) => {
     const academicYear = sanitize(body.academicYear);
     const topicSpecialization = sanitize(body.topicSpecialization);
     const pagesCount = body.pagesCount;
-    const part = body.part || null; // 'A1', 'A2', 'B1', 'B2', or null for full report
+    // Chapter number: 1-9 for individual chapters, or 'front' for front matter
+    const chapter = body.chapter || null;
 
-    console.log("Input validation passed for user:", userId, "Part:", part || "Full");
+    console.log("Input validation passed for user:", userId, "Chapter:", chapter || "Full");
 
     // ========== BUSINESS LOGIC ==========
-    // Initialize Supabase admin client for database operations
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // For part-based generation, skip generation slot claiming
-    // The slot is only claimed when user generates a full report or both parts
+    // For chapter-based generation, skip generation slot claiming
     let newCount = 0;
-    if (!part) {
-      // Atomically claim a generation slot before processing (prevents race condition)
+    if (!chapter) {
       const { data: claimResult, error: claimError } = await supabase
         .rpc('claim_generation_slot', { p_user_id: userId });
 
@@ -165,166 +156,315 @@ serve(async (req) => {
       newCount = claimResult.generations_used;
       console.log(`Generation slot claimed. User now has ${newCount} generations used.`);
     } else {
-      console.log(`Generating Part ${part} - no generation slot claimed`);
+      console.log(`Generating Chapter ${chapter} - no generation slot claimed`);
     }
 
-    // Generate report using DeepSeek AI
     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
     
     if (!DEEPSEEK_API_KEY) {
       throw new Error("DeepSeek API key not configured");
     }
 
-    // Calculate word count based on pages (approximately 300-350 words per page for academic reports)
-    const targetWordCount = pagesCount * 350;
-    
-    // Define base context
+    // Base context for all prompts
     const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
 College: ${collegeName}, University: ${university}, Guide: ${guideName}
 Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
 Duration: ${internshipDuration}, Year: ${academicYear}, Topic: ${topicSpecialization}
 Target: ${pagesCount} pages total`;
 
-    // Define prompts for each part (4 parts to minimize timeouts)
-    const partA1Prompt = `${baseContext}
+    // Chapter-specific prompts (each optimized for ~8000 tokens output)
+    const chapterPrompts: Record<string, { prompt: string; label: string }> = {
+      'front': {
+        label: 'Front Matter',
+        prompt: `${baseContext}
 
-Generate the FRONT MATTER and CHAPTER 1 with FULL DETAIL for an internship report:
+Generate the FRONT MATTER for an internship report with FULL DETAIL:
 
-# CERTIFICATE (150+ words - formal certificate with institutional formatting)
-# DECLARATION (200+ words - student declaration with formal legal language)
-# ACKNOWLEDGEMENT (300+ words - thank institution, guide, company, family individually)
-# ABSTRACT (400+ words - comprehensive summary of internship experience)
-# TABLE OF CONTENTS (list all chapters and sections)
+# CERTIFICATE
+(Write a formal certificate - 150+ words with institutional formatting, signatures placeholders)
+
+# DECLARATION
+(Write student declaration - 200+ words with formal legal language)
+
+# ACKNOWLEDGEMENT
+(Write detailed acknowledgement - 300+ words thanking institution, guide, company supervisors, colleagues, family)
+
+# ABSTRACT
+(Write comprehensive abstract - 400+ words summarizing the entire internship experience, objectives, methodology, findings, and conclusions)
+
+# TABLE OF CONTENTS
+(List all chapters with section numbers)
+
 # LIST OF FIGURES
+(Placeholder list)
+
 # LIST OF TABLES
+(Placeholder list)
+
 # LIST OF ABBREVIATIONS
+(Include 10-15 relevant abbreviations used in the report)
 
-# CHAPTER 1: INTRODUCTION (1500+ words)
-## 1.1 Background of the Study (400+ words - elaborate on industry context, trends, relevance)
-## 1.2 Objectives of the Internship (300+ words - list 8-10 specific objectives)
-## 1.3 Scope of the Study (300+ words - define boundaries and limitations)
-## 1.4 Need for the Study (300+ words - justify importance with data)
-## 1.5 Research Methodology (200+ words - approach and data collection methods)
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '1': {
+        label: 'Chapter 1: Introduction',
+        prompt: `${baseContext}
 
-Write EXTENSIVE, DETAILED content with formal academic English.`;
+Generate CHAPTER 1: INTRODUCTION with FULL DETAIL (2000+ words):
 
-    const partA2Prompt = `${baseContext}
+# CHAPTER 1: INTRODUCTION
 
-Generate CHAPTERS 2 and 3 with FULL DETAIL for an internship report:
+## 1.1 Background of the Study
+(Write 500+ words - elaborate on industry context, current trends, market scenario, relevance of ${topicSpecialization})
 
-# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (2000+ words)
-## 2.1 Industry Overview (500+ words - detailed analysis of ${topicSpecialization} industry, market size, trends)
-## 2.2 About ${companyName} (400+ words - comprehensive company history, milestones)
-## 2.3 Vision, Mission, and Core Values (200+ words - company philosophy)
-## 2.4 Products and Services Portfolio (400+ words - detailed description of offerings)
-## 2.5 Organizational Structure and Hierarchy (300+ words - departments, team composition)
-## 2.6 SWOT Analysis (300+ words - comprehensive strengths, weaknesses, opportunities, threats)
+## 1.2 Objectives of the Internship
+(Write 400+ words - list 8-10 specific, measurable objectives with explanations)
 
-# CHAPTER 3: LITERATURE REVIEW (2500+ words)
-## 3.1 Theoretical Framework (600+ words - relevant theories and models for ${topicSpecialization})
-## 3.2 Review of Previous Studies (800+ words - cite 10-15 academic studies with findings)
-## 3.3 Industry Best Practices (400+ words - current industry standards)
-## 3.4 Technological Advancements (400+ words - latest technologies in the field)
-## 3.5 Research Gap Analysis (300+ words - gaps this internship addresses)
+## 1.3 Scope of the Study
+(Write 400+ words - define boundaries, what is included/excluded, limitations)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`;
+## 1.4 Need for the Study
+(Write 400+ words - justify importance with industry data, statistics, and real-world relevance)
 
-    const partB1Prompt = `${baseContext}
+## 1.5 Research Methodology
+(Write 300+ words - describe approach, data collection methods, tools used)
 
-Generate CHAPTERS 4, 5, and 6 with FULL DETAIL for an internship report:
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '2': {
+        label: 'Chapter 2: Industry & Company Profile',
+        prompt: `${baseContext}
 
-# CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (3000+ words)
-## 4.1 Department Overview (300+ words - detailed department description)
-## 4.2 Roles and Responsibilities Assigned (500+ words - comprehensive list of duties)
-## 4.3 Week-wise Activity Log (800+ words - detailed week-by-week account for ${internshipDuration})
-## 4.4 Projects Undertaken (700+ words - describe 3-5 major projects with objectives and outcomes)
-## 4.5 Tools and Technologies Used (400+ words - software, tools with usage context)
-## 4.6 Team Collaboration and Communication (300+ words - teamwork experiences)
+Generate CHAPTER 2: INDUSTRY AND COMPANY PROFILE with FULL DETAIL (2500+ words):
 
-# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words)
-## 5.1 Technical Skills Acquired (500+ words - detailed technical skills with proficiency)
-## 5.2 Soft Skills Developed (400+ words - communication, leadership with examples)
-## 5.3 Domain Knowledge Enhancement (400+ words - specific knowledge about ${topicSpecialization})
-## 5.4 Professional Competencies (400+ words - industry-specific competencies)
-## 5.5 Certifications and Training (300+ words - training programs completed)
+# CHAPTER 2: INDUSTRY AND COMPANY PROFILE
 
-# CHAPTER 6: DATA ANALYSIS AND FINDINGS (2500+ words)
-## 6.1 Data Collection Methodology (400+ words - how data was gathered)
-## 6.2 Analysis Framework (300+ words - analytical methods and tools)
-## 6.3 Key Findings and Observations (800+ words - 8-10 major findings detailed)
-## 6.4 Comparative Analysis (500+ words - compare with industry standards)
-## 6.5 Interpretation of Results (500+ words - implications and significance)
+## 2.1 Industry Overview
+(Write 600+ words - detailed analysis of ${topicSpecialization} industry, market size, growth rate, key players, trends)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`;
+## 2.2 About ${companyName}
+(Write 500+ words - comprehensive company history, founding, milestones, current operations)
 
-    const partB2Prompt = `${baseContext}
+## 2.3 Vision, Mission, and Core Values
+(Write 250+ words - company philosophy, goals, guiding principles)
 
-Generate CHAPTERS 7, 8, 9, BIBLIOGRAPHY, and ANNEXURES with FULL DETAIL for an internship report:
+## 2.4 Products and Services Portfolio
+(Write 500+ words - detailed description of all major offerings, USP, market positioning)
 
-# CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (1500+ words)
-## 7.1 Technical Challenges Encountered (400+ words - technical difficulties with context)
-## 7.2 Organizational Challenges (300+ words - workplace and process challenges)
-## 7.3 Problem-Solving Approaches (400+ words - methods to overcome challenges)
-## 7.4 Lessons Learned (400+ words - key takeaways from challenges)
+## 2.5 Organizational Structure
+(Write 350+ words - departments, hierarchy, team composition, reporting structure)
 
-# CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (1500+ words)
-## 8.1 Recommendations for ${companyName} (500+ words - 5-7 actionable recommendations)
-## 8.2 Process Improvement Suggestions (400+ words - operational improvements)
-## 8.3 Technology Adoption Recommendations (300+ words - new technologies and benefits)
-## 8.4 Future Scope and Opportunities (300+ words - growth areas)
+## 2.6 SWOT Analysis
+(Write 400+ words - comprehensive strengths, weaknesses, opportunities, threats with examples)
 
-# CHAPTER 9: CONCLUSION (1000+ words)
-## 9.1 Summary of Internship Experience (300+ words - comprehensive summary)
-## 9.2 Achievement of Objectives (300+ words - map achievements to initial objectives)
-## 9.3 Personal and Professional Growth (200+ words - development during internship)
-## 9.4 Future Career Aspirations (200+ words - connect learning to career goals)
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '3': {
+        label: 'Chapter 3: Literature Review',
+        prompt: `${baseContext}
+
+Generate CHAPTER 3: LITERATURE REVIEW with FULL DETAIL (2500+ words):
+
+# CHAPTER 3: LITERATURE REVIEW
+
+## 3.1 Theoretical Framework
+(Write 700+ words - relevant theories, models, and frameworks for ${topicSpecialization}, explain each theory)
+
+## 3.2 Review of Previous Studies
+(Write 900+ words - cite and discuss 12-15 academic studies with author names, years, key findings)
+
+## 3.3 Industry Best Practices
+(Write 450+ words - current industry standards, benchmarks, successful case studies)
+
+## 3.4 Technological Advancements
+(Write 450+ words - latest technologies, digital transformation, innovations in the field)
+
+## 3.5 Research Gap Analysis
+(Write 350+ words - identify gaps in existing research that this internship addresses)
+
+Write EXTENSIVE, DETAILED content with formal academic English. Include proper citations in APA format.`
+      },
+      '4': {
+        label: 'Chapter 4: Internship Activities',
+        prompt: `${baseContext}
+
+Generate CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES with FULL DETAIL (3000+ words):
+
+# CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES
+
+## 4.1 Department Overview
+(Write 400+ words - detailed department description, function, role in organization)
+
+## 4.2 Roles and Responsibilities Assigned
+(Write 600+ words - comprehensive list of 10-15 duties with detailed descriptions)
+
+## 4.3 Week-wise Activity Log
+(Write 1000+ words - detailed week-by-week account for ${internshipDuration}, specific tasks, learnings each week)
+
+## 4.4 Projects Undertaken
+(Write 700+ words - describe 4-5 major projects with objectives, methodology, outcomes)
+
+## 4.5 Tools and Technologies Used
+(Write 500+ words - list all software, tools, technologies with usage context and proficiency gained)
+
+## 4.6 Team Collaboration
+(Write 400+ words - teamwork experiences, meetings, communication methods, collaborative projects)
+
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '5': {
+        label: 'Chapter 5: Technical Learning',
+        prompt: `${baseContext}
+
+Generate CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT with FULL DETAIL (2500+ words):
+
+# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT
+
+## 5.1 Technical Skills Acquired
+(Write 600+ words - list 10-12 technical skills with detailed descriptions of what was learned, proficiency level)
+
+## 5.2 Soft Skills Developed
+(Write 500+ words - communication, leadership, time management, problem-solving with specific examples)
+
+## 5.3 Domain Knowledge Enhancement
+(Write 500+ words - specific knowledge about ${topicSpecialization}, industry insights, specialized learning)
+
+## 5.4 Professional Competencies
+(Write 500+ words - industry-specific competencies, professional standards, workplace ethics)
+
+## 5.5 Certifications and Training
+(Write 400+ words - training programs attended, online courses, workshops, certifications obtained)
+
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '6': {
+        label: 'Chapter 6: Data Analysis & Findings',
+        prompt: `${baseContext}
+
+Generate CHAPTER 6: DATA ANALYSIS AND FINDINGS with FULL DETAIL (2500+ words):
+
+# CHAPTER 6: DATA ANALYSIS AND FINDINGS
+
+## 6.1 Data Collection Methodology
+(Write 500+ words - how data was gathered, sources, sample size, tools used)
+
+## 6.2 Analysis Framework
+(Write 400+ words - analytical methods, tools, frameworks used for analysis)
+
+## 6.3 Key Findings and Observations
+(Write 800+ words - present 10-12 major findings with detailed explanations, data points)
+
+## 6.4 Comparative Analysis
+(Write 500+ words - compare findings with industry standards, benchmarks, previous studies)
+
+## 6.5 Interpretation of Results
+(Write 500+ words - explain implications, significance, what the data reveals)
+
+Include relevant tables and figures placeholders. Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '7': {
+        label: 'Chapter 7: Challenges & Solutions',
+        prompt: `${baseContext}
+
+Generate CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING with FULL DETAIL (2000+ words):
+
+# CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING
+
+## 7.1 Technical Challenges Encountered
+(Write 500+ words - 5-6 technical difficulties with context, impact, and how they were addressed)
+
+## 7.2 Organizational Challenges
+(Write 400+ words - workplace, process, and communication challenges faced)
+
+## 7.3 Problem-Solving Approaches
+(Write 500+ words - specific methods, frameworks, strategies used to overcome challenges)
+
+## 7.4 Lessons Learned
+(Write 500+ words - key takeaways from challenges, how they contributed to growth)
+
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '8': {
+        label: 'Chapter 8: Recommendations',
+        prompt: `${baseContext}
+
+Generate CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS with FULL DETAIL (2000+ words):
+
+# CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS
+
+## 8.1 Recommendations for ${companyName}
+(Write 600+ words - 6-8 detailed, actionable recommendations with justification and expected benefits)
+
+## 8.2 Process Improvement Suggestions
+(Write 500+ words - operational improvements, efficiency enhancements, workflow optimizations)
+
+## 8.3 Technology Adoption Recommendations
+(Write 450+ words - new technologies, tools, systems that could benefit the organization)
+
+## 8.4 Future Scope and Opportunities
+(Write 450+ words - growth areas, market opportunities, expansion possibilities)
+
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      },
+      '9': {
+        label: 'Chapter 9: Conclusion & References',
+        prompt: `${baseContext}
+
+Generate CHAPTER 9: CONCLUSION and BIBLIOGRAPHY with FULL DETAIL:
+
+# CHAPTER 9: CONCLUSION (1200+ words)
+
+## 9.1 Summary of Internship Experience
+(Write 400+ words - comprehensive summary of the entire internship journey)
+
+## 9.2 Achievement of Objectives
+(Write 400+ words - map achievements to initial objectives, degree of completion)
+
+## 9.3 Personal and Professional Growth
+(Write 250+ words - development during internship, transformation)
+
+## 9.4 Future Career Aspirations
+(Write 250+ words - connect learning to career goals, next steps)
 
 # BIBLIOGRAPHY
-(Include 20-25 properly formatted academic references in APA style including journals, books, websites, and industry reports relevant to ${topicSpecialization})
+(Include 25-30 properly formatted references in APA style:
+- 10 academic journal articles
+- 5 books/textbooks
+- 5 industry reports
+- 5 reputable websites
+All relevant to ${topicSpecialization})
 
 # ANNEXURES
-## Annexure A: Sample Work Documents
-## Annexure B: Photographs from Internship
-## Annexure C: Completion Certificate
-## Annexure D: Weekly Report Samples
-## Annexure E: Feedback Form
+## Annexure A: Sample Work Documents (placeholder)
+## Annexure B: Photographs from Internship (placeholder)
+## Annexure C: Completion Certificate (placeholder)
+## Annexure D: Weekly Report Samples (placeholder)
+## Annexure E: Feedback Form (placeholder)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`;
+Write EXTENSIVE, DETAILED content with formal academic English.`
+      }
+    };
 
-    // Determine which prompt to use based on part parameter
+    // Determine which prompt to use
     let chapterPrompt: string;
-    let partLabel: string;
+    let chapterLabel: string;
     
-    switch (part) {
-      case 'A1':
-        chapterPrompt = partA1Prompt;
-        partLabel = "A1 (Front Matter + Ch1)";
-        break;
-      case 'A2':
-        chapterPrompt = partA2Prompt;
-        partLabel = "A2 (Ch2-3)";
-        break;
-      case 'B1':
-        chapterPrompt = partB1Prompt;
-        partLabel = "B1 (Ch4-6)";
-        break;
-      case 'B2':
-        chapterPrompt = partB2Prompt;
-        partLabel = "B2 (Ch7-9 + Refs)";
-        break;
-      default:
-        // Full report (legacy behavior) - use Part A1 for now
-        chapterPrompt = partA1Prompt;
-        partLabel = "Full (legacy)";
+    if (chapter && chapterPrompts[chapter]) {
+      chapterPrompt = chapterPrompts[chapter].prompt;
+      chapterLabel = chapterPrompts[chapter].label;
+    } else {
+      // Default to front matter for legacy/full report
+      chapterPrompt = chapterPrompts['front'].prompt;
+      chapterLabel = "Front Matter";
     }
     
-    console.log(`Generating ${partLabel}...`);
+    console.log(`Generating ${chapterLabel}...`);
     
-    // Create an AbortController with 90-second timeout (shorter for smaller parts)
+    // 90-second timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000);
     
-    let fullContent = "";
+    let generatedContent = "";
     
     try {
       const response = await fetch("https://api.deepseek.com/chat/completions", {
@@ -338,14 +478,14 @@ Write EXTENSIVE, DETAILED content with formal academic English.`;
           messages: [
             {
               role: "system",
-              content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries.`
+              content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries. Use proper markdown formatting.`
             },
             {
               role: "user",
               content: chapterPrompt
             }
           ],
-          max_tokens: 6000, // Reduced for smaller parts
+          max_tokens: 8000,
           temperature: 0.75,
         }),
         signal: controller.signal,
@@ -360,13 +500,9 @@ Write EXTENSIVE, DETAILED content with formal academic English.`;
       }
 
       const data = await response.json();
-      const partContent = data.choices[0]?.message?.content;
+      generatedContent = data.choices[0]?.message?.content || "";
       
-      if (partContent) {
-        fullContent = partContent;
-      }
-      
-      console.log(`API call completed successfully for ${partLabel}`);
+      console.log(`API call completed successfully for ${chapterLabel}, content length: ${generatedContent.length}`);
     } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
@@ -376,19 +512,18 @@ Write EXTENSIVE, DETAILED content with formal academic English.`;
       throw fetchError;
     }
 
-    const generatedContent = fullContent;
-
     if (!generatedContent) {
       throw new Error("No content generated");
     }
 
-    // For part-based generation, don't save to database - just return the content
-    if (part) {
-      console.log(`Part ${part} generated successfully for user:`, userId);
+    // For chapter-based generation, return content directly
+    if (chapter) {
+      console.log(`Chapter ${chapter} generated successfully for user:`, userId);
       return new Response(
         JSON.stringify({
           content: generatedContent,
-          part: part,
+          chapter: chapter,
+          label: chapterLabel,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -436,7 +571,7 @@ Write EXTENSIVE, DETAILED content with formal academic English.`;
   } catch (error) {
     console.error("Generate report error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Failed to generate report" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
