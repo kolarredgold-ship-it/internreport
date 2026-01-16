@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,7 +87,16 @@ const CreateReport = () => {
   const [failedChapters, setFailedChapters] = useState<string[]>([]);
   const [showLivePreview, setShowLivePreview] = useState(true);
   const [currentGeneratingText, setCurrentGeneratingText] = useState('');
-  const [displayedLines, setDisplayedLines] = useState<string[]>([]);
+  const [displayedText, setDisplayedText] = useState('');
+  const [charCount, setCharCount] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new text is added
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [displayedText]);
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
@@ -312,20 +321,27 @@ const CreateReport = () => {
       setGenerationPhase(`Generating ${chapter.label}: ${chapter.description}...`);
 
       setCurrentGeneratingText('');
-      setDisplayedLines([]);
+      setDisplayedText('');
+      setCharCount(0);
       const content = await generateChapter(chapter.key);
       
       if (content) {
         newContent[chapter.key] = content;
         setChapterContent(prev => ({ ...prev, [chapter.key]: content }));
         
-        // Simulate line-by-line display of generated content
-        const lines = content.split('\n');
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-          setDisplayedLines(prev => [...prev, lines[lineIndex]]);
-          // Small delay between lines for visual effect
-          await new Promise(resolve => setTimeout(resolve, 15));
+        // Character-by-character typing effect
+        const chars = content.split('');
+        const chunkSize = 3; // Show 3 characters at a time for speed
+        for (let charIndex = 0; charIndex < chars.length; charIndex += chunkSize) {
+          const chunk = chars.slice(0, charIndex + chunkSize).join('');
+          setDisplayedText(chunk);
+          setCharCount(charIndex + chunkSize);
+          // Small delay for typing effect (faster for better UX)
+          await new Promise(resolve => setTimeout(resolve, 2));
         }
+        // Ensure full content is shown
+        setDisplayedText(content);
+        setCharCount(content.length);
       } else {
         failed.push(chapter.key);
       }
@@ -342,7 +358,8 @@ const CreateReport = () => {
     setGenerationProgress(100);
     setGenerationPhase('');
     setCurrentGeneratingText('');
-    setDisplayedLines([]);
+    setDisplayedText('');
+    setCharCount(0);
 
     // Update generations count
     if (Object.keys(newContent).length > 0) {
@@ -678,7 +695,7 @@ const CreateReport = () => {
                   </div>
 
                   {/* Live Generated Content Display */}
-                  {showLivePreview && displayedLines.length > 0 && (
+                  {showLivePreview && displayedText.length > 0 && (
                     <div className="mt-3 bg-background/50 rounded-lg border border-border/50 overflow-hidden">
                       <div className="bg-muted/50 px-3 py-1.5 border-b border-border/50 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -686,19 +703,17 @@ const CreateReport = () => {
                           Generating: {CHAPTERS.find(c => c.key === currentChapter)?.label}
                         </span>
                         <span className="ml-auto text-xs text-muted-foreground/60">
-                          {displayedLines.length} lines
+                          {charCount.toLocaleString()} chars
                         </span>
                       </div>
                       <ScrollArea className="h-64">
-                        <div className="p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground/80">
-                          {displayedLines.map((line, index) => (
-                            <div 
-                              key={index} 
-                              className="animate-in fade-in slide-in-from-left-2 duration-200"
-                            >
-                              {line || '\u00A0'}
-                            </div>
-                          ))}
+                        <div 
+                          ref={scrollRef}
+                          className="p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground/80"
+                        >
+                          {displayedText}
+                          <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-0.5 align-middle" />
+                          <div className="h-1" /> {/* Scroll anchor */}
                         </div>
                       </ScrollArea>
                     </div>
