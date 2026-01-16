@@ -397,43 +397,59 @@ Target: ${pagesCount} pages total`;
       
       console.log(`Making DeepSeek API call ${i + 1} of ${numCalls}...`);
       
-      const response = await fetch("https://api.deepseek.com/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [
-            {
-              role: "system",
-              content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries.`
-            },
-            {
-              role: "user",
-              content: chapterPrompt
-            }
-          ],
-          max_tokens: 8000,
-          temperature: 0.75,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("DeepSeek API error:", response.status, errorText);
-        throw new Error(`DeepSeek API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const partContent = data.choices[0]?.message?.content;
+      // Create an AbortController with 90-second timeout per API call
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
       
-      if (partContent) {
-        fullContent += (fullContent ? "\n\n" : "") + partContent;
+      try {
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            messages: [
+              {
+                role: "system",
+                content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries.`
+              },
+              {
+                role: "user",
+                content: chapterPrompt
+              }
+            ],
+            max_tokens: 8000,
+            temperature: 0.75,
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("DeepSeek API error:", response.status, errorText);
+          throw new Error(`DeepSeek API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const partContent = data.choices[0]?.message?.content;
+        
+        if (partContent) {
+          fullContent += (fullContent ? "\n\n" : "") + partContent;
+        }
+        
+        console.log(`Call ${i + 1} completed successfully`);
+      } catch (fetchError: unknown) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error(`DeepSeek API call ${i + 1} timed out after 90 seconds`);
+          throw new Error('AI generation timed out. Please try again with fewer pages.');
+        }
+        throw fetchError;
       }
-      
-      console.log(`Call ${i + 1} completed successfully`);
     }
 
     const generatedContent = fullContent;
