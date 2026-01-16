@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx';
 import { saveAs } from 'file-saver';
@@ -84,6 +85,8 @@ const CreateReport = () => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState('');
   const [failedChapters, setFailedChapters] = useState<string[]>([]);
+  const [showLivePreview, setShowLivePreview] = useState(true);
+  const [currentGeneratingText, setCurrentGeneratingText] = useState('');
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
@@ -307,11 +310,14 @@ const CreateReport = () => {
       setGenerationProgress(Math.round((i / CHAPTERS.length) * 100));
       setGenerationPhase(`Generating ${chapter.label}: ${chapter.description}...`);
 
+      setCurrentGeneratingText('');
       const content = await generateChapter(chapter.key);
       
       if (content) {
         newContent[chapter.key] = content;
         setChapterContent(prev => ({ ...prev, [chapter.key]: content }));
+        // Simulate line-by-line display of generated content
+        setCurrentGeneratingText(content);
       } else {
         failed.push(chapter.key);
       }
@@ -327,6 +333,7 @@ const CreateReport = () => {
     setCurrentChapter(null);
     setGenerationProgress(100);
     setGenerationPhase('');
+    setCurrentGeneratingText('');
 
     // Update generations count
     if (Object.keys(newContent).length > 0) {
@@ -643,6 +650,49 @@ const CreateReport = () => {
                     </div>
                   </div>
                   <Progress value={generationProgress} className="h-2" />
+                  
+                  {/* Live Content Preview Toggle */}
+                  <div className="flex items-center justify-between pt-2 border-t border-primary/10">
+                    <span className="text-xs text-muted-foreground">Live Preview</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowLivePreview(!showLivePreview)}
+                      className="h-6 px-2"
+                    >
+                      {showLivePreview ? (
+                        <><EyeOff className="w-3 h-3 mr-1" /> Hide</>
+                      ) : (
+                        <><Eye className="w-3 h-3 mr-1" /> Show</>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Live Generated Content Display */}
+                  {showLivePreview && currentGeneratingText && (
+                    <div className="mt-3 bg-background/50 rounded-lg border border-border/50 overflow-hidden">
+                      <div className="bg-muted/50 px-3 py-1.5 border-b border-border/50 flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Generating: {CHAPTERS.find(c => c.key === currentChapter)?.label}
+                        </span>
+                      </div>
+                      <ScrollArea className="h-64">
+                        <div className="p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground/80">
+                          {currentGeneratingText.split('\n').map((line, index) => (
+                            <div 
+                              key={index} 
+                              className="animate-in fade-in slide-in-from-left-1 duration-300"
+                              style={{ animationDelay: `${index * 10}ms` }}
+                            >
+                              {line || '\u00A0'}
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  )}
+                  
                   <p className="text-xs text-muted-foreground text-center">
                     This may take 5-10 minutes. Please keep this page open.
                   </p>
