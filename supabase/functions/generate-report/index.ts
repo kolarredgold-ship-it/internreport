@@ -133,7 +133,7 @@ serve(async (req) => {
     const academicYear = sanitize(body.academicYear);
     const topicSpecialization = sanitize(body.topicSpecialization);
     const pagesCount = body.pagesCount;
-    const part = body.part || null; // 'A', 'B', or null for full report
+    const part = body.part || null; // 'A1', 'A2', 'B1', 'B2', or null for full report
 
     console.log("Input validation passed for user:", userId, "Part:", part || "Full");
 
@@ -178,161 +178,109 @@ serve(async (req) => {
     // Calculate word count based on pages (approximately 300-350 words per page for academic reports)
     const targetWordCount = pagesCount * 350;
     
-    const prompt = `You are an expert academic report writer specializing in Indian university internship project reports. Your task is to generate an EXTREMELY DETAILED and COMPREHENSIVE internship project report.
+    // Define base context
+    const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
+College: ${collegeName}, University: ${university}, Guide: ${guideName}
+Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
+Duration: ${internshipDuration}, Year: ${academicYear}, Topic: ${topicSpecialization}
+Target: ${pagesCount} pages total`;
 
-CRITICAL REQUIREMENTS:
-- Target Length: ${pagesCount} pages (approximately ${targetWordCount} words minimum)
-- Each chapter MUST be extensively detailed with multiple paragraphs
-- Every subsection should contain 500-800 words of detailed content
-- Include real-world examples, case studies, and practical applications
-- Use formal academic language with proper citations style
-- Write elaborate explanations, not brief summaries
+    // Define prompts for each part (4 parts to minimize timeouts)
+    const partA1Prompt = `${baseContext}
 
-Student Information:
-- Name: ${studentName}
-- Register Number: ${registerNumber}
-- Course: ${course}
-- College: ${collegeName}
-- University: ${university}
-- Guide Name: ${guideName}
+Generate the FRONT MATTER and CHAPTER 1 with FULL DETAIL for an internship report:
 
-Internship Details:
-- Title: ${internshipTitle}
-- Company: ${companyName}
-- Location: ${companyLocation}
-- Duration: ${internshipDuration}
-- Academic Year: ${academicYear}
-- Topic/Specialization: ${topicSpecialization}
-
-Generate an EXHAUSTIVELY DETAILED internship project report. Each section must be FULLY ELABORATED with extensive content:
-
-# CERTIFICATE
-(Write a formal certificate of 150+ words with proper institutional formatting, signatures placeholders, and official language)
-
-# DECLARATION
-(Student declaration statement of 200+ words with formal legal language)
-
-# ACKNOWLEDGEMENT
-(Professional acknowledgment section of 300+ words thanking institution, guide, company, family, and colleagues individually with specific mentions)
-
-# ABSTRACT
-(Comprehensive abstract of 400+ words summarizing the entire internship experience, methodology, key findings, and conclusions)
-
-# TABLE OF CONTENTS
-(Detailed table with all chapters, sections, and page numbers)
-
+# CERTIFICATE (150+ words - formal certificate with institutional formatting)
+# DECLARATION (200+ words - student declaration with formal legal language)
+# ACKNOWLEDGEMENT (300+ words - thank institution, guide, company, family individually)
+# ABSTRACT (400+ words - comprehensive summary of internship experience)
+# TABLE OF CONTENTS (list all chapters and sections)
 # LIST OF FIGURES
 # LIST OF TABLES
 # LIST OF ABBREVIATIONS
 
-# CHAPTER 1: INTRODUCTION (Minimum 1500 words)
-## 1.1 Background of the Study
-(Elaborate on the industry context, historical development, current trends, and relevance of ${topicSpecialization} in today's market - minimum 400 words)
-## 1.2 Objectives of the Internship
-(List and explain at least 8-10 specific objectives with detailed descriptions - minimum 300 words)
-## 1.3 Scope of the Study
-(Define boundaries, limitations, and coverage area in detail - minimum 300 words)
-## 1.4 Need for the Study
-(Justify the importance with market data, industry requirements, and academic relevance - minimum 300 words)
-## 1.5 Research Methodology
-(Explain the approach, data collection methods, and analysis techniques used - minimum 200 words)
+# CHAPTER 1: INTRODUCTION (1500+ words)
+## 1.1 Background of the Study (400+ words - elaborate on industry context, trends, relevance)
+## 1.2 Objectives of the Internship (300+ words - list 8-10 specific objectives)
+## 1.3 Scope of the Study (300+ words - define boundaries and limitations)
+## 1.4 Need for the Study (300+ words - justify importance with data)
+## 1.5 Research Methodology (200+ words - approach and data collection methods)
 
-# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Minimum 2000 words)
-## 2.1 Industry Overview
-(Detailed analysis of the ${topicSpecialization} industry, market size, growth trends, key players - minimum 500 words)
-## 2.2 About ${companyName}
-(Comprehensive company history, founding story, milestones, achievements - minimum 400 words)
-## 2.3 Vision, Mission, and Core Values
-(Elaborate on company philosophy and guiding principles - minimum 200 words)
-## 2.4 Products and Services Portfolio
-(Detailed description of all offerings with features and benefits - minimum 400 words)
-## 2.5 Organizational Structure and Hierarchy
-(Explain departments, reporting structure, team compositions - minimum 300 words)
-## 2.6 SWOT Analysis
-(Comprehensive strengths, weaknesses, opportunities, threats analysis - minimum 300 words)
+Write EXTENSIVE, DETAILED content with formal academic English.`;
 
-# CHAPTER 3: LITERATURE REVIEW (Minimum 2500 words)
-## 3.1 Theoretical Framework
-(Discuss relevant theories, models, and frameworks related to ${topicSpecialization} - minimum 600 words)
-## 3.2 Review of Previous Studies
-(Cite and discuss at least 10-15 relevant academic studies with findings - minimum 800 words)
-## 3.3 Industry Best Practices
-(Document current industry standards and methodologies - minimum 400 words)
-## 3.4 Technological Advancements
-(Discuss latest technologies and innovations in the field - minimum 400 words)
-## 3.5 Research Gap Analysis
-(Identify gaps in existing knowledge that this internship addresses - minimum 300 words)
+    const partA2Prompt = `${baseContext}
 
-# CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (Minimum 3000 words)
-## 4.1 Department Overview
-(Detailed description of the department where internship was conducted - minimum 300 words)
-## 4.2 Roles and Responsibilities Assigned
-(Comprehensive list of all duties with detailed explanations - minimum 500 words)
-## 4.3 Week-wise Activity Log
-(Detailed week-by-week account of activities for entire ${internshipDuration} - minimum 800 words)
-## 4.4 Projects Undertaken
-(Describe 3-5 major projects with objectives, methodology, and outcomes - minimum 700 words)
-## 4.5 Tools and Technologies Used
-(List and explain all software, tools, and technologies with usage context - minimum 400 words)
-## 4.6 Team Collaboration and Communication
-(Describe teamwork experiences, meetings, and coordination - minimum 300 words)
+Generate CHAPTERS 2 and 3 with FULL DETAIL for an internship report:
 
-# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (Minimum 2000 words)
-## 5.1 Technical Skills Acquired
-(Detailed description of each technical skill with proficiency levels - minimum 500 words)
-## 5.2 Soft Skills Developed
-(Communication, leadership, time management, etc. with examples - minimum 400 words)
-## 5.3 Domain Knowledge Enhancement
-(Specific knowledge gained about ${topicSpecialization} - minimum 400 words)
-## 5.4 Professional Competencies
-(Industry-specific competencies developed - minimum 400 words)
-## 5.5 Certifications and Training
-(Any training programs or certifications completed - minimum 300 words)
+# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (2000+ words)
+## 2.1 Industry Overview (500+ words - detailed analysis of ${topicSpecialization} industry, market size, trends)
+## 2.2 About ${companyName} (400+ words - comprehensive company history, milestones)
+## 2.3 Vision, Mission, and Core Values (200+ words - company philosophy)
+## 2.4 Products and Services Portfolio (400+ words - detailed description of offerings)
+## 2.5 Organizational Structure and Hierarchy (300+ words - departments, team composition)
+## 2.6 SWOT Analysis (300+ words - comprehensive strengths, weaknesses, opportunities, threats)
 
-# CHAPTER 6: DATA ANALYSIS AND FINDINGS (Minimum 2500 words)
-## 6.1 Data Collection Methodology
-(Explain how data was gathered during internship - minimum 400 words)
-## 6.2 Analysis Framework
-(Describe analytical methods and tools used - minimum 300 words)
-## 6.3 Key Findings and Observations
-(Present 8-10 major findings with detailed explanations - minimum 800 words)
-## 6.4 Comparative Analysis
-(Compare findings with industry standards and literature - minimum 500 words)
-## 6.5 Interpretation of Results
-(Discuss implications and significance of findings - minimum 500 words)
+# CHAPTER 3: LITERATURE REVIEW (2500+ words)
+## 3.1 Theoretical Framework (600+ words - relevant theories and models for ${topicSpecialization})
+## 3.2 Review of Previous Studies (800+ words - cite 10-15 academic studies with findings)
+## 3.3 Industry Best Practices (400+ words - current industry standards)
+## 3.4 Technological Advancements (400+ words - latest technologies in the field)
+## 3.5 Research Gap Analysis (300+ words - gaps this internship addresses)
 
-# CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (Minimum 1500 words)
-## 7.1 Technical Challenges Encountered
-(Describe technical difficulties faced with detailed context - minimum 400 words)
-## 7.2 Organizational Challenges
-(Workplace and process-related challenges - minimum 300 words)
-## 7.3 Problem-Solving Approaches
-(Methods used to overcome each challenge - minimum 400 words)
-## 7.4 Lessons Learned
-(Key takeaways from challenges faced - minimum 400 words)
+Write EXTENSIVE, DETAILED content with formal academic English.`;
 
-# CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (Minimum 1500 words)
-## 8.1 Recommendations for ${companyName}
-(5-7 specific, actionable recommendations with justifications - minimum 500 words)
-## 8.2 Process Improvement Suggestions
-(Detailed suggestions for operational improvements - minimum 400 words)
-## 8.3 Technology Adoption Recommendations
-(Suggest new technologies and their benefits - minimum 300 words)
-## 8.4 Future Scope and Opportunities
-(Identify growth areas and opportunities - minimum 300 words)
+    const partB1Prompt = `${baseContext}
 
-# CHAPTER 9: CONCLUSION (Minimum 1000 words)
-## 9.1 Summary of Internship Experience
-(Comprehensive summary of the entire experience - minimum 300 words)
-## 9.2 Achievement of Objectives
-(Map achievements against initial objectives - minimum 300 words)
-## 9.3 Personal and Professional Growth
-(Reflect on development during internship - minimum 200 words)
-## 9.4 Future Career Aspirations
-(Connect internship learning to career goals - minimum 200 words)
+Generate CHAPTERS 4, 5, and 6 with FULL DETAIL for an internship report:
+
+# CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (3000+ words)
+## 4.1 Department Overview (300+ words - detailed department description)
+## 4.2 Roles and Responsibilities Assigned (500+ words - comprehensive list of duties)
+## 4.3 Week-wise Activity Log (800+ words - detailed week-by-week account for ${internshipDuration})
+## 4.4 Projects Undertaken (700+ words - describe 3-5 major projects with objectives and outcomes)
+## 4.5 Tools and Technologies Used (400+ words - software, tools with usage context)
+## 4.6 Team Collaboration and Communication (300+ words - teamwork experiences)
+
+# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words)
+## 5.1 Technical Skills Acquired (500+ words - detailed technical skills with proficiency)
+## 5.2 Soft Skills Developed (400+ words - communication, leadership with examples)
+## 5.3 Domain Knowledge Enhancement (400+ words - specific knowledge about ${topicSpecialization})
+## 5.4 Professional Competencies (400+ words - industry-specific competencies)
+## 5.5 Certifications and Training (300+ words - training programs completed)
+
+# CHAPTER 6: DATA ANALYSIS AND FINDINGS (2500+ words)
+## 6.1 Data Collection Methodology (400+ words - how data was gathered)
+## 6.2 Analysis Framework (300+ words - analytical methods and tools)
+## 6.3 Key Findings and Observations (800+ words - 8-10 major findings detailed)
+## 6.4 Comparative Analysis (500+ words - compare with industry standards)
+## 6.5 Interpretation of Results (500+ words - implications and significance)
+
+Write EXTENSIVE, DETAILED content with formal academic English.`;
+
+    const partB2Prompt = `${baseContext}
+
+Generate CHAPTERS 7, 8, 9, BIBLIOGRAPHY, and ANNEXURES with FULL DETAIL for an internship report:
+
+# CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (1500+ words)
+## 7.1 Technical Challenges Encountered (400+ words - technical difficulties with context)
+## 7.2 Organizational Challenges (300+ words - workplace and process challenges)
+## 7.3 Problem-Solving Approaches (400+ words - methods to overcome challenges)
+## 7.4 Lessons Learned (400+ words - key takeaways from challenges)
+
+# CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (1500+ words)
+## 8.1 Recommendations for ${companyName} (500+ words - 5-7 actionable recommendations)
+## 8.2 Process Improvement Suggestions (400+ words - operational improvements)
+## 8.3 Technology Adoption Recommendations (300+ words - new technologies and benefits)
+## 8.4 Future Scope and Opportunities (300+ words - growth areas)
+
+# CHAPTER 9: CONCLUSION (1000+ words)
+## 9.1 Summary of Internship Experience (300+ words - comprehensive summary)
+## 9.2 Achievement of Objectives (300+ words - map achievements to initial objectives)
+## 9.3 Personal and Professional Growth (200+ words - development during internship)
+## 9.4 Future Career Aspirations (200+ words - connect learning to career goals)
 
 # BIBLIOGRAPHY
-(Include 20-25 properly formatted academic references in APA style including journals, books, websites, and industry reports)
+(Include 20-25 properly formatted academic references in APA style including journals, books, websites, and industry reports relevant to ${topicSpecialization})
 
 # ANNEXURES
 ## Annexure A: Sample Work Documents
@@ -341,76 +289,42 @@ Generate an EXHAUSTIVELY DETAILED internship project report. Each section must b
 ## Annexure D: Weekly Report Samples
 ## Annexure E: Feedback Form
 
-IMPORTANT INSTRUCTIONS:
-1. Write EXTENSIVE, DETAILED content for EVERY section - no brief overviews
-2. Each paragraph should be 100-150 words minimum
-3. Use formal academic English with proper grammar
-4. Include specific examples, statistics, and data points
-5. Make content relevant to ${topicSpecialization} and ${companyName}
-6. Ensure content is unique, plagiarism-free, and human-like
-7. Total word count MUST be at least ${targetWordCount} words
-8. DO NOT skip any section - all must be fully elaborated`;
-
-    console.log("Calling DeepSeek API for report generation...");
-    
-    let fullContent = "";
-    
-    // Define base context first
-    const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
-College: ${collegeName}, University: ${university}, Guide: ${guideName}
-Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
-Duration: ${internshipDuration}, Year: ${academicYear}, Topic: ${topicSpecialization}
-Target: ${pagesCount} pages total`;
-
-    // Define prompts for Part A and Part B
-    const partAPrompt = `${baseContext}
-
-Generate the following sections with FULL DETAIL for an internship report:
-
-# CERTIFICATE (150+ words)
-# DECLARATION (200+ words)  
-# ACKNOWLEDGEMENT (300+ words)
-# ABSTRACT (400+ words)
-# TABLE OF CONTENTS
-# LIST OF FIGURES
-# LIST OF TABLES
-# LIST OF ABBREVIATIONS
-
-# CHAPTER 1: INTRODUCTION (1500+ words with all subsections 1.1-1.5)
-# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (2000+ words with all subsections 2.1-2.6)
-# CHAPTER 3: LITERATURE REVIEW (2500+ words with all subsections 3.1-3.5)
-# CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (3000+ words with subsections 4.1-4.6)
-# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words with subsections 5.1-5.5)`;
-
-    const partBPrompt = `${baseContext}
-
-Complete the internship report with these final sections with FULL DETAIL:
-
-# CHAPTER 6: DATA ANALYSIS AND FINDINGS (2500+ words with subsections 6.1-6.5)
-# CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (1500+ words with subsections 7.1-7.4)
-# CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (1500+ words with subsections 8.1-8.4)
-# CHAPTER 9: CONCLUSION (1000+ words with subsections 9.1-9.4)
-# BIBLIOGRAPHY (20-25 APA references)
-# ANNEXURES (A-E with descriptions)`;
+Write EXTENSIVE, DETAILED content with formal academic English.`;
 
     // Determine which prompt to use based on part parameter
     let chapterPrompt: string;
-    if (part === 'A') {
-      chapterPrompt = partAPrompt;
-      console.log("Generating Part A (Chapters 1-5)...");
-    } else if (part === 'B') {
-      chapterPrompt = partBPrompt;
-      console.log("Generating Part B (Chapters 6-9)...");
-    } else {
-      // Full report (legacy behavior) - use Part A for now
-      chapterPrompt = partAPrompt;
-      console.log("Generating full report (Part A first)...");
-    }
-
+    let partLabel: string;
     
-    // Create an AbortController with 120-second timeout
+    switch (part) {
+      case 'A1':
+        chapterPrompt = partA1Prompt;
+        partLabel = "A1 (Front Matter + Ch1)";
+        break;
+      case 'A2':
+        chapterPrompt = partA2Prompt;
+        partLabel = "A2 (Ch2-3)";
+        break;
+      case 'B1':
+        chapterPrompt = partB1Prompt;
+        partLabel = "B1 (Ch4-6)";
+        break;
+      case 'B2':
+        chapterPrompt = partB2Prompt;
+        partLabel = "B2 (Ch7-9 + Refs)";
+        break;
+      default:
+        // Full report (legacy behavior) - use Part A1 for now
+        chapterPrompt = partA1Prompt;
+        partLabel = "Full (legacy)";
+    }
+    
+    console.log(`Generating ${partLabel}...`);
+    
+    // Create an AbortController with 90-second timeout (shorter for smaller parts)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
+    const timeoutId = setTimeout(() => controller.abort(), 90000);
+    
+    let fullContent = "";
     
     try {
       const response = await fetch("https://api.deepseek.com/chat/completions", {
@@ -431,7 +345,7 @@ Complete the internship report with these final sections with FULL DETAIL:
               content: chapterPrompt
             }
           ],
-          max_tokens: 8000,
+          max_tokens: 6000, // Reduced for smaller parts
           temperature: 0.75,
         }),
         signal: controller.signal,
@@ -452,11 +366,11 @@ Complete the internship report with these final sections with FULL DETAIL:
         fullContent = partContent;
       }
       
-      console.log(`API call completed successfully for Part ${part || 'Full'}`);
+      console.log(`API call completed successfully for ${partLabel}`);
     } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-        console.error(`DeepSeek API call timed out after 120 seconds`);
+        console.error(`DeepSeek API call timed out after 90 seconds`);
         throw new Error('AI generation timed out. Please try again.');
       }
       throw fetchError;
@@ -469,8 +383,7 @@ Complete the internship report with these final sections with FULL DETAIL:
     }
 
     // For part-based generation, don't save to database - just return the content
-    // The full report will be saved when both parts are downloaded together
-    if (part === 'A' || part === 'B') {
+    if (part) {
       console.log(`Part ${part} generated successfully for user:`, userId);
       return new Response(
         JSON.stringify({

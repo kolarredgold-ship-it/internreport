@@ -47,15 +47,28 @@ const initialFormData: FormData = {
   pagesCount: 10,
 };
 
+type PartType = 'A1' | 'A2' | 'B1' | 'B2';
+
+interface PartContent {
+  A1: string | null;
+  A2: string | null;
+  B1: string | null;
+  B2: string | null;
+}
+
 const CreateReport = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [generating, setGenerating] = useState(false);
-  const [generatingPart, setGeneratingPart] = useState<'A' | 'B' | null>(null);
-  const [partAContent, setPartAContent] = useState<string | null>(null);
-  const [partBContent, setPartBContent] = useState<string | null>(null);
+  const [generatingPart, setGeneratingPart] = useState<PartType | null>(null);
+  const [partContent, setPartContent] = useState<PartContent>({
+    A1: null,
+    A2: null,
+    B1: null,
+    B2: null,
+  });
   const [canGenerate, setCanGenerate] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pendingReportId, setPendingReportId] = useState<string | null>(null);
@@ -66,6 +79,9 @@ const CreateReport = () => {
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState('');
+
+  const hasAnyContent = partContent.A1 || partContent.A2 || partContent.B1 || partContent.B2;
+  const hasAllContent = partContent.A1 && partContent.A2 && partContent.B1 && partContent.B2;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -253,7 +269,43 @@ const CreateReport = () => {
     });
   };
 
-  const handleGeneratePart = async (part: 'A' | 'B') => {
+  const getProgressPhases = (part: PartType) => {
+    switch (part) {
+      case 'A1':
+        return [
+          { progress: 15, phase: 'Generating Certificate & Declaration...', delay: 3000 },
+          { progress: 35, phase: 'Writing Acknowledgement & Abstract...', delay: 8000 },
+          { progress: 55, phase: 'Creating Table of Contents...', delay: 15000 },
+          { progress: 75, phase: 'Composing Chapter 1: Introduction...', delay: 25000 },
+          { progress: 90, phase: 'Finalizing Part A1...', delay: 40000 },
+        ];
+      case 'A2':
+        return [
+          { progress: 20, phase: 'Analyzing Industry Overview...', delay: 5000 },
+          { progress: 45, phase: 'Writing Company Profile...', delay: 15000 },
+          { progress: 70, phase: 'Composing Literature Review...', delay: 30000 },
+          { progress: 90, phase: 'Finalizing Part A2...', delay: 45000 },
+        ];
+      case 'B1':
+        return [
+          { progress: 15, phase: 'Documenting Internship Activities...', delay: 5000 },
+          { progress: 35, phase: 'Writing Week-wise Log...', delay: 15000 },
+          { progress: 55, phase: 'Composing Technical Learning...', delay: 25000 },
+          { progress: 75, phase: 'Analyzing Findings...', delay: 40000 },
+          { progress: 90, phase: 'Finalizing Part B1...', delay: 55000 },
+        ];
+      case 'B2':
+        return [
+          { progress: 20, phase: 'Writing Challenges & Solutions...', delay: 5000 },
+          { progress: 40, phase: 'Composing Recommendations...', delay: 15000 },
+          { progress: 60, phase: 'Writing Conclusion...', delay: 25000 },
+          { progress: 80, phase: 'Adding Bibliography...', delay: 35000 },
+          { progress: 95, phase: 'Creating Annexures...', delay: 45000 },
+        ];
+    }
+  };
+
+  const handleGeneratePart = async (part: PartType) => {
     if (!canGenerate) {
       toast({
         title: 'Generation limit reached',
@@ -270,26 +322,7 @@ const CreateReport = () => {
     setGenerationProgress(0);
     setGenerationPhase(`Initializing AI engine for Part ${part}...`);
 
-    // Progress phases based on part
-    const progressPhasesA = [
-      { progress: 10, phase: 'Generating Certificate & Declaration...', delay: 3000 },
-      { progress: 25, phase: 'Writing Acknowledgement & Abstract...', delay: 8000 },
-      { progress: 40, phase: 'Composing Chapter 1: Introduction...', delay: 15000 },
-      { progress: 55, phase: 'Composing Chapter 2: Company Profile...', delay: 25000 },
-      { progress: 70, phase: 'Writing Chapter 3: Literature Review...', delay: 40000 },
-      { progress: 85, phase: 'Detailing Chapter 4: Internship Activities...', delay: 55000 },
-      { progress: 95, phase: 'Writing Chapter 5: Technical Learning...', delay: 70000 },
-    ];
-    
-    const progressPhasesB = [
-      { progress: 15, phase: 'Analyzing Chapter 6: Findings...', delay: 5000 },
-      { progress: 35, phase: 'Composing Chapter 7: Challenges...', delay: 15000 },
-      { progress: 55, phase: 'Writing Chapter 8: Recommendations...', delay: 30000 },
-      { progress: 75, phase: 'Completing Chapter 9: Conclusion...', delay: 45000 },
-      { progress: 90, phase: 'Adding Bibliography & Annexures...', delay: 60000 },
-    ];
-
-    const progressPhases = part === 'A' ? progressPhasesA : progressPhasesB;
+    const progressPhases = getProgressPhases(part);
 
     // Start progress simulation
     const progressIntervals: NodeJS.Timeout[] = [];
@@ -307,7 +340,7 @@ const CreateReport = () => {
         body: {
           ...formData,
           userId: user?.id,
-          part: part, // Pass which part to generate
+          part: part,
         },
       });
 
@@ -320,11 +353,7 @@ const CreateReport = () => {
         setGenerationProgress(100);
         setGenerationPhase(`Part ${part} completed!`);
         
-        if (part === 'A') {
-          setPartAContent(data.content);
-        } else {
-          setPartBContent(data.content);
-        }
+        setPartContent(prev => ({ ...prev, [part]: data.content }));
         
         // Update generations count if provided
         if (data.generationsUsed !== undefined) {
@@ -356,14 +385,14 @@ const CreateReport = () => {
     }
   };
 
-  const downloadAsDocx = async (content: string, partLabel: string) => {
+  const downloadAsDocx = async (content: string, partLabel: string, includeTitle: boolean = false) => {
     if (!content) return;
 
     const sections = content.split('\n\n');
     const children: Paragraph[] = [];
 
-    // Title page (only for Part A or full report)
-    if (partLabel === 'Part A' || partLabel === 'Full') {
+    // Title page (only for Part A1 or full report)
+    if (includeTitle) {
       children.push(
         new Paragraph({
           children: [new TextRun({ text: formData.university.toUpperCase(), bold: true, size: 32 })],
@@ -485,9 +514,78 @@ const CreateReport = () => {
   };
 
   const downloadFullReport = async () => {
-    if (!partAContent || !partBContent) return;
-    const fullContent = partAContent + '\n\n' + partBContent;
-    await downloadAsDocx(fullContent, 'Full');
+    if (!hasAllContent) return;
+    const fullContent = [partContent.A1, partContent.A2, partContent.B1, partContent.B2].join('\n\n');
+    await downloadAsDocx(fullContent, 'Full', true);
+  };
+
+  const getPartLabel = (part: PartType): string => {
+    switch (part) {
+      case 'A1': return 'Front Matter + Ch1';
+      case 'A2': return 'Chapters 2-3';
+      case 'B1': return 'Chapters 4-6';
+      case 'B2': return 'Chapters 7-9 + Refs';
+    }
+  };
+
+  const renderPartSection = (part: PartType) => {
+    const content = partContent[part];
+    const isGenerating = generatingPart === part;
+    
+    return (
+      <div key={part} className="border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold">Part {part} ({getPartLabel(part)})</h3>
+          {content ? (
+            <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">
+              ✓ Generated
+            </span>
+          ) : (
+            <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded">
+              Not generated
+            </span>
+          )}
+        </div>
+        {content && (
+          <div className="bg-muted/50 rounded-lg p-4 max-h-32 overflow-y-auto mb-3">
+            <pre className="whitespace-pre-wrap text-xs font-sans">{content.substring(0, 500)}...</pre>
+          </div>
+        )}
+        <div className="flex gap-2">
+          {content ? (
+            <Button 
+              variant="gradient" 
+              onClick={() => downloadAsDocx(content, `Part_${part}`, part === 'A1')} 
+              className="flex-1"
+              size="sm"
+            >
+              <Download className="w-4 h-4" />
+              Download Part {part}
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              onClick={() => handleGeneratePart(part)} 
+              disabled={generating}
+              className="flex-1"
+              size="sm"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Generate Part {part}
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+    );
   };
 
   if (authLoading) {
@@ -522,120 +620,29 @@ const CreateReport = () => {
           <p className="text-muted-foreground">Fill in your internship details to generate a report</p>
         </div>
 
-        {(partAContent || partBContent) ? (
+        {hasAnyContent ? (
           <Card className="border-0 shadow-xl">
             <CardHeader>
               <CardTitle className="font-display flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
-                Report Parts Generated
+                Report Parts
               </CardTitle>
               <CardDescription>
-                Download each part or generate the remaining part.
+                Generate each part separately to avoid timeouts. Download individually or combine all parts.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Part A Section */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Part A (Chapters 1-5)</h3>
-                  {partAContent ? (
-                    <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">
-                      ✓ Generated
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded">
-                      Not generated
-                    </span>
-                  )}
-                </div>
-                {partAContent && (
-                  <div className="bg-muted/50 rounded-lg p-4 max-h-48 overflow-y-auto mb-3">
-                    <pre className="whitespace-pre-wrap text-xs font-sans">{partAContent.substring(0, 1000)}...</pre>
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  {partAContent ? (
-                    <Button variant="gradient" onClick={() => downloadAsDocx(partAContent, 'Part A')} className="flex-1">
-                      <Download className="w-4 h-4" />
-                      Download Part A
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleGeneratePart('A')} 
-                      disabled={generating}
-                      className="flex-1"
-                    >
-                      {generatingPart === 'A' ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          Generate Part A
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              {/* Part B Section */}
-              <div className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Part B (Chapters 6-9 + Bibliography)</h3>
-                  {partBContent ? (
-                    <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">
-                      ✓ Generated
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded">
-                      Not generated
-                    </span>
-                  )}
-                </div>
-                {partBContent && (
-                  <div className="bg-muted/50 rounded-lg p-4 max-h-48 overflow-y-auto mb-3">
-                    <pre className="whitespace-pre-wrap text-xs font-sans">{partBContent.substring(0, 1000)}...</pre>
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  {partBContent ? (
-                    <Button variant="gradient" onClick={() => downloadAsDocx(partBContent, 'Part B')} className="flex-1">
-                      <Download className="w-4 h-4" />
-                      Download Part B
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleGeneratePart('B')} 
-                      disabled={generating}
-                      className="flex-1"
-                    >
-                      {generatingPart === 'B' ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4" />
-                          Generate Part B
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
+            <CardContent className="space-y-4">
+              {/* Parts Grid */}
+              <div className="grid md:grid-cols-2 gap-4">
+                {(['A1', 'A2', 'B1', 'B2'] as PartType[]).map(renderPartSection)}
               </div>
 
               {/* Full Report Download */}
-              {partAContent && partBContent && (
+              {hasAllContent && (
                 <div className="border-t pt-4">
                   <Button variant="hero" onClick={downloadFullReport} className="w-full" size="lg">
                     <Download className="w-5 h-5" />
-                    Download Full Report (Part A + B Combined)
+                    Download Full Report (All Parts Combined)
                   </Button>
                 </div>
               )}
@@ -661,7 +668,7 @@ const CreateReport = () => {
 
               <Button 
                 variant="outline" 
-                onClick={() => { setPartAContent(null); setPartBContent(null); }} 
+                onClick={() => setPartContent({ A1: null, A2: null, B1: null, B2: null })} 
                 className="w-full"
               >
                 Create Another Report
@@ -876,115 +883,72 @@ const CreateReport = () => {
                   // Payment is pending verification
                   <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-6 text-center">
                     <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <CreditCard className="w-6 h-6 text-amber-600" />
+                      <Clock className="w-6 h-6 text-amber-600" />
                     </div>
                     <h3 className="font-semibold text-lg mb-1">Payment Under Review</h3>
                     <p className="text-muted-foreground text-sm">
-                      Your payment is being verified. Your report will be generated once payment is approved.
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Status: <span className="text-amber-600 font-medium">Inactive (Waiting for payment verification)</span>
+                      Your payment has been submitted and is being verified. Once approved, you can generate reports.
+                      This usually takes less than 24 hours.
                     </p>
                   </div>
                 ) : hasApprovedPayment && canGenerate ? (
-                  // User has approved payment and can generate
+                  // Can generate - show generate buttons
                   <div className="space-y-4">
-                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
-                      <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                        ✓ Payment verified • {3 - (generationsUsed % 3)} generations remaining
-                      </p>
-                    </div>
-                    
-                    {generating && (
-                      <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center animate-pulse">
-                            <Sparkles className="w-5 h-5 text-primary-foreground" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-foreground">Generating Part {generatingPart}</p>
-                            <p className="text-sm text-muted-foreground">{generationPhase}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-display text-xl font-bold text-primary">{generationProgress}%</p>
-                          </div>
-                        </div>
-                        
-                        <Progress value={generationProgress} className="h-2" />
-                        
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          <span>Estimated time: 1-2 minutes per part</span>
-                        </div>
+                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      <div>
+                        <p className="font-semibold text-emerald-700 dark:text-emerald-300">Ready to Generate</p>
+                        <p className="text-xs text-muted-foreground">{generationsUsed}/3 generations used</p>
                       </div>
-                    )}
-
-                    {/* Part A and Part B generation buttons */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button
-                        type="button"
-                        variant="hero"
-                        size="lg"
-                        className="w-full"
-                        onClick={() => handleGeneratePart('A')}
-                        disabled={generating}
-                      >
-                        {generatingPart === 'A' ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4 h-4" />
-                            Generate Part A
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="hero"
-                        size="lg"
-                        className="w-full"
-                        onClick={() => handleGeneratePart('B')}
-                        disabled={generating}
-                      >
-                        {generatingPart === 'B' ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4 h-4" />
-                            Generate Part B
-                          </>
-                        )}
-                      </Button>
                     </div>
-                    
-                    <p className="text-xs text-center text-muted-foreground">
-                      Part A: Chapters 1-5 (Front matter + Core content)<br />
-                      Part B: Chapters 6-9 (Analysis, Conclusion + Bibliography)
-                    </p>
+                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                      <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-2">
+                        📋 Report will be split into 4 parts to avoid timeouts:
+                      </p>
+                      <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                        <li>• <strong>Part A1:</strong> Front Matter + Chapter 1</li>
+                        <li>• <strong>Part A2:</strong> Chapters 2-3 (Company Profile + Literature)</li>
+                        <li>• <strong>Part B1:</strong> Chapters 4-6 (Activities + Skills + Findings)</li>
+                        <li>• <strong>Part B2:</strong> Chapters 7-9 + Bibliography</li>
+                      </ul>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="hero"
+                      size="xl"
+                      className="w-full"
+                      onClick={() => handleGeneratePart('A1')}
+                      disabled={generating}
+                    >
+                      {generating ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-5 h-5" />
+                          Start with Part A1
+                        </>
+                      )}
+                    </Button>
                   </div>
                 ) : (
-                  // User needs to make first payment
+                  // First time user - needs to pay
                   <div className="space-y-4">
-                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-display font-semibold text-lg">Report Price</p>
-                          <p className="text-muted-foreground text-sm">
-                            {formData.pagesCount} pages • AI-generated content
-                          </p>
-                        </div>
+                    <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-muted-foreground">Report Price:</span>
                         <div className="text-right">
-                          <p className="font-display text-3xl font-bold text-primary">₹{calculatePrice()}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formData.pagesCount <= 10 ? '3-10 pages' : formData.pagesCount <= 20 ? '11-20 pages' : 'Above 20 pages'}
-                          </p>
+                          <span className="font-display text-3xl font-bold text-primary">₹{calculatePrice()}</span>
+                          <p className="text-xs text-muted-foreground">One-time payment</p>
                         </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>✓ AI-powered professional report</p>
+                        <p>✓ Customized for your internship</p>
+                        <p>✓ 3 report generations included</p>
+                        <p>✓ Instant download as DOCX</p>
                       </div>
                     </div>
                     <Button
@@ -993,10 +957,9 @@ const CreateReport = () => {
                       size="xl"
                       className="w-full"
                       onClick={handleProceedToPayment}
-                      disabled={generating}
                     >
                       <CreditCard className="w-5 h-5" />
-                      Proceed to Payment - ₹{calculatePrice()}
+                      Proceed to Payment
                     </Button>
                   </div>
                 )}
@@ -1013,8 +976,8 @@ const CreateReport = () => {
         amount={needsTopup ? 499 : calculatePrice()}
         reportId={pendingReportId}
         userId={user?.id || ''}
-        onSuccess={handlePaymentSuccess}
         paymentType={needsTopup ? 'topup' : 'report'}
+        onSuccess={handlePaymentSuccess}
       />
     </div>
   );
