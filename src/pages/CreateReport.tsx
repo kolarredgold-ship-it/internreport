@@ -87,6 +87,7 @@ const CreateReport = () => {
   const [failedChapters, setFailedChapters] = useState<string[]>([]);
   const [showLivePreview, setShowLivePreview] = useState(true);
   const [currentGeneratingText, setCurrentGeneratingText] = useState('');
+  const [displayedLines, setDisplayedLines] = useState<string[]>([]);
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
@@ -311,13 +312,20 @@ const CreateReport = () => {
       setGenerationPhase(`Generating ${chapter.label}: ${chapter.description}...`);
 
       setCurrentGeneratingText('');
+      setDisplayedLines([]);
       const content = await generateChapter(chapter.key);
       
       if (content) {
         newContent[chapter.key] = content;
         setChapterContent(prev => ({ ...prev, [chapter.key]: content }));
+        
         // Simulate line-by-line display of generated content
-        setCurrentGeneratingText(content);
+        const lines = content.split('\n');
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+          setDisplayedLines(prev => [...prev, lines[lineIndex]]);
+          // Small delay between lines for visual effect
+          await new Promise(resolve => setTimeout(resolve, 15));
+        }
       } else {
         failed.push(chapter.key);
       }
@@ -334,6 +342,7 @@ const CreateReport = () => {
     setGenerationProgress(100);
     setGenerationPhase('');
     setCurrentGeneratingText('');
+    setDisplayedLines([]);
 
     // Update generations count
     if (Object.keys(newContent).length > 0) {
@@ -669,21 +678,23 @@ const CreateReport = () => {
                   </div>
 
                   {/* Live Generated Content Display */}
-                  {showLivePreview && currentGeneratingText && (
+                  {showLivePreview && displayedLines.length > 0 && (
                     <div className="mt-3 bg-background/50 rounded-lg border border-border/50 overflow-hidden">
                       <div className="bg-muted/50 px-3 py-1.5 border-b border-border/50 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-xs font-medium text-muted-foreground">
                           Generating: {CHAPTERS.find(c => c.key === currentChapter)?.label}
                         </span>
+                        <span className="ml-auto text-xs text-muted-foreground/60">
+                          {displayedLines.length} lines
+                        </span>
                       </div>
                       <ScrollArea className="h-64">
                         <div className="p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground/80">
-                          {currentGeneratingText.split('\n').map((line, index) => (
+                          {displayedLines.map((line, index) => (
                             <div 
                               key={index} 
-                              className="animate-in fade-in slide-in-from-left-1 duration-300"
-                              style={{ animationDelay: `${index * 10}ms` }}
+                              className="animate-in fade-in slide-in-from-left-2 duration-200"
                             >
                               {line || '\u00A0'}
                             </div>
