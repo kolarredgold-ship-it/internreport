@@ -53,7 +53,9 @@ const CreateReport = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [generating, setGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState<string | null>(null);
+  const [generatingPart, setGeneratingPart] = useState<'A' | 'B' | null>(null);
+  const [partAContent, setPartAContent] = useState<string | null>(null);
+  const [partBContent, setPartBContent] = useState<string | null>(null);
   const [canGenerate, setCanGenerate] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pendingReportId, setPendingReportId] = useState<string | null>(null);
@@ -251,7 +253,7 @@ const CreateReport = () => {
     });
   };
 
-  const handleGenerate = async () => {
+  const handleGeneratePart = async (part: 'A' | 'B') => {
     if (!canGenerate) {
       toast({
         title: 'Generation limit reached',
@@ -264,25 +266,30 @@ const CreateReport = () => {
     if (!validateForm()) return;
 
     setGenerating(true);
+    setGeneratingPart(part);
     setGenerationProgress(0);
-    setGenerationPhase('Initializing AI engine...');
+    setGenerationPhase(`Initializing AI engine for Part ${part}...`);
 
-    // Simulate progress for better UX (actual generation takes 2-5 minutes for 30-40 pages)
-    const progressPhases = [
-      { progress: 5, phase: 'Preparing report structure...', delay: 2000 },
-      { progress: 10, phase: 'Generating Certificate & Declaration...', delay: 4000 },
-      { progress: 15, phase: 'Writing Acknowledgement & Abstract...', delay: 6000 },
-      { progress: 20, phase: 'Composing Chapter 1: Introduction...', delay: 10000 },
-      { progress: 30, phase: 'Composing Chapter 2: Company Profile...', delay: 20000 },
-      { progress: 40, phase: 'Writing Chapter 3: Literature Review...', delay: 35000 },
-      { progress: 50, phase: 'Detailing Chapter 4: Internship Activities...', delay: 50000 },
-      { progress: 60, phase: 'Writing Chapter 5: Technical Learning...', delay: 65000 },
-      { progress: 70, phase: 'Analyzing Chapter 6: Findings...', delay: 80000 },
-      { progress: 80, phase: 'Composing Chapter 7: Challenges...', delay: 95000 },
-      { progress: 85, phase: 'Writing Chapter 8: Recommendations...', delay: 110000 },
-      { progress: 90, phase: 'Completing Chapter 9: Conclusion...', delay: 125000 },
-      { progress: 95, phase: 'Adding Bibliography & Annexures...', delay: 140000 },
+    // Progress phases based on part
+    const progressPhasesA = [
+      { progress: 10, phase: 'Generating Certificate & Declaration...', delay: 3000 },
+      { progress: 25, phase: 'Writing Acknowledgement & Abstract...', delay: 8000 },
+      { progress: 40, phase: 'Composing Chapter 1: Introduction...', delay: 15000 },
+      { progress: 55, phase: 'Composing Chapter 2: Company Profile...', delay: 25000 },
+      { progress: 70, phase: 'Writing Chapter 3: Literature Review...', delay: 40000 },
+      { progress: 85, phase: 'Detailing Chapter 4: Internship Activities...', delay: 55000 },
+      { progress: 95, phase: 'Writing Chapter 5: Technical Learning...', delay: 70000 },
     ];
+    
+    const progressPhasesB = [
+      { progress: 15, phase: 'Analyzing Chapter 6: Findings...', delay: 5000 },
+      { progress: 35, phase: 'Composing Chapter 7: Challenges...', delay: 15000 },
+      { progress: 55, phase: 'Writing Chapter 8: Recommendations...', delay: 30000 },
+      { progress: 75, phase: 'Completing Chapter 9: Conclusion...', delay: 45000 },
+      { progress: 90, phase: 'Adding Bibliography & Annexures...', delay: 60000 },
+    ];
+
+    const progressPhases = part === 'A' ? progressPhasesA : progressPhasesB;
 
     // Start progress simulation
     const progressIntervals: NodeJS.Timeout[] = [];
@@ -295,11 +302,12 @@ const CreateReport = () => {
     });
 
     try {
-      // Call edge function to generate report
+      // Call edge function to generate report part
       const { data, error } = await supabase.functions.invoke('generate-report', {
         body: {
           ...formData,
           userId: user?.id,
+          part: part, // Pass which part to generate
         },
       });
 
@@ -310,18 +318,25 @@ const CreateReport = () => {
 
       if (data.content) {
         setGenerationProgress(100);
-        setGenerationPhase('Report completed!');
-        setGeneratedContent(data.content);
+        setGenerationPhase(`Part ${part} completed!`);
         
-        // Update generations count
-        await supabase
-          .from('profiles')
-          .update({ generations_used: data.generationsUsed })
-          .eq('user_id', user?.id);
+        if (part === 'A') {
+          setPartAContent(data.content);
+        } else {
+          setPartBContent(data.content);
+        }
+        
+        // Update generations count if provided
+        if (data.generationsUsed !== undefined) {
+          await supabase
+            .from('profiles')
+            .update({ generations_used: data.generationsUsed })
+            .eq('user_id', user?.id);
+        }
 
         toast({
-          title: 'Report generated!',
-          description: 'Your report is ready for download.',
+          title: `Part ${part} generated!`,
+          description: `Part ${part} of your report is ready for download.`,
         });
       }
     } catch (error: any) {
@@ -335,83 +350,86 @@ const CreateReport = () => {
       });
     } finally {
       setGenerating(false);
+      setGeneratingPart(null);
       setGenerationProgress(0);
       setGenerationPhase('');
     }
   };
 
-  const downloadAsDocx = async () => {
-    if (!generatedContent) return;
+  const downloadAsDocx = async (content: string, partLabel: string) => {
+    if (!content) return;
 
-    const sections = generatedContent.split('\n\n');
+    const sections = content.split('\n\n');
     const children: Paragraph[] = [];
 
-    // Title page
-    children.push(
-      new Paragraph({
-        children: [new TextRun({ text: formData.university.toUpperCase(), bold: true, size: 32 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: formData.collegeName, bold: true, size: 28 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 600 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: `On`, size: 24 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: `"${formData.internshipTitle}"`, bold: true, size: 28, italics: true })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 600 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: `Submitted by`, size: 24 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: formData.studentName, bold: true, size: 28 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 100 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: `Register No: ${formData.registerNumber}`, size: 24 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: `Under the guidance of`, size: 24 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: formData.guideName, bold: true, size: 28 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 600 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: `${formData.course}`, size: 24 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 100 },
-      }),
-      new Paragraph({
-        children: [new TextRun({ text: `Academic Year: ${formData.academicYear}`, size: 24 })],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
-      }),
-      new Paragraph({
-        children: [new PageBreak()],
-      })
-    );
+    // Title page (only for Part A or full report)
+    if (partLabel === 'Part A' || partLabel === 'Full') {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: formData.university.toUpperCase(), bold: true, size: 32 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: formData.collegeName, bold: true, size: 28 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 600 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `On`, size: 24 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `"${formData.internshipTitle}"`, bold: true, size: 28, italics: true })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 600 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `Submitted by`, size: 24 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: formData.studentName, bold: true, size: 28 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 100 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `Register No: ${formData.registerNumber}`, size: 24 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `Under the guidance of`, size: 24 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: formData.guideName, bold: true, size: 28 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 600 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `${formData.course}`, size: 24 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 100 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `Academic Year: ${formData.academicYear}`, size: 24 })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+        new Paragraph({
+          children: [new PageBreak()],
+        })
+      );
+    }
 
     // Parse and add content
     sections.forEach(section => {
@@ -457,13 +475,19 @@ const CreateReport = () => {
     });
 
     const blob = await Packer.toBlob(doc);
-    const filename = `${formData.studentName.replace(/\s+/g, '_')}_Internship_Report.docx`;
+    const filename = `${formData.studentName.replace(/\s+/g, '_')}_Internship_Report_${partLabel}.docx`;
     saveAs(blob, filename);
 
     toast({
       title: 'Downloaded!',
-      description: 'Your report has been downloaded as DOCX.',
+      description: `${partLabel} of your report has been downloaded as DOCX.`,
     });
+  };
+
+  const downloadFullReport = async () => {
+    if (!partAContent || !partBContent) return;
+    const fullContent = partAContent + '\n\n' + partBContent;
+    await downloadAsDocx(fullContent, 'Full');
   };
 
   if (authLoading) {
@@ -498,30 +522,150 @@ const CreateReport = () => {
           <p className="text-muted-foreground">Fill in your internship details to generate a report</p>
         </div>
 
-        {generatedContent ? (
+        {(partAContent || partBContent) ? (
           <Card className="border-0 shadow-xl">
             <CardHeader>
               <CardTitle className="font-display flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
-                Report Generated Successfully!
+                Report Parts Generated
               </CardTitle>
               <CardDescription>
-                Your internship report is ready. Download it as a Word document.
+                Download each part or generate the remaining part.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-muted/50 rounded-lg p-6 max-h-96 overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-sm font-sans">{generatedContent}</pre>
+              {/* Part A Section */}
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Part A (Chapters 1-5)</h3>
+                  {partAContent ? (
+                    <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">
+                      ✓ Generated
+                    </span>
+                  ) : (
+                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded">
+                      Not generated
+                    </span>
+                  )}
+                </div>
+                {partAContent && (
+                  <div className="bg-muted/50 rounded-lg p-4 max-h-48 overflow-y-auto mb-3">
+                    <pre className="whitespace-pre-wrap text-xs font-sans">{partAContent.substring(0, 1000)}...</pre>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  {partAContent ? (
+                    <Button variant="gradient" onClick={() => downloadAsDocx(partAContent, 'Part A')} className="flex-1">
+                      <Download className="w-4 h-4" />
+                      Download Part A
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleGeneratePart('A')} 
+                      disabled={generating}
+                      className="flex-1"
+                    >
+                      {generatingPart === 'A' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          Generate Part A
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
               </div>
-              <div className="flex gap-4">
-                <Button variant="gradient" onClick={downloadAsDocx} className="flex-1">
-                  <Download className="w-4 h-4" />
-                  Download DOCX
-                </Button>
-                <Button variant="outline" onClick={() => setGeneratedContent(null)} className="flex-1">
-                  Create Another Report
-                </Button>
+
+              {/* Part B Section */}
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Part B (Chapters 6-9 + Bibliography)</h3>
+                  {partBContent ? (
+                    <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded">
+                      ✓ Generated
+                    </span>
+                  ) : (
+                    <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-1 rounded">
+                      Not generated
+                    </span>
+                  )}
+                </div>
+                {partBContent && (
+                  <div className="bg-muted/50 rounded-lg p-4 max-h-48 overflow-y-auto mb-3">
+                    <pre className="whitespace-pre-wrap text-xs font-sans">{partBContent.substring(0, 1000)}...</pre>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  {partBContent ? (
+                    <Button variant="gradient" onClick={() => downloadAsDocx(partBContent, 'Part B')} className="flex-1">
+                      <Download className="w-4 h-4" />
+                      Download Part B
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleGeneratePart('B')} 
+                      disabled={generating}
+                      className="flex-1"
+                    >
+                      {generatingPart === 'B' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          Generate Part B
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
               </div>
+
+              {/* Full Report Download */}
+              {partAContent && partBContent && (
+                <div className="border-t pt-4">
+                  <Button variant="hero" onClick={downloadFullReport} className="w-full" size="lg">
+                    <Download className="w-5 h-5" />
+                    Download Full Report (Part A + B Combined)
+                  </Button>
+                </div>
+              )}
+
+              {/* Progress indicator */}
+              {generating && (
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full gradient-bg flex items-center justify-center animate-pulse">
+                      <Sparkles className="w-4 h-4 text-primary-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground text-sm">Generating Part {generatingPart}</p>
+                      <p className="text-xs text-muted-foreground">{generationPhase}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-display text-lg font-bold text-primary">{generationProgress}%</p>
+                    </div>
+                  </div>
+                  <Progress value={generationProgress} className="h-2" />
+                </div>
+              )}
+
+              <Button 
+                variant="outline" 
+                onClick={() => { setPartAContent(null); setPartBContent(null); }} 
+                className="w-full"
+              >
+                Create Another Report
+              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -758,7 +902,7 @@ const CreateReport = () => {
                             <Sparkles className="w-5 h-5 text-primary-foreground" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-semibold text-foreground">Generating Your Report</p>
+                            <p className="font-semibold text-foreground">Generating Part {generatingPart}</p>
                             <p className="text-sm text-muted-foreground">{generationPhase}</p>
                           </div>
                           <div className="text-right">
@@ -770,50 +914,59 @@ const CreateReport = () => {
                         
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="w-3 h-3" />
-                          <span>
-                            {formData.pagesCount >= 30 
-                              ? 'Estimated time: 2-4 minutes for detailed 30-40 page report'
-                              : formData.pagesCount >= 20
-                              ? 'Estimated time: 1-2 minutes'
-                              : 'Estimated time: 30-60 seconds'}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-2 pt-2">
-                          {[
-                            { label: 'Structure', done: generationProgress >= 15 },
-                            { label: 'Content', done: generationProgress >= 70 },
-                            { label: 'Finalize', done: generationProgress >= 95 },
-                          ].map((step, i) => (
-                            <div key={i} className={`flex items-center gap-1 text-xs ${step.done ? 'text-primary' : 'text-muted-foreground'}`}>
-                              {step.done ? <CheckCircle2 className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full border border-current" />}
-                              <span>{step.label}</span>
-                            </div>
-                          ))}
+                          <span>Estimated time: 1-2 minutes per part</span>
                         </div>
                       </div>
                     )}
+
+                    {/* Part A and Part B generation buttons */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button
+                        type="button"
+                        variant="hero"
+                        size="lg"
+                        className="w-full"
+                        onClick={() => handleGeneratePart('A')}
+                        disabled={generating}
+                      >
+                        {generatingPart === 'A' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Generate Part A
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="hero"
+                        size="lg"
+                        className="w-full"
+                        onClick={() => handleGeneratePart('B')}
+                        disabled={generating}
+                      >
+                        {generatingPart === 'B' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Generate Part B
+                          </>
+                        )}
+                      </Button>
+                    </div>
                     
-                    <Button
-                      type="button"
-                      variant="hero"
-                      size="xl"
-                      className="w-full"
-                      onClick={handleGenerate}
-                      disabled={generating}
-                    >
-                      {generating ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Generating {formData.pagesCount}-Page Report...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-5 h-5" />
-                          Generate {formData.pagesCount}-Page Report
-                        </>
-                      )}
-                    </Button>
+                    <p className="text-xs text-center text-muted-foreground">
+                      Part A: Chapters 1-5 (Front matter + Core content)<br />
+                      Part B: Chapters 6-9 (Analysis, Conclusion + Bibliography)
+                    </p>
                   </div>
                 ) : (
                   // User needs to make first payment
