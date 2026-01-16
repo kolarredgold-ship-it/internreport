@@ -1,12 +1,23 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 const Index = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const [showServerBusyDialog, setShowServerBusyDialog] = useState(false);
+
   const features = [{
     icon: Zap,
     title: 'AI-Powered Generation',
@@ -24,19 +35,24 @@ const Index = () => {
     title: 'Plagiarism Free',
     description: 'Each report is uniquely generated for your specific internship'
   }];
+
   const pricing = [{
     pages: '3-10',
     price: 99,
-    popular: false
+    popular: false,
+    disabled: true
   }, {
     pages: '11-20',
     price: 299,
-    popular: true
+    popular: false,
+    disabled: true
   }, {
     pages: '21-40',
     price: 499,
-    popular: false
+    popular: true,
+    disabled: false
   }];
+
   const steps = [{
     step: 1,
     title: 'Create Account',
@@ -54,7 +70,39 @@ const Index = () => {
     title: 'Download Report',
     description: 'Get DOCX file instantly'
   }];
-  return <div className="min-h-screen hero-gradient">
+
+  const handlePlanClick = (plan: typeof pricing[0]) => {
+    if (plan.disabled) {
+      setShowServerBusyDialog(true);
+    }
+  };
+
+  return (
+    <div className="min-h-screen hero-gradient">
+      {/* Server Busy Dialog */}
+      <AlertDialog open={showServerBusyDialog} onOpenChange={setShowServerBusyDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8 text-amber-600" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-center">Server Busy</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Due to high demand, many users are currently generating reports. This plan is temporarily unavailable.
+              <br /><br />
+              Please choose the <strong>₹499 Premium Plan</strong> for instant access to report generation.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="sm:justify-center">
+            <AlertDialogAction onClick={() => setShowServerBusyDialog(false)}>
+              Got it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Navigation */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -62,19 +110,23 @@ const Index = () => {
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">IPRG  - Internship Project Report Generator</span>
+            <span className="font-display font-bold text-xl">IPRG - Internship Project Report Generator</span>
           </div>
           <div className="flex items-center gap-4">
-            {user ? <Link to="/dashboard">
+            {user ? (
+              <Link to="/dashboard">
                 <Button variant="gradient">Dashboard</Button>
-              </Link> : <>
+              </Link>
+            ) : (
+              <>
                 <Link to="/auth">
                   <Button variant="ghost">Login</Button>
                 </Link>
                 <Link to="/auth?signup=true">
                   <Button variant="gradient">Get Started</Button>
                 </Link>
-              </>}
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -108,7 +160,7 @@ const Index = () => {
             </a>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            ₹99 onwards • 3 Free Generations • Instant Download
+            ₹499 • 3 Free Generations • Instant Download
           </p>
         </div>
       </section>
@@ -124,9 +176,8 @@ const Index = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-soft animate-scale-in" style={{
-          animationDelay: `${index * 100}ms`
-        }}>
+          {features.map((feature, index) => (
+            <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-soft animate-scale-in" style={{ animationDelay: `${index * 100}ms` }}>
               <CardContent className="p-6">
                 <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <feature.icon className="w-6 h-6 text-primary-foreground" />
@@ -134,7 +185,8 @@ const Index = () => {
                 <h3 className="font-display font-semibold text-lg mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground text-sm">{feature.description}</p>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -147,16 +199,16 @@ const Index = () => {
           <p className="text-muted-foreground">Simple 4-step process to get your report</p>
         </div>
         <div className="grid md:grid-cols-4 gap-8">
-          {steps.map((step, index) => <div key={index} className="text-center relative animate-fade-in" style={{
-          animationDelay: `${index * 150}ms`
-        }}>
+          {steps.map((step, index) => (
+            <div key={index} className="text-center relative animate-fade-in" style={{ animationDelay: `${index * 150}ms` }}>
               <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 shadow-glow">
                 <span className="font-display font-bold text-2xl text-primary-foreground">{step.step}</span>
               </div>
               {index < steps.length - 1 && <div className="hidden md:block absolute top-8 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />}
               <h3 className="font-display font-semibold mb-2">{step.title}</h3>
               <p className="text-muted-foreground text-sm">{step.description}</p>
-            </div>)}
+            </div>
+          ))}
         </div>
       </section>
 
@@ -169,28 +221,56 @@ const Index = () => {
           <p className="text-muted-foreground">Pay only for what you need. No hidden charges.</p>
         </div>
         <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {pricing.map((plan, index) => <Card key={index} className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl ${plan.popular ? 'border-primary shadow-glow scale-105' : 'border-0 shadow-soft'}`}>
-              {plan.popular && <div className="absolute top-0 left-0 right-0 gradient-bg text-center py-1 text-xs font-semibold text-primary-foreground">
-                  MOST POPULAR
-                </div>}
-              <CardContent className={`p-6 ${plan.popular ? 'pt-10' : ''}`}>
+          {pricing.map((plan, index) => (
+            <Card 
+              key={index} 
+              className={`relative overflow-hidden transition-all duration-300 hover:shadow-xl ${
+                plan.popular 
+                  ? 'border-primary shadow-glow scale-105' 
+                  : plan.disabled 
+                    ? 'border-0 shadow-soft opacity-75' 
+                    : 'border-0 shadow-soft'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute top-0 left-0 right-0 gradient-bg text-center py-1 text-xs font-semibold text-primary-foreground">
+                  RECOMMENDED
+                </div>
+              )}
+              {plan.disabled && (
+                <div className="absolute top-0 left-0 right-0 bg-amber-500 text-center py-1 text-xs font-semibold text-white">
+                  SERVER BUSY
+                </div>
+              )}
+              <CardContent className={`p-6 ${plan.popular || plan.disabled ? 'pt-10' : ''}`}>
                 <div className="text-center">
                   <p className="text-muted-foreground text-sm mb-2">{plan.pages} Pages</p>
                   <div className="flex items-baseline justify-center gap-1 mb-4">
-                    <span className="text-4xl font-display font-bold">₹{plan.price}</span>
+                    <span className={`text-4xl font-display font-bold ${plan.disabled ? 'line-through text-muted-foreground' : ''}`}>₹{plan.price}</span>
                   </div>
-                  <Link to={user ? "/dashboard" : "/auth?signup=true"}>
-                    <Button variant={plan.popular ? "gradient" : "outline"} className="w-full">
+                  {plan.disabled ? (
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handlePlanClick(plan)}
+                    >
                       Get Started
                     </Button>
-                  </Link>
+                  ) : (
+                    <Link to={user ? "/dashboard" : "/auth?signup=true"}>
+                      <Button variant="gradient" className="w-full">
+                        Get Started
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
         <div className="text-center mt-8">
           <p className="text-muted-foreground text-sm">
-            Need more than 3 generations? Top up for ₹499 for 5 additional reports.
+            Need more than 3 generations? Top up for ₹499 for 3 additional reports.
           </p>
         </div>
       </section>
@@ -249,9 +329,11 @@ const Index = () => {
             </div>
             <div>
               <h4 className="font-display font-semibold mb-4">Contact</h4>
-              <p className="text-sm text-muted-foreground">support@iprg.in
-+91 9738959525
-Omlaytechnologies@gmail.com</p>
+              <p className="text-sm text-muted-foreground">
+                support@iprg.in<br />
+                +91 9738959525<br />
+                Omlaytechnologies@gmail.com
+              </p>
             </div>
           </div>
           <div className="border-t border-border/50 mt-8 pt-8 text-center text-sm text-muted-foreground">
@@ -259,6 +341,8 @@ Omlaytechnologies@gmail.com</p>
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
