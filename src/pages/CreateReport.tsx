@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { useToast } from '@/hooks/use-toast';
 import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -44,7 +44,7 @@ const initialFormData: FormData = {
   internshipDuration: '',
   academicYear: '',
   topicSpecialization: '',
-  pagesCount: 10,
+  pagesCount: 25,
 };
 
 // Chapters to generate (in order)
@@ -186,9 +186,7 @@ const CreateReport = () => {
   };
 
   const calculatePrice = () => {
-    const pages = formData.pagesCount;
-    if (pages <= 10) return 99;
-    if (pages <= 20) return 299;
+    // Fixed price - ₹499 only
     return 499;
   };
 
@@ -835,22 +833,6 @@ const CreateReport = () => {
                         onChange={handleInputChange}
                         placeholder="Enter internship duration"
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="pagesCount">Number of Pages *</Label>
-                      <Select
-                        value={String(formData.pagesCount)}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, pagesCount: parseInt(value) }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select pages" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[3, 5, 10, 15, 20, 25, 30, 35, 40].map(num => (
-                            <SelectItem key={num} value={String(num)}>{num} pages</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
                   </div>
                   <div className="space-y-2">
