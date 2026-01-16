@@ -133,32 +133,40 @@ serve(async (req) => {
     const academicYear = sanitize(body.academicYear);
     const topicSpecialization = sanitize(body.topicSpecialization);
     const pagesCount = body.pagesCount;
+    const part = body.part || null; // 'A', 'B', or null for full report
 
-    console.log("Input validation passed for user:", userId);
+    console.log("Input validation passed for user:", userId, "Part:", part || "Full");
 
     // ========== BUSINESS LOGIC ==========
     // Initialize Supabase admin client for database operations
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Atomically claim a generation slot before processing (prevents race condition)
-    const { data: claimResult, error: claimError } = await supabase
-      .rpc('claim_generation_slot', { p_user_id: userId });
+    // For part-based generation, skip generation slot claiming
+    // The slot is only claimed when user generates a full report or both parts
+    let newCount = 0;
+    if (!part) {
+      // Atomically claim a generation slot before processing (prevents race condition)
+      const { data: claimResult, error: claimError } = await supabase
+        .rpc('claim_generation_slot', { p_user_id: userId });
 
-    if (claimError) {
-      console.error('Failed to claim generation slot:', claimError);
-      throw new Error('Failed to verify generation limit');
+      if (claimError) {
+        console.error('Failed to claim generation slot:', claimError);
+        throw new Error('Failed to verify generation limit');
+      }
+
+      if (!claimResult.success) {
+        return new Response(
+          JSON.stringify({ error: claimResult.error }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      newCount = claimResult.generations_used;
+      console.log(`Generation slot claimed. User now has ${newCount} generations used.`);
+    } else {
+      console.log(`Generating Part ${part} - no generation slot claimed`);
     }
-
-    if (!claimResult.success) {
-      return new Response(
-        JSON.stringify({ error: claimResult.error }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const newCount = claimResult.generations_used;
-    console.log(`Generation slot claimed. User now has ${newCount} generations used.`);
 
     // Generate report using DeepSeek AI
     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
@@ -343,18 +351,21 @@ IMPORTANT INSTRUCTIONS:
 7. Total word count MUST be at least ${targetWordCount} words
 8. DO NOT skip any section - all must be fully elaborated`;
 
-    console.log("Calling DeepSeek API for detailed report generation...");
-    
-    // Use maximum 2 API calls to stay within edge function timeout limits
-    // 1 call for reports up to 15 pages, 2 calls for longer reports
-    const numCalls = pagesCount <= 15 ? 1 : 2;
+    console.log("Calling DeepSeek API for report generation...");
     
     let fullContent = "";
     
-    // Define chapter groups for 2 calls (optimized for timeout limits)
-    const chapterGroups = [
-      // Group 1: Front matter + Chapters 1-5
-      `Generate the following sections with FULL DETAIL for an internship report:
+    // Define base context first
+    const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
+College: ${collegeName}, University: ${university}, Guide: ${guideName}
+Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
+Duration: ${internshipDuration}, Year: ${academicYear}, Topic: ${topicSpecialization}
+Target: ${pagesCount} pages total`;
+
+    // Define prompts for Part A and Part B
+    const partAPrompt = `${baseContext}
+
+Generate the following sections with FULL DETAIL for an internship report:
 
 # CERTIFICATE (150+ words)
 # DECLARATION (200+ words)  
@@ -369,83 +380,86 @@ IMPORTANT INSTRUCTIONS:
 # CHAPTER 2: INDUSTRY AND COMPANY PROFILE (2000+ words with all subsections 2.1-2.6)
 # CHAPTER 3: LITERATURE REVIEW (2500+ words with all subsections 3.1-3.5)
 # CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (3000+ words with subsections 4.1-4.6)
-# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words with subsections 5.1-5.5)`,
+# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words with subsections 5.1-5.5)`;
 
-      // Group 2: Chapters 6-9 + Back matter
-      `Complete the internship report with these final sections with FULL DETAIL:
+    const partBPrompt = `${baseContext}
+
+Complete the internship report with these final sections with FULL DETAIL:
 
 # CHAPTER 6: DATA ANALYSIS AND FINDINGS (2500+ words with subsections 6.1-6.5)
 # CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (1500+ words with subsections 7.1-7.4)
 # CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (1500+ words with subsections 8.1-8.4)
 # CHAPTER 9: CONCLUSION (1000+ words with subsections 9.1-9.4)
 # BIBLIOGRAPHY (20-25 APA references)
-# ANNEXURES (A-E with descriptions)`
-    ];
+# ANNEXURES (A-E with descriptions)`;
 
-    const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
-College: ${collegeName}, University: ${university}, Guide: ${guideName}
-Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
-Duration: ${internshipDuration}, Year: ${academicYear}, Topic: ${topicSpecialization}
-Target: ${pagesCount} pages total`;
+    // Determine which prompt to use based on part parameter
+    let chapterPrompt: string;
+    if (part === 'A') {
+      chapterPrompt = partAPrompt;
+      console.log("Generating Part A (Chapters 1-5)...");
+    } else if (part === 'B') {
+      chapterPrompt = partBPrompt;
+      console.log("Generating Part B (Chapters 6-9)...");
+    } else {
+      // Full report (legacy behavior) - use Part A for now
+      chapterPrompt = partAPrompt;
+      console.log("Generating full report (Part A first)...");
+    }
 
-    for (let i = 0; i < numCalls; i++) {
-      const chapterPrompt = numCalls === 1 ? prompt : `${baseContext}\n\n${chapterGroups[i]}`;
-      
-      console.log(`Making DeepSeek API call ${i + 1} of ${numCalls}...`);
-      
-      // Create an AbortController with 90-second timeout per API call
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 90000);
-      
-      try {
-        const response = await fetch("https://api.deepseek.com/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "deepseek-chat",
-            messages: [
-              {
-                role: "system",
-                content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries.`
-              },
-              {
-                role: "user",
-                content: chapterPrompt
-              }
-            ],
-            max_tokens: 8000,
-            temperature: 0.75,
-          }),
-          signal: controller.signal,
-        });
+    
+    // Create an AbortController with 120-second timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+    
+    try {
+      const response = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            {
+              role: "system",
+              content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries.`
+            },
+            {
+              role: "user",
+              content: chapterPrompt
+            }
+          ],
+          max_tokens: 8000,
+          temperature: 0.75,
+        }),
+        signal: controller.signal,
+      });
 
-        clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("DeepSeek API error:", response.status, errorText);
-          throw new Error(`DeepSeek API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const partContent = data.choices[0]?.message?.content;
-        
-        if (partContent) {
-          fullContent += (fullContent ? "\n\n" : "") + partContent;
-        }
-        
-        console.log(`Call ${i + 1} completed successfully`);
-      } catch (fetchError: unknown) {
-        clearTimeout(timeoutId);
-        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-          console.error(`DeepSeek API call ${i + 1} timed out after 90 seconds`);
-          throw new Error('AI generation timed out. Please try again with fewer pages.');
-        }
-        throw fetchError;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("DeepSeek API error:", response.status, errorText);
+        throw new Error(`DeepSeek API error: ${response.status}`);
       }
+
+      const data = await response.json();
+      const partContent = data.choices[0]?.message?.content;
+      
+      if (partContent) {
+        fullContent = partContent;
+      }
+      
+      console.log(`API call completed successfully for Part ${part || 'Full'}`);
+    } catch (fetchError: unknown) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        console.error(`DeepSeek API call timed out after 120 seconds`);
+        throw new Error('AI generation timed out. Please try again.');
+      }
+      throw fetchError;
     }
 
     const generatedContent = fullContent;
@@ -454,7 +468,20 @@ Target: ${pagesCount} pages total`;
       throw new Error("No content generated");
     }
 
-    // Save report to database
+    // For part-based generation, don't save to database - just return the content
+    // The full report will be saved when both parts are downloaded together
+    if (part === 'A' || part === 'B') {
+      console.log(`Part ${part} generated successfully for user:`, userId);
+      return new Response(
+        JSON.stringify({
+          content: generatedContent,
+          part: part,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Save full report to database (legacy behavior)
     const { data: report, error: reportError } = await supabase
       .from("reports")
       .insert({
