@@ -86,17 +86,17 @@ const CreateReport = () => {
   const [generationPhase, setGenerationPhase] = useState('');
   const [failedChapters, setFailedChapters] = useState<string[]>([]);
   const [showLivePreview, setShowLivePreview] = useState(true);
-  const [currentGeneratingText, setCurrentGeneratingText] = useState('');
-  const [displayedText, setDisplayedText] = useState('');
-  const [charCount, setCharCount] = useState(0);
+  const [allGeneratedLines, setAllGeneratedLines] = useState<{chapter: string; line: string}[]>([]);
+  const [currentLine, setCurrentLine] = useState('');
+  const [lineCount, setLineCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new text is added
+  // Auto-scroll to bottom when new lines are added
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
-  }, [displayedText]);
+  }, [allGeneratedLines, currentLine]);
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
@@ -311,6 +311,9 @@ const CreateReport = () => {
 
     setGenerating(true);
     setFailedChapters([]);
+    setAllGeneratedLines([]);
+    setCurrentLine('');
+    setLineCount(0);
     const newContent: ChapterContent = {};
     const failed: string[] = [];
 
@@ -320,35 +323,40 @@ const CreateReport = () => {
       setGenerationProgress(Math.round((i / CHAPTERS.length) * 100));
       setGenerationPhase(`Generating ${chapter.label}: ${chapter.description}...`);
 
-      setCurrentGeneratingText('');
-      setDisplayedText('');
-      setCharCount(0);
+      // Add chapter header
+      setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `\n━━━ ${chapter.label}: ${chapter.description} ━━━\n` }]);
+      setLineCount(prev => prev + 1);
+      
       const content = await generateChapter(chapter.key);
       
       if (content) {
         newContent[chapter.key] = content;
         setChapterContent(prev => ({ ...prev, [chapter.key]: content }));
         
-        // Character-by-character typing effect
-        const chars = content.split('');
-        const chunkSize = 3; // Show 3 characters at a time for speed
-        for (let charIndex = 0; charIndex < chars.length; charIndex += chunkSize) {
-          const chunk = chars.slice(0, charIndex + chunkSize).join('');
-          setDisplayedText(chunk);
-          setCharCount(charIndex + chunkSize);
-          // Small delay for typing effect (faster for better UX)
-          await new Promise(resolve => setTimeout(resolve, 2));
+        // Line-by-line typing effect for all chapters
+        const lines = content.split('\n');
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+          const line = lines[lineIndex];
+          
+          // Character-by-character for current line
+          for (let charIndex = 0; charIndex <= line.length; charIndex += 5) {
+            setCurrentLine(line.slice(0, charIndex));
+            await new Promise(resolve => setTimeout(resolve, 1));
+          }
+          
+          // Add completed line to all lines
+          setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line }]);
+          setLineCount(prev => prev + 1);
+          setCurrentLine('');
         }
-        // Ensure full content is shown
-        setDisplayedText(content);
-        setCharCount(content.length);
       } else {
         failed.push(chapter.key);
+        setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `⚠️ Failed to generate ${chapter.label}` }]);
       }
 
       // Small delay between chapters to avoid rate limiting
       if (i < CHAPTERS.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
@@ -357,9 +365,7 @@ const CreateReport = () => {
     setCurrentChapter(null);
     setGenerationProgress(100);
     setGenerationPhase('');
-    setCurrentGeneratingText('');
-    setDisplayedText('');
-    setCharCount(0);
+    setCurrentLine('');
 
     // Update generations count
     if (Object.keys(newContent).length > 0) {
@@ -694,26 +700,35 @@ const CreateReport = () => {
                     </Button>
                   </div>
 
-                  {/* Live Generated Content Display */}
-                  {showLivePreview && displayedText.length > 0 && (
+                  {/* Live Generated Content Display - All Chapters */}
+                  {showLivePreview && (allGeneratedLines.length > 0 || currentLine) && (
                     <div className="mt-3 bg-background/50 rounded-lg border border-border/50 overflow-hidden">
                       <div className="bg-muted/50 px-3 py-1.5 border-b border-border/50 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-xs font-medium text-muted-foreground">
-                          Generating: {CHAPTERS.find(c => c.key === currentChapter)?.label}
+                          Live Generation: {CHAPTERS.find(c => c.key === currentChapter)?.label}
                         </span>
                         <span className="ml-auto text-xs text-muted-foreground/60">
-                          {charCount.toLocaleString()} chars
+                          {lineCount.toLocaleString()} lines
                         </span>
                       </div>
-                      <ScrollArea className="h-64">
-                        <div 
-                          ref={scrollRef}
-                          className="p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground/80"
-                        >
-                          {displayedText}
-                          <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-0.5 align-middle" />
-                          <div className="h-1" /> {/* Scroll anchor */}
+                      <ScrollArea className="h-80">
+                        <div className="p-3 font-mono text-xs leading-relaxed text-foreground/80">
+                          {allGeneratedLines.map((item, idx) => (
+                            <div 
+                              key={idx} 
+                              className={`${item.line.includes('━━━') ? 'text-primary font-bold mt-4 mb-2' : ''} ${item.line.includes('⚠️') ? 'text-amber-500' : ''}`}
+                            >
+                              {item.line}
+                            </div>
+                          ))}
+                          {currentLine && (
+                            <div className="inline">
+                              {currentLine}
+                              <span className="inline-block w-2 h-4 bg-emerald-500 animate-pulse ml-0.5 align-middle" />
+                            </div>
+                          )}
+                          <div ref={scrollRef} className="h-1" />
                         </div>
                       </ScrollArea>
                     </div>
