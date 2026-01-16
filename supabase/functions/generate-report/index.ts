@@ -345,15 +345,15 @@ IMPORTANT INSTRUCTIONS:
 
     console.log("Calling DeepSeek API for detailed report generation...");
     
-    // DeepSeek API has max_tokens limit of 8192, so we make multiple calls for long reports
-    const chaptersPerCall = pagesCount <= 10 ? 9 : 3; // Split into multiple calls for longer reports
-    const numCalls = pagesCount <= 10 ? 1 : 3; // 1 call for short, 3 calls for long reports
+    // Use maximum 2 API calls to stay within edge function timeout limits
+    // 1 call for reports up to 15 pages, 2 calls for longer reports
+    const numCalls = pagesCount <= 15 ? 1 : 2;
     
     let fullContent = "";
     
-    // Define chapter groups for multiple calls
+    // Define chapter groups for 2 calls (optimized for timeout limits)
     const chapterGroups = [
-      // Group 1: Front matter + Chapters 1-3
+      // Group 1: Front matter + Chapters 1-5
       `Generate the following sections with FULL DETAIL for an internship report:
 
 # CERTIFICATE (150+ words)
@@ -367,18 +367,14 @@ IMPORTANT INSTRUCTIONS:
 
 # CHAPTER 1: INTRODUCTION (1500+ words with all subsections 1.1-1.5)
 # CHAPTER 2: INDUSTRY AND COMPANY PROFILE (2000+ words with all subsections 2.1-2.6)
-# CHAPTER 3: LITERATURE REVIEW (2500+ words with all subsections 3.1-3.5)`,
-
-      // Group 2: Chapters 4-6
-      `Continue the internship report with these chapters with FULL DETAIL:
-
+# CHAPTER 3: LITERATURE REVIEW (2500+ words with all subsections 3.1-3.5)
 # CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (3000+ words with subsections 4.1-4.6)
-# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words with subsections 5.1-5.5)
-# CHAPTER 6: DATA ANALYSIS AND FINDINGS (2500+ words with subsections 6.1-6.5)`,
+# CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (2000+ words with subsections 5.1-5.5)`,
 
-      // Group 3: Chapters 7-9 + Back matter
+      // Group 2: Chapters 6-9 + Back matter
       `Complete the internship report with these final sections with FULL DETAIL:
 
+# CHAPTER 6: DATA ANALYSIS AND FINDINGS (2500+ words with subsections 6.1-6.5)
 # CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (1500+ words with subsections 7.1-7.4)
 # CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (1500+ words with subsections 8.1-8.4)
 # CHAPTER 9: CONCLUSION (1000+ words with subsections 9.1-9.4)
