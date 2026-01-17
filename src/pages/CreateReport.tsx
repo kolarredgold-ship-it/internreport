@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle, Eye, EyeOff, Wifi } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle, Eye, EyeOff, Wifi, RotateCcw, Timer } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
@@ -92,6 +92,11 @@ const CreateReport = () => {
   const [lineCount, setLineCount] = useState(0);
   const [generateInParts, setGenerateInParts] = useState(false);
   const [currentPart, setCurrentPart] = useState<string | null>(null);
+  const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [resumingReport, setResumingReport] = useState(false);
+  const [chapterTimes, setChapterTimes] = useState<number[]>([]);
+  const [chapterStartTime, setChapterStartTime] = useState<number | null>(null);
+  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new lines are added
@@ -100,6 +105,105 @@ const CreateReport = () => {
       scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, [allGeneratedLines, currentLine]);
+
+  // Check for resumable reports on load
+  useEffect(() => {
+    if (user) {
+      checkForResumableReport();
+    }
+  }, [user]);
+
+  const checkForResumableReport = async () => {
+    try {
+      // Find reports that have partial content saved
+      const { data: reports } = await supabase
+        .from('reports')
+        .select('id, report_content, student_name, register_number, course, college_name, university, guide_name, internship_title, company_name, company_location, internship_duration, academic_year, topic_specialization, pages_count')
+        .eq('user_id', user?.id)
+        .eq('status', 'generating')
+        .order('updated_at', { ascending: false })
+        .limit(1);
+
+      if (reports && reports.length > 0) {
+        const report = reports[0];
+        if (report.report_content) {
+          try {
+            const savedContent = JSON.parse(report.report_content) as ChapterContent;
+            const completedCount = Object.keys(savedContent).filter(k => savedContent[k]).length;
+            
+            if (completedCount > 0 && completedCount < CHAPTERS.length) {
+              setResumingReport(true);
+              setCurrentReportId(report.id);
+              setChapterContent(savedContent);
+              
+              // Restore form data
+              setFormData({
+                studentName: report.student_name,
+                registerNumber: report.register_number,
+                course: report.course,
+                collegeName: report.college_name,
+                university: report.university,
+                guideName: report.guide_name,
+                internshipTitle: report.internship_title,
+                companyName: report.company_name,
+                companyLocation: report.company_location,
+                internshipDuration: report.internship_duration,
+                academicYear: report.academic_year,
+                topicSpecialization: report.topic_specialization,
+                pagesCount: report.pages_count,
+              });
+
+              toast({
+                title: 'Resume available',
+                description: `Found incomplete report with ${completedCount}/${CHAPTERS.length} chapters. You can continue from where you left off.`,
+              });
+            }
+          } catch (e) {
+            console.error('Error parsing saved content:', e);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error checking for resumable reports:', error);
+    }
+  };
+
+  // Save chapter content to database
+  const saveChapterToDb = async (reportId: string, content: ChapterContent) => {
+    try {
+      await supabase
+        .from('reports')
+        .update({ 
+          report_content: JSON.stringify(content),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', reportId);
+    } catch (error) {
+      console.error('Error saving chapter to database:', error);
+    }
+  };
+
+  // Calculate estimated time remaining
+  const updateEstimatedTime = (completedChaptersCount: number) => {
+    if (chapterTimes.length === 0) {
+      // Default estimate: 45 seconds per chapter
+      const remaining = CHAPTERS.length - completedChaptersCount;
+      const seconds = remaining * 45;
+      setEstimatedTimeRemaining(formatTime(seconds));
+    } else {
+      const avgTime = chapterTimes.reduce((a, b) => a + b, 0) / chapterTimes.length;
+      const remaining = CHAPTERS.length - completedChaptersCount;
+      const seconds = Math.round((remaining * avgTime) / 1000);
+      setEstimatedTimeRemaining(formatTime(seconds));
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `~${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `~${mins}m ${secs}s`;
+  };
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
@@ -441,7 +545,12 @@ const CreateReport = () => {
     const content = await generateChapter(chapterKey);
     
     if (content) {
-      setChapterContent(prev => ({ ...prev, [chapterKey]: content }));
+      setChapterContent(prev => {
+        const updated = { ...prev, [chapterKey]: content };
+        // Save to database
+        if (currentReportId) saveChapterToDb(currentReportId, updated);
+        return updated;
+      });
       setFailedChapters(prev => prev.filter(k => k !== chapterKey));
       
       // Show content line by line
@@ -490,17 +599,84 @@ const CreateReport = () => {
 
     setGenerating(true);
     setFailedChapters([]);
-    setAllGeneratedLines([]);
     setCurrentLine('');
-    setLineCount(0);
-    const newContent: ChapterContent = {};
-    const failed: string[] = [];
+    setChapterTimes([]);
+    setEstimatedTimeRemaining(null);
+    
+    // Initialize timing estimate
+    updateEstimatedTime(Object.keys(chapterContent).filter(k => chapterContent[k]).length);
+    
+    // Only reset lines if starting fresh
+    if (!resumingReport) {
+      setAllGeneratedLines([]);
+      setLineCount(0);
+    }
+    
+    // Create or use existing report record
+    let reportId = currentReportId;
+    
+    if (!reportId) {
+      try {
+        const { data: reportData, error: reportError } = await supabase
+          .from('reports')
+          .insert({
+            user_id: user?.id,
+            student_name: formData.studentName,
+            register_number: formData.registerNumber,
+            course: formData.course,
+            college_name: formData.collegeName,
+            university: formData.university,
+            guide_name: formData.guideName,
+            internship_title: formData.internshipTitle,
+            company_name: formData.companyName,
+            company_location: formData.companyLocation,
+            internship_duration: formData.internshipDuration,
+            academic_year: formData.academicYear,
+            topic_specialization: formData.topicSpecialization,
+            pages_count: formData.pagesCount,
+            status: 'generating',
+          })
+          .select()
+          .single();
 
-    for (let i = 0; i < CHAPTERS.length; i++) {
-      const chapter = CHAPTERS[i];
+        if (reportError) throw reportError;
+        reportId = reportData.id;
+        setCurrentReportId(reportId);
+      } catch (error: any) {
+        console.error('Create report error:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to create report. Please try again.',
+          variant: 'destructive',
+        });
+        setGenerating(false);
+        return;
+      }
+    }
+    
+    const newContent: ChapterContent = { ...chapterContent };
+    const failed: string[] = [];
+    const times: number[] = [...chapterTimes];
+
+    // Find chapters to generate (skip already completed ones if resuming)
+    const chaptersToGenerate = resumingReport 
+      ? CHAPTERS.filter(ch => !chapterContent[ch.key])
+      : CHAPTERS;
+    
+    if (resumingReport) {
+      setAllGeneratedLines(prev => [...prev, { chapter: 'system', line: `\n🔄 Resuming generation... (${CHAPTERS.length - chaptersToGenerate.length}/${CHAPTERS.length} already done)\n` }]);
+    }
+
+    for (let i = 0; i < chaptersToGenerate.length; i++) {
+      const chapter = chaptersToGenerate[i];
+      const overallProgress = resumingReport 
+        ? Math.round(((CHAPTERS.length - chaptersToGenerate.length + i) / CHAPTERS.length) * 100)
+        : Math.round((i / CHAPTERS.length) * 100);
+      
       setCurrentChapter(chapter.key);
-      setGenerationProgress(Math.round((i / CHAPTERS.length) * 100));
+      setGenerationProgress(overallProgress);
       setGenerationPhase(`Generating ${chapter.label}: ${chapter.description}...`);
+      setChapterStartTime(Date.now());
 
       // Add chapter header
       setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `\n━━━ ${chapter.label}: ${chapter.description} ━━━\n` }]);
@@ -517,9 +693,19 @@ const CreateReport = () => {
         content = await generateChapter(chapter.key);
       }
       
+      // Track timing
+      const chapterTime = Date.now() - (chapterStartTime || Date.now());
+      times.push(chapterTime);
+      setChapterTimes(times);
+      
       if (content) {
         newContent[chapter.key] = content;
-        setChapterContent(prev => ({ ...prev, [chapter.key]: content }));
+        setChapterContent(prev => {
+          const updated = { ...prev, [chapter.key]: content };
+          // Save to database
+          if (reportId) saveChapterToDb(reportId, updated);
+          return updated;
+        });
         
         // Only show typing effect if we didn't already do it in parts mode
         if (!generateInParts) {
@@ -540,13 +726,17 @@ const CreateReport = () => {
             setCurrentLine('');
           }
         }
+        
+        // Update estimated time
+        const completedCount = Object.keys(newContent).filter(k => newContent[k]).length;
+        updateEstimatedTime(completedCount);
       } else {
         failed.push(chapter.key);
         setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `⚠️ Failed to generate ${chapter.label}` }]);
       }
 
       // Small delay between chapters to avoid rate limiting
-      if (i < CHAPTERS.length - 1) {
+      if (i < chaptersToGenerate.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
@@ -557,9 +747,24 @@ const CreateReport = () => {
     setGenerationProgress(100);
     setGenerationPhase('');
     setCurrentLine('');
+    setResumingReport(false);
+    setEstimatedTimeRemaining(null);
+    setChapterStartTime(null);
+
+    // Update report status to completed if all done
+    if (failed.length === 0 && reportId) {
+      try {
+        await supabase
+          .from('reports')
+          .update({ status: 'completed' })
+          .eq('id', reportId);
+      } catch (e) {
+        console.error('Error updating report status:', e);
+      }
+    }
 
     // Update generations count
-    if (Object.keys(newContent).length > 0) {
+    if (Object.keys(newContent).length > 0 && !resumingReport) {
       try {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -618,7 +823,12 @@ const CreateReport = () => {
       const content = await generateChapter(chapterKey);
       
       if (content) {
-        setChapterContent(prev => ({ ...prev, [chapterKey]: content }));
+        setChapterContent(prev => {
+          const updated = { ...prev, [chapterKey]: content };
+          // Save to database
+          if (currentReportId) saveChapterToDb(currentReportId, updated);
+          return updated;
+        });
       } else {
         stillFailed.push(chapterKey);
       }
@@ -635,6 +845,18 @@ const CreateReport = () => {
     setGenerationPhase('');
 
     if (stillFailed.length === 0) {
+      // Update report status to completed
+      if (currentReportId) {
+        try {
+          await supabase
+            .from('reports')
+            .update({ status: 'completed' })
+            .eq('id', currentReportId);
+        } catch (e) {
+          console.error('Error updating report status:', e);
+        }
+      }
+      
       toast({
         title: 'All chapters generated!',
         description: 'Your report is now complete.',
@@ -870,6 +1092,12 @@ const CreateReport = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-display text-lg font-bold text-primary">{generationProgress}%</p>
+                      {estimatedTimeRemaining && (
+                        <p className="text-[10px] text-muted-foreground flex items-center justify-end gap-1">
+                          <Timer className="w-3 h-3" />
+                          {estimatedTimeRemaining} remaining
+                        </p>
+                      )}
                     </div>
                   </div>
                   <Progress value={generationProgress} className="h-2" />
@@ -973,6 +1201,36 @@ const CreateReport = () => {
                 </div>
               )}
 
+              {/* Resume Button - when there are incomplete chapters */}
+              {!generating && !hasAllContent && completedChapters.length > 0 && failedChapters.length === 0 && (
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <RotateCcw className="w-4 h-4 text-blue-600" />
+                    <span className="font-semibold text-blue-700 dark:text-blue-300">
+                      Resume Generation
+                    </span>
+                    <span className="ml-auto text-xs text-muted-foreground">
+                      {completedChapters.length}/{CHAPTERS.length} done
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    You can continue generating the remaining chapters from where you left off.
+                  </p>
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => {
+                      setResumingReport(true);
+                      handleGenerateReport();
+                    }}
+                    className="w-full"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Continue Generation ({CHAPTERS.length - completedChapters.length} remaining)
+                  </Button>
+                </div>
+              )}
+
               {/* Download Button */}
               {hasAnyContent && !generating && (
                 <Button 
@@ -991,6 +1249,11 @@ const CreateReport = () => {
                 onClick={() => {
                   setChapterContent({});
                   setFailedChapters([]);
+                  setCurrentReportId(null);
+                  setResumingReport(false);
+                  setAllGeneratedLines([]);
+                  setLineCount(0);
+                  setFormData(initialFormData);
                 }} 
                 className="w-full"
                 disabled={generating}
