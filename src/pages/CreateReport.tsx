@@ -49,10 +49,10 @@ const initialFormData: FormData = {
   pagesCount: 25,
 };
 
-// Chapters to generate (in order)
-const CHAPTERS = [
+// Chapters to generate (in order) - function to allow dynamic title for Chapter 1
+const getChapters = (internshipTitle?: string) => [
   { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, TOC' },
-  { key: '1', label: 'Chapter 1', description: 'Introduction to Internship' },
+  { key: '1', label: 'Chapter 1', description: `Introduction to ${internshipTitle || 'Internship Title'}` },
   { key: '2', label: 'Chapter 2', description: 'Introduction to Industry and Company Profile' },
   { key: '3', label: 'Chapter 3', description: 'Literature Review' },
   { key: '4', label: 'Chapter 4', description: 'External Learning' },
@@ -209,7 +209,7 @@ const CreateReport = () => {
             const savedContent = JSON.parse(report.report_content) as ChapterContent;
             const completedCount = Object.keys(savedContent).filter(k => savedContent[k]).length;
             
-            if (completedCount > 0 && completedCount < CHAPTERS.length) {
+            if (completedCount > 0 && completedCount < getChapters(report.internship_title).length) {
               setResumingReport(true);
               setCurrentReportId(report.id);
               setChapterContent(savedContent);
@@ -233,7 +233,7 @@ const CreateReport = () => {
 
               toast({
                 title: 'Resume available',
-                description: `Found incomplete report with ${completedCount}/${CHAPTERS.length} chapters. You can continue from where you left off.`,
+                description: `Found incomplete report with ${completedCount}/${getChapters(report.internship_title).length} chapters. You can continue from where you left off.`,
               });
             }
           } catch (e) {
@@ -265,12 +265,12 @@ const CreateReport = () => {
   const updateEstimatedTime = (completedChaptersCount: number) => {
     if (chapterTimes.length === 0) {
       // Default estimate: 45 seconds per chapter
-      const remaining = CHAPTERS.length - completedChaptersCount;
+      const remaining = getChapters(formData.internshipTitle).length - completedChaptersCount;
       const seconds = remaining * 45;
       setEstimatedTimeRemaining(formatTime(seconds));
     } else {
       const avgTime = chapterTimes.reduce((a, b) => a + b, 0) / chapterTimes.length;
-      const remaining = CHAPTERS.length - completedChaptersCount;
+      const remaining = getChapters(formData.internshipTitle).length - completedChaptersCount;
       const seconds = Math.round((remaining * avgTime) / 1000);
       setEstimatedTimeRemaining(formatTime(seconds));
     }
@@ -285,7 +285,7 @@ const CreateReport = () => {
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
-  const hasAllContent = completedChapters.length === CHAPTERS.length;
+  const hasAllContent = completedChapters.length === getChapters(formData.internshipTitle).length;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -619,7 +619,7 @@ const CreateReport = () => {
 
   // Retry a single failed chapter
   const handleRetrySingleChapter = async (chapterKey: string) => {
-    const chapter = CHAPTERS.find(c => c.key === chapterKey);
+    const chapter = getChapters(formData.internshipTitle).find(c => c.key === chapterKey);
     if (!chapter) return;
 
     setGenerating(true);
@@ -746,6 +746,7 @@ const CreateReport = () => {
     const times: number[] = [...chapterTimes];
 
     // Find chapters to generate (skip already completed ones if resuming)
+    const CHAPTERS = getChapters(formData.internshipTitle);
     const chaptersToGenerate = resumingReport 
       ? CHAPTERS.filter(ch => !chapterContent[ch.key])
       : CHAPTERS;
@@ -893,11 +894,11 @@ const CreateReport = () => {
         title: 'Generation stopped',
         description: 'Your progress has been saved. You can resume later.',
       });
-    } else if (failed.length < CHAPTERS.length) {
+    } else if (failed.length < getChapters(formData.internshipTitle).length) {
       playCompletionSound();
       toast({
         title: 'Report partially generated',
-        description: `${CHAPTERS.length - failed.length} of ${CHAPTERS.length} chapters generated. You can retry failed chapters.`,
+        description: `${getChapters(formData.internshipTitle).length - failed.length} of ${getChapters(formData.internshipTitle).length} chapters generated. You can retry failed chapters.`,
         variant: 'destructive',
       });
     } else {
@@ -918,7 +919,7 @@ const CreateReport = () => {
 
     for (let i = 0; i < failedChapters.length; i++) {
       const chapterKey = failedChapters[i];
-      const chapter = CHAPTERS.find(c => c.key === chapterKey);
+      const chapter = getChapters(formData.internshipTitle).find(c => c.key === chapterKey);
       if (!chapter) continue;
 
       setCurrentChapter(chapterKey);
@@ -991,7 +992,7 @@ const CreateReport = () => {
     if (!hasAnyContent) return;
 
     // Merge all chapters in order and clean up asterisks
-    const orderedContent = CHAPTERS
+    const orderedContent = getChapters(formData.internshipTitle)
       .map(ch => chapterContent[ch.key] ? cleanContent(chapterContent[ch.key]!) : null)
       .filter(Boolean)
       .join('\n\n---\n\n');
@@ -1161,13 +1162,13 @@ const CreateReport = () => {
               <CardDescription>
                 {hasAllContent 
                   ? 'All chapters generated! Download your complete report.'
-                  : `${completedChapters.length} of ${CHAPTERS.length} chapters generated.`}
+                  : `${completedChapters.length} of ${getChapters(formData.internshipTitle).length} chapters generated.`}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Progress Grid */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                {CHAPTERS.map(chapter => {
+                {getChapters(formData.internshipTitle).map(chapter => {
                   const isCompleted = !!chapterContent[chapter.key];
                   const isCurrent = currentChapter === chapter.key;
                   const isFailed = failedChapters.includes(chapter.key);
@@ -1241,7 +1242,7 @@ const CreateReport = () => {
                       <div className="bg-muted/50 px-3 py-1.5 border-b border-border/50 flex items-center gap-2 flex-wrap">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-xs font-medium text-muted-foreground">
-                          {CHAPTERS.find(c => c.key === currentChapter)?.label}
+                          {getChapters(formData.internshipTitle).find(c => c.key === currentChapter)?.label}
                           {currentPart && <span className="text-primary ml-1">→ {currentPart}</span>}
                         </span>
                         {generateInParts && (
@@ -1316,7 +1317,7 @@ const CreateReport = () => {
                   </div>
                   <div className="space-y-2">
                     {failedChapters.map(chapterKey => {
-                      const chapter = CHAPTERS.find(c => c.key === chapterKey);
+                      const chapter = getChapters(formData.internshipTitle).find(c => c.key === chapterKey);
                       return (
                         <Button 
                           key={chapterKey}
@@ -1352,7 +1353,7 @@ const CreateReport = () => {
                       Resume Generation
                     </span>
                     <span className="ml-auto text-xs text-muted-foreground">
-                      {completedChapters.length}/{CHAPTERS.length} done
+                      {completedChapters.length}/{getChapters(formData.internshipTitle).length} done
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
@@ -1368,7 +1369,7 @@ const CreateReport = () => {
                     className="w-full"
                   >
                     <Sparkles className="w-4 h-4" />
-                    Continue Generation ({CHAPTERS.length - completedChapters.length} remaining)
+                    Continue Generation ({getChapters(formData.internshipTitle).length - completedChapters.length} remaining)
                   </Button>
                 </div>
               )}
@@ -1382,7 +1383,7 @@ const CreateReport = () => {
                   size="lg"
                 >
                   <Download className="w-5 h-5" />
-                  Download Complete Report ({completedChapters.length}/{CHAPTERS.length} chapters)
+                  Download Complete Report ({completedChapters.length}/{getChapters(formData.internshipTitle).length} chapters)
                 </Button>
               )}
 
@@ -1616,7 +1617,7 @@ const CreateReport = () => {
                         📋 Your report will include 10 sections:
                       </p>
                       <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
-                        {CHAPTERS.map(ch => (
+                        {getChapters(formData.internshipTitle).map(ch => (
                           <div key={ch.key}>• {ch.label}</div>
                         ))}
                       </div>
