@@ -277,8 +277,8 @@ const CreateReport = () => {
     });
   };
 
-  // Generate a single chapter with retry logic
-  const generateChapter = async (chapterKey: string, retries = 3): Promise<string | null> => {
+  // Generate a single chapter with retry logic and fallback to parts
+  const generateChapter = async (chapterKey: string, retries = 2): Promise<string | null> => {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         console.log(`Generating chapter ${chapterKey}, attempt ${attempt}/${retries}`);
@@ -296,8 +296,18 @@ const CreateReport = () => {
       } catch (error: any) {
         console.error(`Error generating chapter ${chapterKey} (attempt ${attempt}):`, error);
         
-        // If this was the last attempt, return null
+        // If this was the last attempt, try generating in parts
         if (attempt === retries) {
+          console.log(`Attempting to generate chapter ${chapterKey} in parts...`);
+          setAllGeneratedLines(prev => [...prev, { 
+            chapter: chapterKey, 
+            line: `🔄 Generating in smaller parts...` 
+          }]);
+          
+          const partsContent = await generateChapterInParts(chapterKey);
+          if (partsContent) {
+            return partsContent;
+          }
           return null;
         }
         
@@ -307,12 +317,117 @@ const CreateReport = () => {
           line: `⏳ Retrying... (attempt ${attempt + 1}/${retries})` 
         }]);
         
-        // Wait before retrying (exponential backoff: 2s, 4s, 8s...)
+        // Wait before retrying (2s, 4s)
         const waitTime = Math.pow(2, attempt) * 1000;
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
     return null;
+  };
+
+  // Generate chapter in smaller parts when full generation times out
+  const generateChapterInParts = async (chapterKey: string): Promise<string | null> => {
+    const chapterParts: Record<string, string[]> = {
+      'front': ['part1_certificate', 'part2_abstract'],
+      '1': ['part1_background', 'part2_objectives'],
+      '2': ['part1_industry', 'part2_company'],
+      '3': ['part1_theory', 'part2_review'],
+      '4': ['part1_activities', 'part2_projects'],
+      '5': ['part1_technical', 'part2_soft'],
+      '6': ['part1_methodology', 'part2_findings'],
+      '7': ['part1_challenges', 'part2_solutions'],
+      '8': ['part1_recommendations', 'part2_future'],
+      '9': ['part1_conclusion', 'part2_references'],
+    };
+
+    const parts = chapterParts[chapterKey] || ['part1', 'part2'];
+    const contents: string[] = [];
+
+    for (const part of parts) {
+      try {
+        setAllGeneratedLines(prev => [...prev, { 
+          chapter: chapterKey, 
+          line: `   📝 Generating ${part.replace('_', ': ')}...` 
+        }]);
+
+        const { data, error } = await supabase.functions.invoke('generate-report', {
+          body: {
+            ...formData,
+            userId: user?.id,
+            chapter: chapterKey,
+            part: part,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.content) {
+          contents.push(data.content);
+        }
+
+        // Small delay between parts
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error: any) {
+        console.error(`Error generating ${chapterKey} ${part}:`, error);
+        setAllGeneratedLines(prev => [...prev, { 
+          chapter: chapterKey, 
+          line: `   ⚠️ Failed to generate ${part}` 
+        }]);
+      }
+    }
+
+    if (contents.length > 0) {
+      return contents.join('\n\n');
+    }
+    return null;
+  };
+
+  // Retry a single failed chapter
+  const handleRetrySingleChapter = async (chapterKey: string) => {
+    const chapter = CHAPTERS.find(c => c.key === chapterKey);
+    if (!chapter) return;
+
+    setGenerating(true);
+    setCurrentChapter(chapterKey);
+    setGenerationPhase(`Retrying ${chapter.label}...`);
+    
+    // Add chapter header to preview
+    setAllGeneratedLines(prev => [...prev, { chapter: chapterKey, line: `\n━━━ Retrying ${chapter.label} ━━━\n` }]);
+    
+    const content = await generateChapter(chapterKey);
+    
+    if (content) {
+      setChapterContent(prev => ({ ...prev, [chapterKey]: content }));
+      setFailedChapters(prev => prev.filter(k => k !== chapterKey));
+      
+      // Show content line by line
+      const lines = content.split('\n');
+      for (const line of lines) {
+        for (let i = 0; i <= line.length; i += 5) {
+          setCurrentLine(line.slice(0, i));
+          await new Promise(resolve => setTimeout(resolve, 1));
+        }
+        setAllGeneratedLines(prev => [...prev, { chapter: chapterKey, line }]);
+        setLineCount(prev => prev + 1);
+        setCurrentLine('');
+      }
+      
+      toast({
+        title: 'Chapter generated!',
+        description: `${chapter.label} has been generated successfully.`,
+      });
+    } else {
+      setAllGeneratedLines(prev => [...prev, { chapter: chapterKey, line: `⚠️ Still failed to generate ${chapter.label}` }]);
+      toast({
+        title: 'Generation failed',
+        description: `${chapter.label} could not be generated.`,
+        variant: 'destructive',
+      });
+    }
+
+    setGenerating(false);
+    setCurrentChapter(null);
+    setGenerationPhase('');
+    setCurrentLine('');
   };
 
   // Generate all chapters sequentially
@@ -759,24 +874,41 @@ const CreateReport = () => {
                 </div>
               )}
 
-              {/* Failed chapters retry */}
+              {/* Failed chapters retry - individual buttons */}
               {failedChapters.length > 0 && !generating && (
                 <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-3">
                     <AlertCircle className="w-4 h-4 text-amber-600" />
                     <span className="font-semibold text-amber-700 dark:text-amber-300">
                       {failedChapters.length} chapter(s) failed to generate
                     </span>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleRetryFailed}
-                    className="w-full"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Retry Failed Chapters
-                  </Button>
+                  <div className="space-y-2">
+                    {failedChapters.map(chapterKey => {
+                      const chapter = CHAPTERS.find(c => c.key === chapterKey);
+                      return (
+                        <Button 
+                          key={chapterKey}
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleRetrySingleChapter(chapterKey)}
+                          className="w-full justify-start gap-2"
+                        >
+                          <Sparkles className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate">Retry {chapter?.label}: {chapter?.description}</span>
+                        </Button>
+                      );
+                    })}
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={handleRetryFailed}
+                      className="w-full mt-2"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Retry All Failed
+                    </Button>
+                  </div>
                 </div>
               )}
 
