@@ -1551,7 +1551,7 @@ const CreateReport = () => {
                       name="topicSpecialization"
                       value={formData.topicSpecialization}
                       onChange={handleInputChange}
-                      placeholder="Enter the topic or specialization"
+                      placeholder="Explain about the company and the internship you completed in this company. Include the company website for better understanding and results"
                       rows={4}
                     />
                   </div>
