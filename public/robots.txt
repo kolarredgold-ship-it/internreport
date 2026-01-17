@@ -1,3 +1,13 @@
+# Robots.txt for internreport.in
+
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /create-report
+Disallow: /my-reports
+Disallow: /admin
+
+# Allow search engine crawlers
 User-agent: Googlebot
 Allow: /
 
@@ -10,5 +20,8 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
+
+# Sitemap location
+Sitemap: https://internreport.in/sitemap.xml
