@@ -1166,8 +1166,8 @@ const CreateReport = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Progress Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+              {/* Chapter Generation Grid - Individual Buttons */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {getChapters(formData.internshipTitle).map(chapter => {
                   const isCompleted = !!chapterContent[chapter.key];
                   const isCurrent = currentChapter === chapter.key;
@@ -1176,25 +1176,83 @@ const CreateReport = () => {
                   return (
                     <div 
                       key={chapter.key}
-                      className={`p-2 rounded-lg text-center text-xs ${
+                      className={`p-3 rounded-xl border ${
                         isCompleted 
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+                          ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
                           : isCurrent
-                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 animate-pulse'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 animate-pulse'
                           : isFailed
-                          ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                          : 'bg-muted text-muted-foreground'
+                          ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                          : 'bg-muted/30 border-border/50'
                       }`}
                     >
-                      <div className="font-semibold">{chapter.label}</div>
-                      <div className="text-[10px] opacity-75 truncate">{chapter.description}</div>
-                      {isCompleted && <CheckCircle2 className="w-3 h-3 mx-auto mt-1" />}
-                      {isCurrent && <Loader2 className="w-3 h-3 mx-auto mt-1 animate-spin" />}
-                      {isFailed && !isCompleted && <AlertCircle className="w-3 h-3 mx-auto mt-1" />}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            {isCompleted && <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+                            {isCurrent && <Loader2 className="w-4 h-4 text-blue-600 animate-spin flex-shrink-0" />}
+                            {isFailed && !isCompleted && <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />}
+                            {!isCompleted && !isCurrent && !isFailed && <div className="w-4 h-4 rounded-full bg-muted flex-shrink-0" />}
+                            <span className="font-semibold text-sm">{chapter.label}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 truncate">{chapter.description}</p>
+                        </div>
+                        <Button
+                          variant={isCompleted ? "outline" : isFailed ? "destructive" : "default"}
+                          size="sm"
+                          onClick={() => handleRetrySingleChapter(chapter.key)}
+                          disabled={generating || isCurrent}
+                          className="flex-shrink-0"
+                        >
+                          {isCurrent ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : isCompleted ? (
+                            <>
+                              <RotateCcw className="w-3 h-3 mr-1" />
+                              Redo
+                            </>
+                          ) : isFailed ? (
+                            <>
+                              <RotateCcw className="w-3 h-3 mr-1" />
+                              Retry
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3 h-3 mr-1" />
+                              Generate
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
               </div>
+
+              {/* Generate All Button */}
+              {!hasAllContent && !generating && (
+                <div className="pt-4 border-t border-border/50">
+                  <Button
+                    variant="hero"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => {
+                      setResumingReport(completedChapters.length > 0);
+                      handleGenerateReport();
+                    }}
+                    disabled={generating}
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    {completedChapters.length > 0 
+                      ? `Generate All Remaining (${getChapters(formData.internshipTitle).length - completedChapters.length} chapters)`
+                      : `Generate All Chapters (${getChapters(formData.internshipTitle).length} chapters)`
+                    }
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Or generate individual chapters above
+                  </p>
+                </div>
+              )}
 
               {/* Progress indicator during generation */}
               {generating && (
@@ -1306,73 +1364,6 @@ const CreateReport = () => {
                 </div>
               )}
 
-              {/* Failed chapters retry - individual buttons */}
-              {failedChapters.length > 0 && !generating && (
-                <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <AlertCircle className="w-4 h-4 text-amber-600" />
-                    <span className="font-semibold text-amber-700 dark:text-amber-300">
-                      {failedChapters.length} chapter(s) failed to generate
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    {failedChapters.map(chapterKey => {
-                      const chapter = getChapters(formData.internshipTitle).find(c => c.key === chapterKey);
-                      return (
-                        <Button 
-                          key={chapterKey}
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleRetrySingleChapter(chapterKey)}
-                          className="w-full justify-start gap-2"
-                        >
-                          <Sparkles className="w-4 h-4 flex-shrink-0" />
-                          <span className="truncate">Retry {chapter?.label}: {chapter?.description}</span>
-                        </Button>
-                      );
-                    })}
-                    <Button 
-                      variant="default" 
-                      size="sm" 
-                      onClick={handleRetryFailed}
-                      className="w-full mt-2"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      Retry All Failed
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Resume Button - when there are incomplete chapters */}
-              {!generating && !hasAllContent && completedChapters.length > 0 && failedChapters.length === 0 && (
-                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <RotateCcw className="w-4 h-4 text-blue-600" />
-                    <span className="font-semibold text-blue-700 dark:text-blue-300">
-                      Resume Generation
-                    </span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      {completedChapters.length}/{getChapters(formData.internshipTitle).length} done
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    You can continue generating the remaining chapters from where you left off.
-                  </p>
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    onClick={() => {
-                      setResumingReport(true);
-                      handleGenerateReport();
-                    }}
-                    className="w-full"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Continue Generation ({getChapters(formData.internshipTitle).length - completedChapters.length} remaining)
-                  </Button>
-                </div>
-              )}
 
               {/* Download Button */}
               {hasAnyContent && !generating && (
