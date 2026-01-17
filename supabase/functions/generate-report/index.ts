@@ -128,8 +128,10 @@ serve(async (req) => {
     const pagesCount = body.pagesCount;
     // Chapter number: 1-9 for individual chapters, or 'front' for front matter
     const chapter = body.chapter || null;
+    // Part: for generating chapters in smaller sections (e.g., 'part1_background', 'part2_objectives')
+    const part = body.part || null;
 
-    console.log("Input validation passed for user:", userId, "Chapter:", chapter || "Full");
+    console.log("Input validation passed for user:", userId, "Chapter:", chapter || "Full", "Part:", part || "Full");
 
     // ========== BUSINESS LOGIC ==========
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -445,11 +447,120 @@ Write EXTENSIVE, DETAILED content with formal academic English.`
       }
     };
 
+    // Part-specific prompts for generating chapters in smaller sections (for timeout fallback)
+    const partPrompts: Record<string, Record<string, { prompt: string; label: string }>> = {
+      'front': {
+        'part1_certificate': {
+          label: 'Front Matter (Certificate, Declaration, Acknowledgement)',
+          prompt: `${baseContext}\n\nGenerate ONLY these sections:\n\n# CERTIFICATE\n(Write a formal certificate - 150+ words)\n\n# DECLARATION\n(Write student declaration - 200+ words)\n\n# ACKNOWLEDGEMENT\n(Write detailed acknowledgement - 300+ words)\n\nWrite with formal academic English.`
+        },
+        'part2_abstract': {
+          label: 'Front Matter (Abstract, TOC, Lists)',
+          prompt: `${baseContext}\n\nGenerate ONLY these sections:\n\n# ABSTRACT\n(Write comprehensive abstract - 400+ words)\n\n# TABLE OF CONTENTS\n(List all chapters)\n\n# LIST OF FIGURES\n# LIST OF TABLES\n# LIST OF ABBREVIATIONS\n\nWrite with formal academic English.`
+        }
+      },
+      '1': {
+        'part1_background': {
+          label: 'Chapter 1 (Background, Objectives)',
+          prompt: `${baseContext}\n\n# CHAPTER 1: INTRODUCTION (Part 1)\n\n## 1.1 Background of the Study\n(Write 500+ words on industry context, trends for ${topicSpecialization})\n\n## 1.2 Objectives of the Internship\n(Write 400+ words - list 8-10 objectives)\n\nWrite with formal academic English.`
+        },
+        'part2_objectives': {
+          label: 'Chapter 1 (Scope, Need, Methodology)',
+          prompt: `${baseContext}\n\n# CHAPTER 1: INTRODUCTION (Part 2)\n\n## 1.3 Scope of the Study\n(Write 400+ words)\n\n## 1.4 Need for the Study\n(Write 400+ words)\n\n## 1.5 Research Methodology\n(Write 300+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '2': {
+        'part1_industry': {
+          label: 'Chapter 2 (Industry Overview)',
+          prompt: `${baseContext}\n\n# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Part 1)\n\n## 2.1 Industry Overview\n(Write 600+ words on ${topicSpecialization} industry)\n\n## 2.2 About ${companyName}\n(Write 500+ words on company history)\n\nWrite with formal academic English.`
+        },
+        'part2_company': {
+          label: 'Chapter 2 (Company Details, SWOT)',
+          prompt: `${baseContext}\n\n# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Part 2)\n\n## 2.3 Vision, Mission, Core Values\n(Write 250+ words)\n\n## 2.4 Products and Services\n(Write 500+ words)\n\n## 2.5 Organizational Structure\n(Write 350+ words)\n\n## 2.6 SWOT Analysis\n(Write 400+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '3': {
+        'part1_theory': {
+          label: 'Chapter 3 (Theoretical Framework)',
+          prompt: `${baseContext}\n\n# CHAPTER 3: LITERATURE REVIEW (Part 1)\n\n## 3.1 Theoretical Framework\n(Write 700+ words on theories for ${topicSpecialization})\n\n## 3.2 Review of Previous Studies\n(Write 500+ words, cite 6-8 studies)\n\nWrite with formal academic English with citations.`
+        },
+        'part2_review': {
+          label: 'Chapter 3 (Best Practices, Research Gap)',
+          prompt: `${baseContext}\n\n# CHAPTER 3: LITERATURE REVIEW (Part 2)\n\n## 3.2 Review of Previous Studies (continued)\n(Write 400+ words, cite 6 more studies)\n\n## 3.3 Industry Best Practices\n(Write 450+ words)\n\n## 3.4 Technological Advancements\n(Write 450+ words)\n\n## 3.5 Research Gap Analysis\n(Write 350+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '4': {
+        'part1_activities': {
+          label: 'Chapter 4 (Department, Roles, Weekly Log)',
+          prompt: `${baseContext}\n\n# CHAPTER 4: INTERNSHIP ACTIVITIES (Part 1)\n\n## 4.1 Department Overview\n(Write 400+ words)\n\n## 4.2 Roles and Responsibilities\n(Write 600+ words on 10-15 duties)\n\n## 4.3 Week-wise Activity Log\n(Write 1000+ words for ${internshipDuration})\n\nWrite with formal academic English.`
+        },
+        'part2_projects': {
+          label: 'Chapter 4 (Projects, Tools, Team)',
+          prompt: `${baseContext}\n\n# CHAPTER 4: INTERNSHIP ACTIVITIES (Part 2)\n\n## 4.4 Projects Undertaken\n(Write 700+ words on 4-5 projects)\n\n## 4.5 Tools and Technologies Used\n(Write 500+ words)\n\n## 4.6 Team Collaboration\n(Write 400+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '5': {
+        'part1_technical': {
+          label: 'Chapter 5 (Technical Skills)',
+          prompt: `${baseContext}\n\n# CHAPTER 5: TECHNICAL LEARNING (Part 1)\n\n## 5.1 Technical Skills Acquired\n(Write 600+ words on 10-12 skills)\n\n## 5.2 Soft Skills Developed\n(Write 500+ words)\n\nWrite with formal academic English.`
+        },
+        'part2_soft': {
+          label: 'Chapter 5 (Domain Knowledge, Certifications)',
+          prompt: `${baseContext}\n\n# CHAPTER 5: TECHNICAL LEARNING (Part 2)\n\n## 5.3 Domain Knowledge Enhancement\n(Write 500+ words on ${topicSpecialization})\n\n## 5.4 Professional Competencies\n(Write 500+ words)\n\n## 5.5 Certifications and Training\n(Write 400+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '6': {
+        'part1_methodology': {
+          label: 'Chapter 6 (Methodology, Framework)',
+          prompt: `${baseContext}\n\n# CHAPTER 6: DATA ANALYSIS (Part 1)\n\n## 6.1 Data Collection Methodology\n(Write 500+ words)\n\n## 6.2 Analysis Framework\n(Write 400+ words)\n\nWrite with formal academic English.`
+        },
+        'part2_findings': {
+          label: 'Chapter 6 (Findings, Analysis)',
+          prompt: `${baseContext}\n\n# CHAPTER 6: DATA ANALYSIS (Part 2)\n\n## 6.3 Key Findings and Observations\n(Write 800+ words with 10-12 findings)\n\n## 6.4 Comparative Analysis\n(Write 500+ words)\n\n## 6.5 Interpretation of Results\n(Write 500+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '7': {
+        'part1_challenges': {
+          label: 'Chapter 7 (Challenges)',
+          prompt: `${baseContext}\n\n# CHAPTER 7: CHALLENGES (Part 1)\n\n## 7.1 Technical Challenges Encountered\n(Write 500+ words on 5-6 difficulties)\n\n## 7.2 Organizational Challenges\n(Write 400+ words)\n\nWrite with formal academic English.`
+        },
+        'part2_solutions': {
+          label: 'Chapter 7 (Problem-Solving, Lessons)',
+          prompt: `${baseContext}\n\n# CHAPTER 7: CHALLENGES (Part 2)\n\n## 7.3 Problem-Solving Approaches\n(Write 500+ words)\n\n## 7.4 Lessons Learned\n(Write 500+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '8': {
+        'part1_recommendations': {
+          label: 'Chapter 8 (Company Recommendations)',
+          prompt: `${baseContext}\n\n# CHAPTER 8: RECOMMENDATIONS (Part 1)\n\n## 8.1 Recommendations for ${companyName}\n(Write 600+ words with 6-8 recommendations)\n\n## 8.2 Process Improvement Suggestions\n(Write 500+ words)\n\nWrite with formal academic English.`
+        },
+        'part2_future': {
+          label: 'Chapter 8 (Technology, Future Scope)',
+          prompt: `${baseContext}\n\n# CHAPTER 8: RECOMMENDATIONS (Part 2)\n\n## 8.3 Technology Adoption Recommendations\n(Write 450+ words)\n\n## 8.4 Future Scope and Opportunities\n(Write 450+ words)\n\nWrite with formal academic English.`
+        }
+      },
+      '9': {
+        'part1_conclusion': {
+          label: 'Chapter 9 (Conclusion)',
+          prompt: `${baseContext}\n\n# CHAPTER 9: CONCLUSION (Part 1)\n\n## 9.1 Summary of Internship Experience\n(Write 400+ words)\n\n## 9.2 Achievement of Objectives\n(Write 400+ words)\n\n## 9.3 Personal and Professional Growth\n(Write 250+ words)\n\n## 9.4 Future Career Aspirations\n(Write 250+ words)\n\nWrite with formal academic English.`
+        },
+        'part2_references': {
+          label: 'Chapter 9 (Bibliography, Annexures)',
+          prompt: `${baseContext}\n\n# BIBLIOGRAPHY\n(Include 25-30 APA style references relevant to ${topicSpecialization})\n\n# ANNEXURES\n## Annexure A: Sample Work Documents (placeholder)\n## Annexure B: Photographs (placeholder)\n## Annexure C: Completion Certificate (placeholder)\n## Annexure D: Weekly Reports (placeholder)\n## Annexure E: Feedback Form (placeholder)\n\nWrite with formal academic English.`
+        }
+      }
+    };
+
     // Determine which prompt to use
     let chapterPrompt: string;
     let chapterLabel: string;
     
-    if (chapter && chapterPrompts[chapter]) {
+    // Check if we're generating a part of a chapter
+    if (chapter && part && partPrompts[chapter]?.[part]) {
+      chapterPrompt = partPrompts[chapter][part].prompt;
+      chapterLabel = partPrompts[chapter][part].label;
+      console.log(`Generating part: ${part} of ${chapter}...`);
+    } else if (chapter && chapterPrompts[chapter]) {
       chapterPrompt = chapterPrompts[chapter].prompt;
       chapterLabel = chapterPrompts[chapter].label;
     } else {
@@ -460,9 +571,9 @@ Write EXTENSIVE, DETAILED content with formal academic English.`
     
     console.log(`Generating ${chapterLabel}...`);
     
-    // 90-second timeout
+    // 120-second timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 90000);
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
     
     let generatedContent = "";
     
@@ -506,7 +617,7 @@ Write EXTENSIVE, DETAILED content with formal academic English.`
     } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-        console.error(`DeepSeek API call timed out after 90 seconds`);
+        console.error(`DeepSeek API call timed out after 120 seconds`);
         throw new Error('AI generation timed out. Please try again.');
       }
       throw fetchError;
