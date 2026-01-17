@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle, Eye, EyeOff, Wifi } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx';
 import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
@@ -89,6 +90,8 @@ const CreateReport = () => {
   const [allGeneratedLines, setAllGeneratedLines] = useState<{chapter: string; line: string}[]>([]);
   const [currentLine, setCurrentLine] = useState('');
   const [lineCount, setLineCount] = useState(0);
+  const [generateInParts, setGenerateInParts] = useState(false);
+  const [currentPart, setCurrentPart] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new lines are added
@@ -325,6 +328,30 @@ const CreateReport = () => {
     return null;
   };
 
+  // Part labels for display
+  const partLabels: Record<string, string> = {
+    'part1_certificate': 'Certificate & Declaration',
+    'part2_abstract': 'Abstract & TOC',
+    'part1_background': 'Background & Context',
+    'part2_objectives': 'Objectives & Scope',
+    'part1_industry': 'Industry Overview',
+    'part2_company': 'Company Profile',
+    'part1_theory': 'Theoretical Framework',
+    'part2_review': 'Literature & Research',
+    'part1_activities': 'Activities & Roles',
+    'part2_projects': 'Projects & Tools',
+    'part1_technical': 'Technical Skills',
+    'part2_soft': 'Soft Skills & Training',
+    'part1_methodology': 'Data Methodology',
+    'part2_findings': 'Findings & Analysis',
+    'part1_challenges': 'Challenges Faced',
+    'part2_solutions': 'Solutions & Lessons',
+    'part1_recommendations': 'Recommendations',
+    'part2_future': 'Future Scope',
+    'part1_conclusion': 'Conclusion',
+    'part2_references': 'Bibliography & Annexures',
+  };
+
   // Generate chapter in smaller parts when full generation times out
   const generateChapterInParts = async (chapterKey: string): Promise<string | null> => {
     const chapterParts: Record<string, string[]> = {
@@ -343,11 +370,15 @@ const CreateReport = () => {
     const parts = chapterParts[chapterKey] || ['part1', 'part2'];
     const contents: string[] = [];
 
-    for (const part of parts) {
+    for (let partIdx = 0; partIdx < parts.length; partIdx++) {
+      const part = parts[partIdx];
+      const partLabel = partLabels[part] || part;
+      
       try {
+        setCurrentPart(partLabel);
         setAllGeneratedLines(prev => [...prev, { 
           chapter: chapterKey, 
-          line: `   📝 Generating ${part.replace('_', ': ')}...` 
+          line: `   📝 Part ${partIdx + 1}/${parts.length}: ${partLabel}...` 
         }]);
 
         const { data, error } = await supabase.functions.invoke('generate-report', {
@@ -362,6 +393,18 @@ const CreateReport = () => {
         if (error) throw error;
         if (data?.content) {
           contents.push(data.content);
+          
+          // Show content line by line for parts too
+          const lines = data.content.split('\n');
+          for (const line of lines) {
+            for (let i = 0; i <= line.length; i += 5) {
+              setCurrentLine(line.slice(0, i));
+              await new Promise(resolve => setTimeout(resolve, 1));
+            }
+            setAllGeneratedLines(prev => [...prev, { chapter: chapterKey, line }]);
+            setLineCount(prev => prev + 1);
+            setCurrentLine('');
+          }
         }
 
         // Small delay between parts
@@ -370,11 +413,13 @@ const CreateReport = () => {
         console.error(`Error generating ${chapterKey} ${part}:`, error);
         setAllGeneratedLines(prev => [...prev, { 
           chapter: chapterKey, 
-          line: `   ⚠️ Failed to generate ${part}` 
+          line: `   ⚠️ Failed: ${partLabel}` 
         }]);
       }
     }
 
+    setCurrentPart(null);
+    
     if (contents.length > 0) {
       return contents.join('\n\n');
     }
@@ -461,27 +506,39 @@ const CreateReport = () => {
       setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `\n━━━ ${chapter.label}: ${chapter.description} ━━━\n` }]);
       setLineCount(prev => prev + 1);
       
-      const content = await generateChapter(chapter.key);
+      // Use parts mode if enabled, otherwise try full chapter first
+      let content: string | null = null;
+      
+      if (generateInParts) {
+        // Direct parts generation for slower connections
+        content = await generateChapterInParts(chapter.key);
+      } else {
+        // Try full chapter first, falls back to parts if it fails
+        content = await generateChapter(chapter.key);
+      }
       
       if (content) {
         newContent[chapter.key] = content;
         setChapterContent(prev => ({ ...prev, [chapter.key]: content }));
         
-        // Line-by-line typing effect for all chapters
-        const lines = content.split('\n');
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-          const line = lines[lineIndex];
-          
-          // Character-by-character for current line
-          for (let charIndex = 0; charIndex <= line.length; charIndex += 5) {
-            setCurrentLine(line.slice(0, charIndex));
-            await new Promise(resolve => setTimeout(resolve, 1));
+        // Only show typing effect if we didn't already do it in parts mode
+        if (!generateInParts) {
+          // Line-by-line typing effect for all chapters
+          const lines = content.split('\n');
+          for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const line = lines[lineIndex];
+            
+            // Character-by-character for current line
+            for (let charIndex = 0; charIndex <= line.length; charIndex += 5) {
+              setCurrentLine(line.slice(0, charIndex));
+              await new Promise(resolve => setTimeout(resolve, 1));
+            }
+            
+            // Add completed line to all lines
+            setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line }]);
+            setLineCount(prev => prev + 1);
+            setCurrentLine('');
           }
-          
-          // Add completed line to all lines
-          setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line }]);
-          setLineCount(prev => prev + 1);
-          setCurrentLine('');
         }
       } else {
         failed.push(chapter.key);
@@ -837,11 +894,15 @@ const CreateReport = () => {
                   {/* Live Generated Content Display - All Chapters */}
                   {showLivePreview && (allGeneratedLines.length > 0 || currentLine) && (
                     <div className="mt-3 bg-background/50 rounded-lg border border-border/50 overflow-hidden">
-                      <div className="bg-muted/50 px-3 py-1.5 border-b border-border/50 flex items-center gap-2">
+                      <div className="bg-muted/50 px-3 py-1.5 border-b border-border/50 flex items-center gap-2 flex-wrap">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         <span className="text-xs font-medium text-muted-foreground">
-                          Live Generation: {CHAPTERS.find(c => c.key === currentChapter)?.label}
+                          {CHAPTERS.find(c => c.key === currentChapter)?.label}
+                          {currentPart && <span className="text-primary ml-1">→ {currentPart}</span>}
                         </span>
+                        {generateInParts && (
+                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">Parts Mode</span>
+                        )}
                         <span className="ml-auto text-xs text-muted-foreground/60">
                           {lineCount.toLocaleString()} lines
                         </span>
@@ -1157,6 +1218,23 @@ const CreateReport = () => {
                       <p className="text-xs text-muted-foreground mt-2">
                         ⏱️ Generation takes 5-10 minutes. Please keep this page open.
                       </p>
+                    </div>
+                    
+                    {/* Slow Connection Mode Toggle */}
+                    <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3 border border-border/50">
+                      <div className="flex items-center gap-2 flex-1">
+                        <Wifi className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium">Slow Connection Mode</p>
+                          <p className="text-xs text-muted-foreground">
+                            Generate in smaller parts to avoid timeouts
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={generateInParts}
+                        onCheckedChange={setGenerateInParts}
+                      />
                     </div>
                     <Button
                       type="button"
