@@ -277,23 +277,42 @@ const CreateReport = () => {
     });
   };
 
-  // Generate a single chapter
-  const generateChapter = async (chapterKey: string): Promise<string | null> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-report', {
-        body: {
-          ...formData,
-          userId: user?.id,
-          chapter: chapterKey,
-        },
-      });
+  // Generate a single chapter with retry logic
+  const generateChapter = async (chapterKey: string, retries = 3): Promise<string | null> => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`Generating chapter ${chapterKey}, attempt ${attempt}/${retries}`);
+        
+        const { data, error } = await supabase.functions.invoke('generate-report', {
+          body: {
+            ...formData,
+            userId: user?.id,
+            chapter: chapterKey,
+          },
+        });
 
-      if (error) throw error;
-      return data?.content || null;
-    } catch (error: any) {
-      console.error(`Error generating chapter ${chapterKey}:`, error);
-      return null;
+        if (error) throw error;
+        return data?.content || null;
+      } catch (error: any) {
+        console.error(`Error generating chapter ${chapterKey} (attempt ${attempt}):`, error);
+        
+        // If this was the last attempt, return null
+        if (attempt === retries) {
+          return null;
+        }
+        
+        // Show retry notification
+        setAllGeneratedLines(prev => [...prev, { 
+          chapter: chapterKey, 
+          line: `⏳ Retrying... (attempt ${attempt + 1}/${retries})` 
+        }]);
+        
+        // Wait before retrying (exponential backoff: 2s, 4s, 8s...)
+        const waitTime = Math.pow(2, attempt) * 1000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
     }
+    return null;
   };
 
   // Generate all chapters sequentially
