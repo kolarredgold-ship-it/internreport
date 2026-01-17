@@ -97,7 +97,51 @@ const CreateReport = () => {
   const [chapterTimes, setChapterTimes] = useState<number[]>([]);
   const [chapterStartTime, setChapterStartTime] = useState<number | null>(null);
   const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<string | null>(null);
+  const [funMessage, setFunMessage] = useState<string>('');
+  const [funMessageIndex, setFunMessageIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fun status messages to keep users engaged
+  const funMessages = [
+    "🤔 Thinking deeply about your internship...",
+    "📚 Analyzing industry best practices...",
+    "✍️ Crafting professional content...",
+    "🎓 Making it university-ready...",
+    "🔍 Adding relevant insights...",
+    "💡 Generating creative sections...",
+    "📝 Structuring chapters perfectly...",
+    "🎨 Polishing the presentation...",
+    "🧠 AI is working its magic...",
+    "⚡ Processing your requirements...",
+    "📖 Building comprehensive content...",
+    "🎯 Tailoring to your specifications...",
+    "🌟 Creating something amazing...",
+    "🚀 Almost there, quality takes time...",
+    "💼 Professional formatting in progress...",
+    "🔧 Fine-tuning the details...",
+    "📊 Incorporating data analysis...",
+    "🎉 Making your report stand out...",
+    "🏆 Ensuring top-notch quality...",
+    "✨ Sprinkling some AI excellence...",
+  ];
+
+  // Rotate fun messages during generation
+  useEffect(() => {
+    if (generating) {
+      setFunMessage(funMessages[0]);
+      const interval = setInterval(() => {
+        setFunMessageIndex(prev => {
+          const next = (prev + 1) % funMessages.length;
+          setFunMessage(funMessages[next]);
+          return next;
+        });
+      }, 3000);
+      return () => clearInterval(interval);
+    } else {
+      setFunMessage('');
+      setFunMessageIndex(0);
+    }
+  }, [generating]);
 
   // Auto-scroll to bottom when new lines are added
   useEffect(() => {
@@ -870,13 +914,24 @@ const CreateReport = () => {
     }
   };
 
+  // Clean up asterisks and formatting from content
+  const cleanContent = (content: string): string => {
+    return content
+      .replace(/\*\*\*/g, '') // Remove triple asterisks
+      .replace(/\*\*/g, '')   // Remove double asterisks (bold markers)
+      .replace(/\*/g, '')      // Remove single asterisks (italic markers)
+      .replace(/#{1,6}\s/g, '') // Remove markdown headers
+      .replace(/`/g, '')       // Remove backticks
+      .trim();
+  };
+
   // Download full merged report
   const downloadFullReport = async () => {
     if (!hasAnyContent) return;
 
-    // Merge all chapters in order
+    // Merge all chapters in order and clean up asterisks
     const orderedContent = CHAPTERS
-      .map(ch => chapterContent[ch.key])
+      .map(ch => chapterContent[ch.key] ? cleanContent(chapterContent[ch.key]!) : null)
       .filter(Boolean)
       .join('\n\n---\n\n');
 
@@ -1154,6 +1209,15 @@ const CreateReport = () => {
                           <div ref={scrollRef} className="h-1" />
                         </div>
                       </ScrollArea>
+                    </div>
+                  )}
+                  
+                  {/* Fun Status Messages */}
+                  {funMessage && (
+                    <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-lg p-3 border border-primary/10">
+                      <p className="text-sm text-center font-medium text-foreground/80 animate-pulse">
+                        {funMessage}
+                      </p>
                     </div>
                   )}
                   
