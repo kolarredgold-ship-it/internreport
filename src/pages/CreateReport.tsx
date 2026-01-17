@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { useToast } from '@/hooks/use-toast';
-import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle, Eye, EyeOff, Wifi, RotateCcw, Timer } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, CheckCircle2, AlertCircle, Eye, EyeOff, Wifi, RotateCcw, Timer, Volume2, Square } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
@@ -52,16 +52,49 @@ const initialFormData: FormData = {
 // Chapters to generate (in order)
 const CHAPTERS = [
   { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, TOC' },
-  { key: '1', label: 'Chapter 1', description: 'Introduction' },
-  { key: '2', label: 'Chapter 2', description: 'Industry & Company Profile' },
+  { key: '1', label: 'Chapter 1', description: 'Introduction to Internship' },
+  { key: '2', label: 'Chapter 2', description: 'Introduction to Industry and Company Profile' },
   { key: '3', label: 'Chapter 3', description: 'Literature Review' },
-  { key: '4', label: 'Chapter 4', description: 'Internship Activities' },
-  { key: '5', label: 'Chapter 5', description: 'Technical Learning' },
+  { key: '4', label: 'Chapter 4', description: 'External Learning' },
+  { key: '5', label: 'Chapter 5', description: 'Internship Outcome' },
   { key: '6', label: 'Chapter 6', description: 'Data Analysis & Findings' },
   { key: '7', label: 'Chapter 7', description: 'Challenges & Solutions' },
   { key: '8', label: 'Chapter 8', description: 'Recommendations' },
   { key: '9', label: 'Chapter 9', description: 'Conclusion & References' },
 ];
+
+// Sound notification function
+const playCompletionSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Play a pleasant chime sequence
+    const playNote = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = frequency;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
+      gainNode.gain.linearRampToValueAtTime(0, startTime + duration);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+    
+    const now = audioContext.currentTime;
+    playNote(523.25, now, 0.2);        // C5
+    playNote(659.25, now + 0.15, 0.2); // E5
+    playNote(783.99, now + 0.3, 0.3);  // G5
+  } catch (e) {
+    console.log('Audio notification not supported');
+  }
+};
 
 interface ChapterContent {
   [key: string]: string | null;
@@ -99,6 +132,7 @@ const CreateReport = () => {
   const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<string | null>(null);
   const [funMessage, setFunMessage] = useState<string>('');
   const [funMessageIndex, setFunMessageIndex] = useState(0);
+  const [stopRequested, setStopRequested] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Fun status messages to keep users engaged
@@ -486,10 +520,10 @@ const CreateReport = () => {
     'part2_company': 'Company Profile',
     'part1_theory': 'Theoretical Framework',
     'part2_review': 'Literature & Research',
-    'part1_activities': 'Activities & Roles',
-    'part2_projects': 'Projects & Tools',
-    'part1_technical': 'Technical Skills',
-    'part2_soft': 'Soft Skills & Training',
+    'part1_activities': 'External Learning Activities',
+    'part2_projects': 'Learning Outcomes',
+    'part1_technical': 'Internship Results',
+    'part2_soft': 'Skills & Outcomes',
     'part1_methodology': 'Data Methodology',
     'part2_findings': 'Findings & Analysis',
     'part1_challenges': 'Challenges Faced',
@@ -498,6 +532,15 @@ const CreateReport = () => {
     'part2_future': 'Future Scope',
     'part1_conclusion': 'Conclusion',
     'part2_references': 'Bibliography & Annexures',
+  };
+
+  // Stop generation handler
+  const handleStopGeneration = () => {
+    setStopRequested(true);
+    setAllGeneratedLines(prev => [...prev, { 
+      chapter: currentChapter || '', 
+      line: `\n🛑 Generation stopped by user. Saving progress...` 
+    }]);
   };
 
   // Generate chapter in smaller parts when full generation times out
@@ -712,6 +755,15 @@ const CreateReport = () => {
     }
 
     for (let i = 0; i < chaptersToGenerate.length; i++) {
+      // Check if stop was requested
+      if (stopRequested) {
+        setAllGeneratedLines(prev => [...prev, { 
+          chapter: 'system', 
+          line: `\n✅ Generation stopped. ${i} chapter(s) saved. You can resume later.` 
+        }]);
+        break;
+      }
+      
       const chapter = chaptersToGenerate[i];
       const overallProgress = resumingReport 
         ? Math.round(((CHAPTERS.length - chaptersToGenerate.length + i) / CHAPTERS.length) * 100)
@@ -794,9 +846,10 @@ const CreateReport = () => {
     setResumingReport(false);
     setEstimatedTimeRemaining(null);
     setChapterStartTime(null);
+    setStopRequested(false);
 
-    // Update report status to completed if all done
-    if (failed.length === 0 && reportId) {
+    // Update report status to completed if all done (and not stopped)
+    if (failed.length === 0 && reportId && !stopRequested) {
       try {
         await supabase
           .from('reports')
@@ -828,12 +881,20 @@ const CreateReport = () => {
       }
     }
 
-    if (failed.length === 0) {
+    // Play sound notification when complete
+    if (failed.length === 0 && !stopRequested) {
+      playCompletionSound();
       toast({
-        title: 'Report generated successfully!',
+        title: '🎉 Report generated successfully!',
         description: 'All chapters have been generated. Download your report now.',
       });
+    } else if (stopRequested) {
+      toast({
+        title: 'Generation stopped',
+        description: 'Your progress has been saved. You can resume later.',
+      });
     } else if (failed.length < CHAPTERS.length) {
+      playCompletionSound();
       toast({
         title: 'Report partially generated',
         description: `${CHAPTERS.length - failed.length} of ${CHAPTERS.length} chapters generated. You can retry failed chapters.`,
@@ -1221,9 +1282,26 @@ const CreateReport = () => {
                     </div>
                   )}
                   
-                  <p className="text-xs text-muted-foreground text-center">
-                    This may take 5-10 minutes. Please keep this page open.
-                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-xs text-muted-foreground">
+                      This may take 5-10 minutes. Please keep this page open.
+                    </p>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleStopGeneration}
+                      disabled={stopRequested}
+                      className="flex items-center gap-1"
+                    >
+                      <Square className="w-3 h-3" />
+                      {stopRequested ? 'Stopping...' : 'Stop'}
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground/60 justify-center">
+                    <Volume2 className="w-3 h-3" />
+                    <span>Sound notification when complete</span>
+                  </div>
                 </div>
               )}
 
