@@ -174,25 +174,25 @@ Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
 Duration: ${internshipDuration}, Year: ${academicYear}, Topic: ${topicSpecialization}
 Target: ${pagesCount} pages total`;
 
-    // Chapter-specific prompts (each optimized for ~8000 tokens output)
+    // Chapter-specific prompts (each optimized for 1500-2000 words output)
     const chapterPrompts: Record<string, { prompt: string; label: string }> = {
       'front': {
         label: 'Front Matter',
         prompt: `${baseContext}
 
-Generate the FRONT MATTER for an internship report with FULL DETAIL:
+Generate the FRONT MATTER for an internship report (1500-2000 words total):
 
 # CERTIFICATE
-(Write a formal certificate - 150+ words with institutional formatting, signatures placeholders)
+(Write a formal certificate - 80-100 words with institutional formatting, signatures placeholders)
 
 # DECLARATION
-(Write student declaration - 200+ words with formal legal language)
+(Write student declaration - 100-120 words with formal legal language)
 
 # ACKNOWLEDGEMENT
-(Write detailed acknowledgement - 300+ words thanking institution, guide, company supervisors, colleagues, family)
+(Write acknowledgement - 150-180 words thanking institution, guide, company supervisors, colleagues, family)
 
 # ABSTRACT
-(Write comprehensive abstract - 400+ words summarizing the entire internship experience, objectives, methodology, findings, and conclusions)
+(Write abstract - 200-250 words summarizing the internship experience, objectives, methodology, findings)
 
 # TABLE OF CONTENTS
 (List all chapters with section numbers)
@@ -204,236 +204,236 @@ Generate the FRONT MATTER for an internship report with FULL DETAIL:
 (Placeholder list)
 
 # LIST OF ABBREVIATIONS
-(Include 10-15 relevant abbreviations used in the report)
+(Include 8-10 relevant abbreviations used in the report)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English. Keep it concise.`
       },
       '1': {
         label: 'Chapter 1: Introduction',
         prompt: `${baseContext}
 
-Generate CHAPTER 1: INTRODUCTION with FULL DETAIL (2000+ words):
+Generate CHAPTER 1: INTRODUCTION (1500-2000 words total):
 
 # CHAPTER 1: INTRODUCTION
 
 ## 1.1 Background of the Study
-(Write 500+ words - elaborate on industry context, current trends, market scenario, relevance of ${topicSpecialization})
+(Write 300-400 words - elaborate on industry context, current trends for ${topicSpecialization})
 
 ## 1.2 Objectives of the Internship
-(Write 400+ words - list 8-10 specific, measurable objectives with explanations)
+(Write 250-300 words - list 5-6 specific objectives with brief explanations)
 
 ## 1.3 Scope of the Study
-(Write 400+ words - define boundaries, what is included/excluded, limitations)
+(Write 250-300 words - define boundaries, what is included/excluded)
 
 ## 1.4 Need for the Study
-(Write 400+ words - justify importance with industry data, statistics, and real-world relevance)
+(Write 250-300 words - justify importance with industry relevance)
 
 ## 1.5 Research Methodology
-(Write 300+ words - describe approach, data collection methods, tools used)
+(Write 200-250 words - describe approach, data collection methods)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English.`
       },
       '2': {
         label: 'Chapter 2: Industry & Company Profile',
         prompt: `${baseContext}
 
-Generate CHAPTER 2: INDUSTRY AND COMPANY PROFILE with FULL DETAIL (2500+ words):
+Generate CHAPTER 2: INDUSTRY AND COMPANY PROFILE (1500-2000 words total):
 
 # CHAPTER 2: INDUSTRY AND COMPANY PROFILE
 
 ## 2.1 Industry Overview
-(Write 600+ words - detailed analysis of ${topicSpecialization} industry, market size, growth rate, key players, trends)
+(Write 300-350 words - analysis of ${topicSpecialization} industry, market trends, key players)
 
 ## 2.2 About ${companyName}
-(Write 500+ words - comprehensive company history, founding, milestones, current operations)
+(Write 250-300 words - company history, operations)
 
 ## 2.3 Vision, Mission, and Core Values
-(Write 250+ words - company philosophy, goals, guiding principles)
+(Write 150-180 words - company philosophy, goals)
 
 ## 2.4 Products and Services Portfolio
-(Write 500+ words - detailed description of all major offerings, USP, market positioning)
+(Write 250-300 words - description of major offerings)
 
 ## 2.5 Organizational Structure
-(Write 350+ words - departments, hierarchy, team composition, reporting structure)
+(Write 180-220 words - departments, hierarchy)
 
 ## 2.6 SWOT Analysis
-(Write 400+ words - comprehensive strengths, weaknesses, opportunities, threats with examples)
+(Write 250-300 words - strengths, weaknesses, opportunities, threats)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English.`
       },
       '3': {
         label: 'Chapter 3: Literature Review',
         prompt: `${baseContext}
 
-Generate CHAPTER 3: LITERATURE REVIEW with FULL DETAIL (2500+ words):
+Generate CHAPTER 3: LITERATURE REVIEW (1500-2000 words total):
 
 # CHAPTER 3: LITERATURE REVIEW
 
 ## 3.1 Theoretical Framework
-(Write 700+ words - relevant theories, models, and frameworks for ${topicSpecialization}, explain each theory)
+(Write 350-400 words - relevant theories and frameworks for ${topicSpecialization})
 
 ## 3.2 Review of Previous Studies
-(Write 900+ words - cite and discuss 12-15 academic studies with author names, years, key findings)
+(Write 400-500 words - cite and discuss 6-8 academic studies with key findings)
 
 ## 3.3 Industry Best Practices
-(Write 450+ words - current industry standards, benchmarks, successful case studies)
+(Write 250-300 words - current industry standards, benchmarks)
 
 ## 3.4 Technological Advancements
-(Write 450+ words - latest technologies, digital transformation, innovations in the field)
+(Write 250-300 words - latest technologies in the field)
 
 ## 3.5 Research Gap Analysis
-(Write 350+ words - identify gaps in existing research that this internship addresses)
+(Write 180-220 words - identify gaps this internship addresses)
 
-Write EXTENSIVE, DETAILED content with formal academic English. Include proper citations in APA format.`
+Write clear, professional content with formal academic English. Include citations in APA format.`
       },
       '4': {
         label: 'Chapter 4: Internship Activities',
         prompt: `${baseContext}
 
-Generate CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES with FULL DETAIL (3000+ words):
+Generate CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES (1500-2000 words total):
 
 # CHAPTER 4: INTERNSHIP ACTIVITIES AND RESPONSIBILITIES
 
 ## 4.1 Department Overview
-(Write 400+ words - detailed department description, function, role in organization)
+(Write 200-250 words - department description, function)
 
 ## 4.2 Roles and Responsibilities Assigned
-(Write 600+ words - comprehensive list of 10-15 duties with detailed descriptions)
+(Write 300-350 words - list of 6-8 duties with descriptions)
 
 ## 4.3 Week-wise Activity Log
-(Write 1000+ words - detailed week-by-week account for ${internshipDuration}, specific tasks, learnings each week)
+(Write 400-500 words - week-by-week account for ${internshipDuration})
 
 ## 4.4 Projects Undertaken
-(Write 700+ words - describe 4-5 major projects with objectives, methodology, outcomes)
+(Write 300-350 words - describe 2-3 major projects with outcomes)
 
 ## 4.5 Tools and Technologies Used
-(Write 500+ words - list all software, tools, technologies with usage context and proficiency gained)
+(Write 200-250 words - list software, tools with usage context)
 
 ## 4.6 Team Collaboration
-(Write 400+ words - teamwork experiences, meetings, communication methods, collaborative projects)
+(Write 150-200 words - teamwork experiences, communication methods)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English.`
       },
       '5': {
         label: 'Chapter 5: Technical Learning',
         prompt: `${baseContext}
 
-Generate CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT with FULL DETAIL (2500+ words):
+Generate CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT (1500-2000 words total):
 
 # CHAPTER 5: TECHNICAL LEARNING AND SKILL DEVELOPMENT
 
 ## 5.1 Technical Skills Acquired
-(Write 600+ words - list 10-12 technical skills with detailed descriptions of what was learned, proficiency level)
+(Write 350-400 words - list 6-8 technical skills with descriptions)
 
 ## 5.2 Soft Skills Developed
-(Write 500+ words - communication, leadership, time management, problem-solving with specific examples)
+(Write 300-350 words - communication, leadership, problem-solving with examples)
 
 ## 5.3 Domain Knowledge Enhancement
-(Write 500+ words - specific knowledge about ${topicSpecialization}, industry insights, specialized learning)
+(Write 300-350 words - specific knowledge about ${topicSpecialization})
 
 ## 5.4 Professional Competencies
-(Write 500+ words - industry-specific competencies, professional standards, workplace ethics)
+(Write 280-320 words - industry-specific competencies, workplace ethics)
 
 ## 5.5 Certifications and Training
-(Write 400+ words - training programs attended, online courses, workshops, certifications obtained)
+(Write 200-250 words - training programs, workshops attended)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English.`
       },
       '6': {
         label: 'Chapter 6: Data Analysis & Findings',
         prompt: `${baseContext}
 
-Generate CHAPTER 6: DATA ANALYSIS AND FINDINGS with FULL DETAIL (2500+ words):
+Generate CHAPTER 6: DATA ANALYSIS AND FINDINGS (1500-2000 words total):
 
 # CHAPTER 6: DATA ANALYSIS AND FINDINGS
 
 ## 6.1 Data Collection Methodology
-(Write 500+ words - how data was gathered, sources, sample size, tools used)
+(Write 280-320 words - how data was gathered, sources, tools used)
 
 ## 6.2 Analysis Framework
-(Write 400+ words - analytical methods, tools, frameworks used for analysis)
+(Write 220-260 words - analytical methods, tools used)
 
 ## 6.3 Key Findings and Observations
-(Write 800+ words - present 10-12 major findings with detailed explanations, data points)
+(Write 400-500 words - present 5-6 major findings with explanations)
 
 ## 6.4 Comparative Analysis
-(Write 500+ words - compare findings with industry standards, benchmarks, previous studies)
+(Write 280-320 words - compare findings with industry standards)
 
 ## 6.5 Interpretation of Results
-(Write 500+ words - explain implications, significance, what the data reveals)
+(Write 280-320 words - explain implications, significance)
 
-Include relevant tables and figures placeholders. Write EXTENSIVE, DETAILED content with formal academic English.`
+Include relevant table/figure placeholders. Write clear, professional content with formal academic English.`
       },
       '7': {
         label: 'Chapter 7: Challenges & Solutions',
         prompt: `${baseContext}
 
-Generate CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING with FULL DETAIL (2000+ words):
+Generate CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING (1500-2000 words total):
 
 # CHAPTER 7: CHALLENGES AND PROBLEM-SOLVING
 
 ## 7.1 Technical Challenges Encountered
-(Write 500+ words - 5-6 technical difficulties with context, impact, and how they were addressed)
+(Write 350-400 words - 3-4 technical difficulties with context and how addressed)
 
 ## 7.2 Organizational Challenges
-(Write 400+ words - workplace, process, and communication challenges faced)
+(Write 280-320 words - workplace, process challenges faced)
 
 ## 7.3 Problem-Solving Approaches
-(Write 500+ words - specific methods, frameworks, strategies used to overcome challenges)
+(Write 350-400 words - methods and strategies used to overcome challenges)
 
 ## 7.4 Lessons Learned
-(Write 500+ words - key takeaways from challenges, how they contributed to growth)
+(Write 350-400 words - key takeaways from challenges, contribution to growth)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English.`
       },
       '8': {
         label: 'Chapter 8: Recommendations',
         prompt: `${baseContext}
 
-Generate CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS with FULL DETAIL (2000+ words):
+Generate CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS (1500-2000 words total):
 
 # CHAPTER 8: SUGGESTIONS AND RECOMMENDATIONS
 
 ## 8.1 Recommendations for ${companyName}
-(Write 600+ words - 6-8 detailed, actionable recommendations with justification and expected benefits)
+(Write 400-450 words - 4-5 actionable recommendations with justification)
 
 ## 8.2 Process Improvement Suggestions
-(Write 500+ words - operational improvements, efficiency enhancements, workflow optimizations)
+(Write 320-380 words - operational improvements, efficiency enhancements)
 
 ## 8.3 Technology Adoption Recommendations
-(Write 450+ words - new technologies, tools, systems that could benefit the organization)
+(Write 300-350 words - new technologies that could benefit the organization)
 
 ## 8.4 Future Scope and Opportunities
-(Write 450+ words - growth areas, market opportunities, expansion possibilities)
+(Write 300-350 words - growth areas, market opportunities)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English.`
       },
       '9': {
         label: 'Chapter 9: Conclusion & References',
         prompt: `${baseContext}
 
-Generate CHAPTER 9: CONCLUSION and BIBLIOGRAPHY with FULL DETAIL:
+Generate CHAPTER 9: CONCLUSION and BIBLIOGRAPHY (1500-2000 words total):
 
-# CHAPTER 9: CONCLUSION (1200+ words)
+# CHAPTER 9: CONCLUSION
 
 ## 9.1 Summary of Internship Experience
-(Write 400+ words - comprehensive summary of the entire internship journey)
+(Write 280-320 words - summary of the entire internship journey)
 
 ## 9.2 Achievement of Objectives
-(Write 400+ words - map achievements to initial objectives, degree of completion)
+(Write 280-320 words - map achievements to initial objectives)
 
 ## 9.3 Personal and Professional Growth
-(Write 250+ words - development during internship, transformation)
+(Write 180-220 words - development during internship)
 
 ## 9.4 Future Career Aspirations
-(Write 250+ words - connect learning to career goals, next steps)
+(Write 180-220 words - connect learning to career goals)
 
 # BIBLIOGRAPHY
-(Include 25-30 properly formatted references in APA style:
-- 10 academic journal articles
-- 5 books/textbooks
-- 5 industry reports
-- 5 reputable websites
+(Include 12-15 properly formatted references in APA style:
+- 5 academic journal articles
+- 3 books/textbooks
+- 3 industry reports
+- 4 reputable websites
 All relevant to ${topicSpecialization})
 
 # ANNEXURES
@@ -443,7 +443,7 @@ All relevant to ${topicSpecialization})
 ## Annexure D: Weekly Report Samples (placeholder)
 ## Annexure E: Feedback Form (placeholder)
 
-Write EXTENSIVE, DETAILED content with formal academic English.`
+Write clear, professional content with formal academic English.`
       }
     };
 
@@ -452,101 +452,101 @@ Write EXTENSIVE, DETAILED content with formal academic English.`
       'front': {
         'part1_certificate': {
           label: 'Front Matter (Certificate, Declaration, Acknowledgement)',
-          prompt: `${baseContext}\n\nGenerate ONLY these sections:\n\n# CERTIFICATE\n(Write a formal certificate - 150+ words)\n\n# DECLARATION\n(Write student declaration - 200+ words)\n\n# ACKNOWLEDGEMENT\n(Write detailed acknowledgement - 300+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\nGenerate ONLY these sections (400-500 words total):\n\n# CERTIFICATE\n(Write 80-100 words)\n\n# DECLARATION\n(Write 100-120 words)\n\n# ACKNOWLEDGEMENT\n(Write 150-180 words)\n\nWrite clear, professional content.`
         },
         'part2_abstract': {
           label: 'Front Matter (Abstract, TOC, Lists)',
-          prompt: `${baseContext}\n\nGenerate ONLY these sections:\n\n# ABSTRACT\n(Write comprehensive abstract - 400+ words)\n\n# TABLE OF CONTENTS\n(List all chapters)\n\n# LIST OF FIGURES\n# LIST OF TABLES\n# LIST OF ABBREVIATIONS\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\nGenerate ONLY these sections (500-600 words total):\n\n# ABSTRACT\n(Write 200-250 words)\n\n# TABLE OF CONTENTS\n(List all chapters)\n\n# LIST OF FIGURES\n# LIST OF TABLES\n# LIST OF ABBREVIATIONS\n\nWrite clear, professional content.`
         }
       },
       '1': {
         'part1_background': {
           label: 'Chapter 1 (Background, Objectives)',
-          prompt: `${baseContext}\n\n# CHAPTER 1: INTRODUCTION (Part 1)\n\n## 1.1 Background of the Study\n(Write 500+ words on industry context, trends for ${topicSpecialization})\n\n## 1.2 Objectives of the Internship\n(Write 400+ words - list 8-10 objectives)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 1: INTRODUCTION (Part 1) - 600-700 words total\n\n## 1.1 Background of the Study\n(Write 300-400 words on industry context for ${topicSpecialization})\n\n## 1.2 Objectives of the Internship\n(Write 250-300 words - list 5-6 objectives)\n\nWrite clear, professional content.`
         },
         'part2_objectives': {
           label: 'Chapter 1 (Scope, Need, Methodology)',
-          prompt: `${baseContext}\n\n# CHAPTER 1: INTRODUCTION (Part 2)\n\n## 1.3 Scope of the Study\n(Write 400+ words)\n\n## 1.4 Need for the Study\n(Write 400+ words)\n\n## 1.5 Research Methodology\n(Write 300+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 1: INTRODUCTION (Part 2) - 700-850 words total\n\n## 1.3 Scope of the Study\n(Write 250-300 words)\n\n## 1.4 Need for the Study\n(Write 250-300 words)\n\n## 1.5 Research Methodology\n(Write 200-250 words)\n\nWrite clear, professional content.`
         }
       },
       '2': {
         'part1_industry': {
           label: 'Chapter 2 (Industry Overview)',
-          prompt: `${baseContext}\n\n# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Part 1)\n\n## 2.1 Industry Overview\n(Write 600+ words on ${topicSpecialization} industry)\n\n## 2.2 About ${companyName}\n(Write 500+ words on company history)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Part 1) - 550-650 words total\n\n## 2.1 Industry Overview\n(Write 300-350 words on ${topicSpecialization} industry)\n\n## 2.2 About ${companyName}\n(Write 250-300 words on company history)\n\nWrite clear, professional content.`
         },
         'part2_company': {
           label: 'Chapter 2 (Company Details, SWOT)',
-          prompt: `${baseContext}\n\n# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Part 2)\n\n## 2.3 Vision, Mission, Core Values\n(Write 250+ words)\n\n## 2.4 Products and Services\n(Write 500+ words)\n\n## 2.5 Organizational Structure\n(Write 350+ words)\n\n## 2.6 SWOT Analysis\n(Write 400+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 2: INDUSTRY AND COMPANY PROFILE (Part 2) - 830-1000 words total\n\n## 2.3 Vision, Mission, Core Values\n(Write 150-180 words)\n\n## 2.4 Products and Services\n(Write 250-300 words)\n\n## 2.5 Organizational Structure\n(Write 180-220 words)\n\n## 2.6 SWOT Analysis\n(Write 250-300 words)\n\nWrite clear, professional content.`
         }
       },
       '3': {
         'part1_theory': {
           label: 'Chapter 3 (Theoretical Framework)',
-          prompt: `${baseContext}\n\n# CHAPTER 3: LITERATURE REVIEW (Part 1)\n\n## 3.1 Theoretical Framework\n(Write 700+ words on theories for ${topicSpecialization})\n\n## 3.2 Review of Previous Studies\n(Write 500+ words, cite 6-8 studies)\n\nWrite with formal academic English with citations.`
+          prompt: `${baseContext}\n\n# CHAPTER 3: LITERATURE REVIEW (Part 1) - 750-900 words total\n\n## 3.1 Theoretical Framework\n(Write 350-400 words on theories for ${topicSpecialization})\n\n## 3.2 Review of Previous Studies\n(Write 400-500 words, cite 6-8 studies)\n\nWrite clear, professional content with citations.`
         },
         'part2_review': {
           label: 'Chapter 3 (Best Practices, Research Gap)',
-          prompt: `${baseContext}\n\n# CHAPTER 3: LITERATURE REVIEW (Part 2)\n\n## 3.2 Review of Previous Studies (continued)\n(Write 400+ words, cite 6 more studies)\n\n## 3.3 Industry Best Practices\n(Write 450+ words)\n\n## 3.4 Technological Advancements\n(Write 450+ words)\n\n## 3.5 Research Gap Analysis\n(Write 350+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 3: LITERATURE REVIEW (Part 2) - 680-820 words total\n\n## 3.3 Industry Best Practices\n(Write 250-300 words)\n\n## 3.4 Technological Advancements\n(Write 250-300 words)\n\n## 3.5 Research Gap Analysis\n(Write 180-220 words)\n\nWrite clear, professional content.`
         }
       },
       '4': {
         'part1_activities': {
           label: 'Chapter 4 (Department, Roles, Weekly Log)',
-          prompt: `${baseContext}\n\n# CHAPTER 4: INTERNSHIP ACTIVITIES (Part 1)\n\n## 4.1 Department Overview\n(Write 400+ words)\n\n## 4.2 Roles and Responsibilities\n(Write 600+ words on 10-15 duties)\n\n## 4.3 Week-wise Activity Log\n(Write 1000+ words for ${internshipDuration})\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 4: INTERNSHIP ACTIVITIES (Part 1) - 900-1100 words total\n\n## 4.1 Department Overview\n(Write 200-250 words)\n\n## 4.2 Roles and Responsibilities\n(Write 300-350 words on 6-8 duties)\n\n## 4.3 Week-wise Activity Log\n(Write 400-500 words for ${internshipDuration})\n\nWrite clear, professional content.`
         },
         'part2_projects': {
           label: 'Chapter 4 (Projects, Tools, Team)',
-          prompt: `${baseContext}\n\n# CHAPTER 4: INTERNSHIP ACTIVITIES (Part 2)\n\n## 4.4 Projects Undertaken\n(Write 700+ words on 4-5 projects)\n\n## 4.5 Tools and Technologies Used\n(Write 500+ words)\n\n## 4.6 Team Collaboration\n(Write 400+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 4: INTERNSHIP ACTIVITIES (Part 2) - 650-800 words total\n\n## 4.4 Projects Undertaken\n(Write 300-350 words on 2-3 projects)\n\n## 4.5 Tools and Technologies Used\n(Write 200-250 words)\n\n## 4.6 Team Collaboration\n(Write 150-200 words)\n\nWrite clear, professional content.`
         }
       },
       '5': {
         'part1_technical': {
           label: 'Chapter 5 (Technical Skills)',
-          prompt: `${baseContext}\n\n# CHAPTER 5: TECHNICAL LEARNING (Part 1)\n\n## 5.1 Technical Skills Acquired\n(Write 600+ words on 10-12 skills)\n\n## 5.2 Soft Skills Developed\n(Write 500+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 5: TECHNICAL LEARNING (Part 1) - 650-750 words total\n\n## 5.1 Technical Skills Acquired\n(Write 350-400 words on 6-8 skills)\n\n## 5.2 Soft Skills Developed\n(Write 300-350 words)\n\nWrite clear, professional content.`
         },
         'part2_soft': {
           label: 'Chapter 5 (Domain Knowledge, Certifications)',
-          prompt: `${baseContext}\n\n# CHAPTER 5: TECHNICAL LEARNING (Part 2)\n\n## 5.3 Domain Knowledge Enhancement\n(Write 500+ words on ${topicSpecialization})\n\n## 5.4 Professional Competencies\n(Write 500+ words)\n\n## 5.5 Certifications and Training\n(Write 400+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 5: TECHNICAL LEARNING (Part 2) - 780-920 words total\n\n## 5.3 Domain Knowledge Enhancement\n(Write 300-350 words on ${topicSpecialization})\n\n## 5.4 Professional Competencies\n(Write 280-320 words)\n\n## 5.5 Certifications and Training\n(Write 200-250 words)\n\nWrite clear, professional content.`
         }
       },
       '6': {
         'part1_methodology': {
           label: 'Chapter 6 (Methodology, Framework)',
-          prompt: `${baseContext}\n\n# CHAPTER 6: DATA ANALYSIS (Part 1)\n\n## 6.1 Data Collection Methodology\n(Write 500+ words)\n\n## 6.2 Analysis Framework\n(Write 400+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 6: DATA ANALYSIS (Part 1) - 500-580 words total\n\n## 6.1 Data Collection Methodology\n(Write 280-320 words)\n\n## 6.2 Analysis Framework\n(Write 220-260 words)\n\nWrite clear, professional content.`
         },
         'part2_findings': {
           label: 'Chapter 6 (Findings, Analysis)',
-          prompt: `${baseContext}\n\n# CHAPTER 6: DATA ANALYSIS (Part 2)\n\n## 6.3 Key Findings and Observations\n(Write 800+ words with 10-12 findings)\n\n## 6.4 Comparative Analysis\n(Write 500+ words)\n\n## 6.5 Interpretation of Results\n(Write 500+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 6: DATA ANALYSIS (Part 2) - 960-1140 words total\n\n## 6.3 Key Findings and Observations\n(Write 400-500 words with 5-6 findings)\n\n## 6.4 Comparative Analysis\n(Write 280-320 words)\n\n## 6.5 Interpretation of Results\n(Write 280-320 words)\n\nWrite clear, professional content.`
         }
       },
       '7': {
         'part1_challenges': {
           label: 'Chapter 7 (Challenges)',
-          prompt: `${baseContext}\n\n# CHAPTER 7: CHALLENGES (Part 1)\n\n## 7.1 Technical Challenges Encountered\n(Write 500+ words on 5-6 difficulties)\n\n## 7.2 Organizational Challenges\n(Write 400+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 7: CHALLENGES (Part 1) - 630-720 words total\n\n## 7.1 Technical Challenges Encountered\n(Write 350-400 words on 3-4 difficulties)\n\n## 7.2 Organizational Challenges\n(Write 280-320 words)\n\nWrite clear, professional content.`
         },
         'part2_solutions': {
           label: 'Chapter 7 (Problem-Solving, Lessons)',
-          prompt: `${baseContext}\n\n# CHAPTER 7: CHALLENGES (Part 2)\n\n## 7.3 Problem-Solving Approaches\n(Write 500+ words)\n\n## 7.4 Lessons Learned\n(Write 500+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 7: CHALLENGES (Part 2) - 700-800 words total\n\n## 7.3 Problem-Solving Approaches\n(Write 350-400 words)\n\n## 7.4 Lessons Learned\n(Write 350-400 words)\n\nWrite clear, professional content.`
         }
       },
       '8': {
         'part1_recommendations': {
           label: 'Chapter 8 (Company Recommendations)',
-          prompt: `${baseContext}\n\n# CHAPTER 8: RECOMMENDATIONS (Part 1)\n\n## 8.1 Recommendations for ${companyName}\n(Write 600+ words with 6-8 recommendations)\n\n## 8.2 Process Improvement Suggestions\n(Write 500+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 8: RECOMMENDATIONS (Part 1) - 720-830 words total\n\n## 8.1 Recommendations for ${companyName}\n(Write 400-450 words with 4-5 recommendations)\n\n## 8.2 Process Improvement Suggestions\n(Write 320-380 words)\n\nWrite clear, professional content.`
         },
         'part2_future': {
           label: 'Chapter 8 (Technology, Future Scope)',
-          prompt: `${baseContext}\n\n# CHAPTER 8: RECOMMENDATIONS (Part 2)\n\n## 8.3 Technology Adoption Recommendations\n(Write 450+ words)\n\n## 8.4 Future Scope and Opportunities\n(Write 450+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 8: RECOMMENDATIONS (Part 2) - 600-700 words total\n\n## 8.3 Technology Adoption Recommendations\n(Write 300-350 words)\n\n## 8.4 Future Scope and Opportunities\n(Write 300-350 words)\n\nWrite clear, professional content.`
         }
       },
       '9': {
         'part1_conclusion': {
           label: 'Chapter 9 (Conclusion)',
-          prompt: `${baseContext}\n\n# CHAPTER 9: CONCLUSION (Part 1)\n\n## 9.1 Summary of Internship Experience\n(Write 400+ words)\n\n## 9.2 Achievement of Objectives\n(Write 400+ words)\n\n## 9.3 Personal and Professional Growth\n(Write 250+ words)\n\n## 9.4 Future Career Aspirations\n(Write 250+ words)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# CHAPTER 9: CONCLUSION (Part 1) - 920-1080 words total\n\n## 9.1 Summary of Internship Experience\n(Write 280-320 words)\n\n## 9.2 Achievement of Objectives\n(Write 280-320 words)\n\n## 9.3 Personal and Professional Growth\n(Write 180-220 words)\n\n## 9.4 Future Career Aspirations\n(Write 180-220 words)\n\nWrite clear, professional content.`
         },
         'part2_references': {
           label: 'Chapter 9 (Bibliography, Annexures)',
-          prompt: `${baseContext}\n\n# BIBLIOGRAPHY\n(Include 25-30 APA style references relevant to ${topicSpecialization})\n\n# ANNEXURES\n## Annexure A: Sample Work Documents (placeholder)\n## Annexure B: Photographs (placeholder)\n## Annexure C: Completion Certificate (placeholder)\n## Annexure D: Weekly Reports (placeholder)\n## Annexure E: Feedback Form (placeholder)\n\nWrite with formal academic English.`
+          prompt: `${baseContext}\n\n# BIBLIOGRAPHY\n(Include 12-15 APA style references relevant to ${topicSpecialization})\n\n# ANNEXURES\n## Annexure A: Sample Work Documents (placeholder)\n## Annexure B: Photographs (placeholder)\n## Annexure C: Completion Certificate (placeholder)\n## Annexure D: Weekly Reports (placeholder)\n## Annexure E: Feedback Form (placeholder)\n\nWrite clear, professional content.`
         }
       }
     };
@@ -589,15 +589,15 @@ Write EXTENSIVE, DETAILED content with formal academic English.`
           messages: [
             {
               role: "system",
-              content: `You are an expert academic writer creating a ${pagesCount}-page internship project report for an Indian university student. Write EXTREMELY DETAILED content with formal academic language. Each section must be fully elaborated with multiple paragraphs. Never write brief summaries. Use proper markdown formatting.`
+              content: `You are an expert academic writer creating an internship project report for an Indian university student. Write clear, professional content with formal academic language. IMPORTANT: Keep each chapter between 1500-2000 words maximum. Be concise but comprehensive. Use proper markdown formatting.`
             },
             {
               role: "user",
               content: chapterPrompt
             }
           ],
-          max_tokens: 8000,
-          temperature: 0.75,
+          max_tokens: 4000,
+          temperature: 0.7,
         }),
         signal: controller.signal,
       });
