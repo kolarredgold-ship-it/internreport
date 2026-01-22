@@ -2,6 +2,8 @@
 
 User-agent: *
 Allow: /
+Allow: /blog
+Allow: /blog/*
 Disallow: /dashboard
 Disallow: /create-report
 Disallow: /my-reports
@@ -23,5 +25,7 @@ Allow: /
 User-agent: LinkedInBot
 Allow: /
 
-# Sitemap location
+# Sitemap locations
+Sitemap: https://internreport.in/sitemap-index.xml
 Sitemap: https://internreport.in/sitemap.xml
+Sitemap: https://internreport.in/sitemap-blog.xml
