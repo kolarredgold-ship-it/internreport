@@ -1,0 +1,304 @@
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Calendar, Clock, ArrowRight, ArrowLeft, GraduationCap, Tag, BookOpen, Share2 } from 'lucide-react';
+import { getPostBySlug, blogPosts } from '@/data/blogPosts';
+import { useEffect } from 'react';
+
+const BlogPost = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const post = slug ? getPostBySlug(slug) : undefined;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
+  if (!post) {
+    return (
+      <div className="min-h-screen hero-gradient flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="p-8 text-center">
+            <h1 className="font-display text-2xl font-bold mb-4">Article Not Found</h1>
+            <p className="text-muted-foreground mb-6">
+              The article you're looking for doesn't exist or has been moved.
+            </p>
+            <Link to="/blog">
+              <Button variant="gradient">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Blog
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Get related posts (same domain or university)
+  const relatedPosts = blogPosts
+    .filter(p => p.id !== post.id && (p.domain === post.domain || p.university === post.university))
+    .slice(0, 3);
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: post.excerpt,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+    }
+  };
+
+  return (
+    <div className="min-h-screen hero-gradient">
+      {/* SEO Meta Tags are handled by the head */}
+      
+      {/* Navigation */}
+      <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <span className="font-display font-bold text-xl">InternReport.in</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/blog">
+              <Button variant="ghost">Blog</Button>
+            </Link>
+            <Link to="/auth?signup=true">
+              <Button variant="gradient">Generate Report</Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+          <span>/</span>
+          <Link to="/blog" className="hover:text-primary transition-colors">Blog</Link>
+          <span>/</span>
+          <span className="text-foreground truncate max-w-[200px]">{post.title}</span>
+        </div>
+      </div>
+
+      {/* Article Header */}
+      <article className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <Badge variant="default">{post.category}</Badge>
+              <Badge variant="secondary">{post.domain}</Badge>
+            </div>
+            
+            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+              {post.title}
+            </h1>
+            
+            <p className="text-xl text-muted-foreground mb-6">
+              {post.excerpt}
+            </p>
+            
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b border-border/50 pb-6">
+              <div className="flex items-center gap-2">
+                <GraduationCap className="w-4 h-4" />
+                <span>{post.university}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                <span>{new Date(post.publishedAt).toLocaleDateString('en-IN', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span>{post.readTime} min read</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleShare}>
+                <Share2 className="w-4 h-4 mr-1" />
+                Share
+              </Button>
+            </div>
+          </div>
+
+          {/* CTA Banner */}
+          <Card className="border-primary/20 bg-primary/5 mb-8">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-display font-semibold text-lg mb-1">
+                    🚀 Generate Your Report Instantly with AI
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Skip the manual work. Get a university-compliant report in minutes.
+                  </p>
+                </div>
+                <Link to="/auth?signup=true">
+                  <Button variant="gradient">
+                    Try AI Generator
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Article Content */}
+          <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+            <div 
+              className="blog-content"
+              dangerouslySetInnerHTML={{ 
+                __html: post.content
+                  .replace(/## /g, '<h2 class="font-display text-2xl font-bold mt-8 mb-4">')
+                  .replace(/### /g, '<h3 class="font-display text-xl font-semibold mt-6 mb-3">')
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground leading-relaxed">')
+                  .replace(/^- (.*?)$/gm, '<li class="ml-4 mb-2">$1</li>')
+                  .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
+              }}
+            />
+          </div>
+
+          {/* Keywords */}
+          <div className="border-t border-border/50 pt-6 mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <Tag className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Related Topics:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {post.keywords.map((keyword, idx) => (
+                <Link 
+                  key={idx} 
+                  to={`/blog?search=${encodeURIComponent(keyword)}`}
+                  className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                >
+                  {keyword}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Final CTA */}
+          <Card className="gradient-bg text-primary-foreground mb-12">
+            <CardContent className="p-8 text-center">
+              <h2 className="font-display text-2xl font-bold mb-4">
+                Ready to Create Your Internship Report?
+              </h2>
+              <p className="text-primary-foreground/80 mb-6 max-w-xl mx-auto">
+                Our AI generates professional, {post.university}-compliant reports 
+                for {post.domain} internships. Join 10,000+ students who trust InternReport.in.
+              </p>
+              <Link to="/auth?signup=true">
+                <Button size="lg" variant="secondary">
+                  Generate My Report Now
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              </Link>
+              <p className="text-sm text-primary-foreground/60 mt-4">
+                ₹499 • 3 Reports • Instant DOCX Download
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Related Posts */}
+          {relatedPosts.length > 0 && (
+            <div className="mb-12">
+              <h2 className="font-display text-2xl font-bold mb-6 flex items-center gap-2">
+                <BookOpen className="w-6 h-6" />
+                Related Articles
+              </h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                {relatedPosts.map((relatedPost) => (
+                  <Link key={relatedPost.id} to={`/blog/${relatedPost.slug}`}>
+                    <Card className="h-full hover:shadow-lg transition-all duration-300 border-0 shadow-soft group">
+                      <CardContent className="p-5">
+                        <Badge variant="secondary" className="text-xs mb-2">
+                          {relatedPost.domain}
+                        </Badge>
+                        <h3 className="font-display font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                          {relatedPost.title}
+                        </h3>
+                        <p className="text-muted-foreground text-sm line-clamp-2">
+                          {relatedPost.excerpt}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Back to Blog */}
+          <div className="text-center">
+            <Link to="/blog">
+              <Button variant="outline" size="lg">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to All Articles
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </article>
+
+      {/* Footer */}
+      <footer className="border-t border-border/50 mt-20">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <span className="font-display font-bold text-xl">InternReport.in</span>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                AI-powered internship report generator for Indian university students.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-display font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/" className="hover:text-primary transition-colors">Home</Link></li>
+                <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+                <li><Link to="/auth" className="hover:text-primary transition-colors">Login</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-display font-semibold mb-4">Policies</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
+                <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/refund" className="hover:text-primary transition-colors">Refund Policy</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-display font-semibold mb-4">Contact</h4>
+              <p className="text-sm text-muted-foreground">
+                support@internreport.in<br />
+                +91 9738959525
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-border/50 mt-8 pt-8 text-center text-sm text-muted-foreground">
+            <p>© 2024 InternReport.in. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default BlogPost;
