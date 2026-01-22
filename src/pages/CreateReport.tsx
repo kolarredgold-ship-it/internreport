@@ -125,6 +125,8 @@ const CreateReport = () => {
   const [lineCount, setLineCount] = useState(0);
   const [generateInParts, setGenerateInParts] = useState(false);
   const [currentPart, setCurrentPart] = useState<string | null>(null);
+  const [parallelGeneration, setParallelGeneration] = useState(true); // Enable parallel by default
+  const [activeChapters, setActiveChapters] = useState<string[]>([]); // Track chapters being generated in parallel
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [resumingReport, setResumingReport] = useState(false);
   const [chapterTimes, setChapterTimes] = useState<number[]>([]);
@@ -755,86 +757,115 @@ const CreateReport = () => {
       setAllGeneratedLines(prev => [...prev, { chapter: 'system', line: `\n🔄 Resuming generation... (${CHAPTERS.length - chaptersToGenerate.length}/${CHAPTERS.length} already done)\n` }]);
     }
 
-    for (let i = 0; i < chaptersToGenerate.length; i++) {
+    // Parallel generation: process chapters in batches of 3 for speed
+    const BATCH_SIZE = parallelGeneration ? 3 : 1;
+    
+    if (parallelGeneration) {
+      setAllGeneratedLines(prev => [...prev, { chapter: 'system', line: `\n⚡ Parallel generation enabled (${BATCH_SIZE} chapters at a time)\n` }]);
+    }
+
+    for (let batchStart = 0; batchStart < chaptersToGenerate.length; batchStart += BATCH_SIZE) {
       // Check if stop was requested
       if (stopRequested) {
         setAllGeneratedLines(prev => [...prev, { 
           chapter: 'system', 
-          line: `\n✅ Generation stopped. ${i} chapter(s) saved. You can resume later.` 
+          line: `\n✅ Generation stopped. Progress saved. You can resume later.` 
         }]);
         break;
       }
+
+      const batch = chaptersToGenerate.slice(batchStart, batchStart + BATCH_SIZE);
+      const batchKeys = batch.map(ch => ch.key);
       
-      const chapter = chaptersToGenerate[i];
+      // Update UI to show all active chapters
+      setActiveChapters(batchKeys);
+      setCurrentChapter(batchKeys.join(', '));
+      
       const overallProgress = resumingReport 
-        ? Math.round(((CHAPTERS.length - chaptersToGenerate.length + i) / CHAPTERS.length) * 100)
-        : Math.round((i / CHAPTERS.length) * 100);
-      
-      setCurrentChapter(chapter.key);
+        ? Math.round(((CHAPTERS.length - chaptersToGenerate.length + batchStart) / CHAPTERS.length) * 100)
+        : Math.round((batchStart / CHAPTERS.length) * 100);
       setGenerationProgress(overallProgress);
-      setGenerationPhase(`Generating ${chapter.label}: ${chapter.description}...`);
+      
+      if (parallelGeneration && batch.length > 1) {
+        setGenerationPhase(`Generating ${batch.length} chapters in parallel: ${batch.map(ch => ch.label).join(', ')}...`);
+      } else {
+        setGenerationPhase(`Generating ${batch[0].label}: ${batch[0].description}...`);
+      }
+      
       setChapterStartTime(Date.now());
 
-      // Add chapter header
-      setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `\n━━━ ${chapter.label}: ${chapter.description} ━━━\n` }]);
-      setLineCount(prev => prev + 1);
-      
-      // Use parts mode if enabled, otherwise try full chapter first
-      let content: string | null = null;
-      
-      if (generateInParts) {
-        // Direct parts generation for slower connections
-        content = await generateChapterInParts(chapter.key);
-      } else {
-        // Try full chapter first, falls back to parts if it fails
-        content = await generateChapter(chapter.key);
-      }
-      
-      // Track timing
-      const chapterTime = Date.now() - (chapterStartTime || Date.now());
-      times.push(chapterTime);
-      setChapterTimes(times);
-      
-      if (content) {
-        newContent[chapter.key] = content;
-        setChapterContent(prev => {
-          const updated = { ...prev, [chapter.key]: content };
-          // Save to database
-          if (reportId) saveChapterToDb(reportId, updated);
-          return updated;
-        });
-        
-        // Only show typing effect if we didn't already do it in parts mode
-        if (!generateInParts) {
-          // Line-by-line typing effect for all chapters
-          const lines = content.split('\n');
-          for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            
-            // Character-by-character for current line
-            for (let charIndex = 0; charIndex <= line.length; charIndex += 5) {
-              setCurrentLine(line.slice(0, charIndex));
-              await new Promise(resolve => setTimeout(resolve, 1));
-            }
-            
-            // Add completed line to all lines
-            setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line }]);
-            setLineCount(prev => prev + 1);
-            setCurrentLine('');
-          }
-        }
-        
-        // Update estimated time
-        const completedCount = Object.keys(newContent).filter(k => newContent[k]).length;
-        updateEstimatedTime(completedCount);
-      } else {
-        failed.push(chapter.key);
-        setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `⚠️ Failed to generate ${chapter.label}` }]);
+      // Add headers for all chapters in batch
+      for (const chapter of batch) {
+        setAllGeneratedLines(prev => [...prev, { chapter: chapter.key, line: `\n━━━ ${chapter.label}: ${chapter.description} ━━━\n` }]);
+        setLineCount(prev => prev + 1);
       }
 
-      // Small delay between chapters to avoid rate limiting
-      if (i < chaptersToGenerate.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      // Generate all chapters in batch simultaneously
+      const batchPromises = batch.map(async (chapter) => {
+        let content: string | null = null;
+        
+        if (generateInParts) {
+          content = await generateChapterInParts(chapter.key);
+        } else {
+          content = await generateChapter(chapter.key);
+        }
+        
+        return { key: chapter.key, label: chapter.label, content };
+      });
+
+      // Wait for all in batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      
+      // Track timing
+      const batchTime = Date.now() - (chapterStartTime || Date.now());
+      times.push(batchTime);
+      setChapterTimes(times);
+
+      // Process results
+      for (const result of batchResults) {
+        if (result.content) {
+          newContent[result.key] = result.content;
+          setChapterContent(prev => {
+            const updated = { ...prev, [result.key]: result.content };
+            if (reportId) saveChapterToDb(reportId, updated);
+            return updated;
+          });
+          
+          // Show condensed output for parallel mode
+          if (parallelGeneration && batch.length > 1) {
+            const lineCount = result.content.split('\n').length;
+            setAllGeneratedLines(prev => [...prev, { 
+              chapter: result.key, 
+              line: `✅ ${result.label} completed (${lineCount} lines)` 
+            }]);
+          } else {
+            // Full typing effect for sequential mode
+            const lines = result.content.split('\n');
+            for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+              const line = lines[lineIndex];
+              for (let charIndex = 0; charIndex <= line.length; charIndex += 5) {
+                setCurrentLine(line.slice(0, charIndex));
+                await new Promise(resolve => setTimeout(resolve, 1));
+              }
+              setAllGeneratedLines(prev => [...prev, { chapter: result.key, line }]);
+              setLineCount(prev => prev + 1);
+              setCurrentLine('');
+            }
+          }
+          
+          const completedCount = Object.keys(newContent).filter(k => newContent[k]).length;
+          updateEstimatedTime(completedCount);
+        } else {
+          failed.push(result.key);
+          setAllGeneratedLines(prev => [...prev, { chapter: result.key, line: `⚠️ Failed to generate ${result.label}` }]);
+        }
+      }
+
+      setActiveChapters([]);
+
+      // Small delay between batches to avoid rate limiting
+      if (batchStart + BATCH_SIZE < chaptersToGenerate.length) {
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
     }
 
@@ -1617,6 +1648,23 @@ const CreateReport = () => {
                       </p>
                     </div>
                     
+                    {/* Fast Parallel Generation Toggle */}
+                    <div className="flex items-center justify-between bg-primary/5 rounded-lg p-3 border border-primary/20">
+                      <div className="flex items-center gap-2 flex-1">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">⚡ Fast Mode (3x Speed)</p>
+                          <p className="text-xs text-muted-foreground">
+                            Generate 3 chapters simultaneously
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={parallelGeneration}
+                        onCheckedChange={setParallelGeneration}
+                      />
+                    </div>
+
                     {/* Slow Connection Mode Toggle */}
                     <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3 border border-border/50">
                       <div className="flex items-center gap-2 flex-1">
