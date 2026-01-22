@@ -1478,24 +1478,13 @@ const CreateReport = () => {
                 </Button>
               )}
               
-              {/* Partial download option if some chapters are done but not all */}
+              {/* Progress message if not all chapters are done */}
               {hasAnyContent && !hasAllContent && !generating && (
-                <div className="space-y-2">
-                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-center">
-                    <p className="text-sm text-amber-700 dark:text-amber-400">
-                      ⚠️ {completedChapters.length}/{getChapters(formData.internshipTitle).length} chapters generated. 
-                      Complete all chapters to download the full report.
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={downloadFullReport} 
-                    className="w-full" 
-                    size="lg"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download Partial Report ({completedChapters.length} chapters)
-                  </Button>
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-center">
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    ⚠️ {completedChapters.length}/{getChapters(formData.internshipTitle).length} chapters generated. 
+                    Complete all chapters to download the report.
+                  </p>
                 </div>
               )}
 
