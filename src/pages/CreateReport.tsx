@@ -135,7 +135,10 @@ const CreateReport = () => {
   const [funMessage, setFunMessage] = useState<string>('');
   const [funMessageIndex, setFunMessageIndex] = useState(0);
   const [stopRequested, setStopRequested] = useState(false);
+  const [thinkingSeconds, setThinkingSeconds] = useState(0); // Timer for AI thinking
+  const [isApiCalling, setIsApiCalling] = useState(false); // Track when API is being called
   const scrollRef = useRef<HTMLDivElement>(null);
+  const thinkingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fun status messages to keep users engaged
   const funMessages = [
@@ -178,6 +181,27 @@ const CreateReport = () => {
       setFunMessageIndex(0);
     }
   }, [generating]);
+
+  // Thinking timer - counts up while API is calling
+  useEffect(() => {
+    if (isApiCalling) {
+      setThinkingSeconds(0);
+      thinkingTimerRef.current = setInterval(() => {
+        setThinkingSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (thinkingTimerRef.current) {
+        clearInterval(thinkingTimerRef.current);
+        thinkingTimerRef.current = null;
+      }
+      setThinkingSeconds(0);
+    }
+    return () => {
+      if (thinkingTimerRef.current) {
+        clearInterval(thinkingTimerRef.current);
+      }
+    };
+  }, [isApiCalling]);
 
   // Auto-scroll to bottom when new lines are added
   useEffect(() => {
@@ -263,17 +287,22 @@ const CreateReport = () => {
     }
   };
 
-  // Calculate estimated time remaining
+  // Calculate estimated time remaining (accounts for parallel generation)
   const updateEstimatedTime = (completedChaptersCount: number) => {
+    const BATCH_SIZE = parallelGeneration ? 3 : 1;
+    const totalChapters = getChapters(formData.internshipTitle).length;
+    const remainingChapters = totalChapters - completedChaptersCount;
+    const remainingBatches = Math.ceil(remainingChapters / BATCH_SIZE);
+    
     if (chapterTimes.length === 0) {
-      // Default estimate: 45 seconds per chapter
-      const remaining = getChapters(formData.internshipTitle).length - completedChaptersCount;
-      const seconds = remaining * 45;
+      // Default estimate: 30 seconds per batch in parallel mode, 45 in sequential
+      const secondsPerBatch = parallelGeneration ? 30 : 45;
+      const seconds = remainingBatches * secondsPerBatch;
       setEstimatedTimeRemaining(formatTime(seconds));
     } else {
-      const avgTime = chapterTimes.reduce((a, b) => a + b, 0) / chapterTimes.length;
-      const remaining = getChapters(formData.internshipTitle).length - completedChaptersCount;
-      const seconds = Math.round((remaining * avgTime) / 1000);
+      // Use actual timing data
+      const avgBatchTime = chapterTimes.reduce((a, b) => a + b, 0) / chapterTimes.length;
+      const seconds = Math.round((remainingBatches * avgBatchTime) / 1000);
       setEstimatedTimeRemaining(formatTime(seconds));
     }
   };
@@ -470,6 +499,8 @@ const CreateReport = () => {
       try {
         console.log(`Generating chapter ${chapterKey}, attempt ${attempt}/${retries}`);
         
+        setIsApiCalling(true); // Start thinking timer
+        
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
             ...formData,
@@ -478,9 +509,12 @@ const CreateReport = () => {
           },
         });
 
+        setIsApiCalling(false); // Stop thinking timer
+        
         if (error) throw error;
         return data?.content || null;
       } catch (error: any) {
+        setIsApiCalling(false); // Stop thinking timer on error
         console.error(`Error generating chapter ${chapterKey} (attempt ${attempt}):`, error);
         
         // If this was the last attempt, try generating in parts
@@ -574,6 +608,8 @@ const CreateReport = () => {
           line: `   📝 Part ${partIdx + 1}/${parts.length}: ${partLabel}...` 
         }]);
 
+        setIsApiCalling(true); // Start thinking timer
+        
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
             ...formData,
@@ -583,6 +619,8 @@ const CreateReport = () => {
           },
         });
 
+        setIsApiCalling(false); // Stop thinking timer
+        
         if (error) throw error;
         if (data?.content) {
           contents.push(data.content);
@@ -1307,6 +1345,37 @@ const CreateReport = () => {
                     </div>
                   </div>
                   <Progress value={generationProgress} className="h-2" />
+                  
+                  {/* AI Thinking Timer Popup */}
+                  {isApiCalling && (
+                    <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/10 border border-amber-500/30 rounded-lg p-4 animate-pulse">
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="relative">
+                          <div className="w-12 h-12 rounded-full border-4 border-amber-500/30 border-t-amber-500 animate-spin" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-lg font-bold text-amber-600">{thinkingSeconds}</span>
+                          </div>
+                        </div>
+                        <div className="text-left">
+                          <p className="font-semibold text-amber-700 dark:text-amber-400 text-sm">
+                            🧠 AI is thinking...
+                          </p>
+                          <p className="text-xs text-amber-600/80 dark:text-amber-500/80">
+                            Please wait {thinkingSeconds < 30 ? `for ~${Math.max(30 - thinkingSeconds, 5)}s` : 'a moment'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-center gap-1">
+                        {[...Array(3)].map((_, i) => (
+                          <div 
+                            key={i} 
+                            className="w-2 h-2 bg-amber-500 rounded-full animate-bounce"
+                            style={{ animationDelay: `${i * 0.15}s` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Live Content Preview Toggle */}
                   <div className="flex items-center justify-between pt-2 border-t border-primary/10">
