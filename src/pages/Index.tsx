@@ -273,6 +273,7 @@ const Index = () => {
               <h4 className="font-display font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
+                <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
                 <li><Link to="/auth" className="hover:text-primary transition-colors">Login</Link></li>
                 <li><Link to="/auth?signup=true" className="hover:text-primary transition-colors">Sign Up</Link></li>
               </ul>
