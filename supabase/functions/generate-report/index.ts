@@ -585,7 +585,7 @@ Write clear, professional content with formal academic English.`
           "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "deepseek-reasoner",
+          model: "deepseek-chat",
           messages: [
             {
               role: "system",
