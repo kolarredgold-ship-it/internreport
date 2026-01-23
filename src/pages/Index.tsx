@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import WalletHeader from '@/components/WalletHeader';
 const Index = () => {
   const {
     user
@@ -100,6 +101,7 @@ const Index = () => {
             <span className="font-display font-bold text-xl">InternReport.in</span>
           </div>
           <div className="flex items-center gap-4">
+            <WalletHeader />
             {user ? <Link to="/dashboard">
                 <Button variant="gradient">Dashboard</Button>
               </Link> : <>
@@ -252,6 +254,28 @@ const Index = () => {
             <p className="text-muted-foreground text-sm">Download within minutes</p>
           </div>
         </div>
+      </section>
+
+      {/* Refer & Earn CTA */}
+      <section className="container mx-auto px-4 py-8">
+        <Card className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20">
+          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center md:text-left">
+              <h3 className="font-display text-xl font-bold mb-1 flex items-center gap-2 justify-center md:justify-start">
+                <Gift className="w-5 h-5 text-green-600" />
+                Refer & Earn ₹150 Per Referral
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                I earned ₹5,000 this week just by referring this app! 💸
+              </p>
+            </div>
+            <Link to={user ? "/refer" : "/auth?signup=true"}>
+              <Button className="bg-green-500 hover:bg-green-600 text-white">
+                Start Earning Now
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </section>
 
       {/* Footer */}
