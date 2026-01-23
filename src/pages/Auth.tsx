@@ -1,24 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, Mail, Lock, ArrowLeft, Loader2 } from 'lucide-react';
+import { FileText, Mail, Lock, ArrowLeft, Loader2, Phone, Gift } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const mobileSchema = z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number');
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(searchParams.get('signup') === 'true');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [referralId, setReferralId] = useState(searchParams.get('ref') || '');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; mobile?: string }>({});
 
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -31,7 +35,7 @@ const Auth = () => {
   }, [user, navigate]);
 
   const validate = () => {
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: { email?: string; password?: string; mobile?: string } = {};
     
     try {
       emailSchema.parse(email);
@@ -47,6 +51,20 @@ const Auth = () => {
       if (e instanceof z.ZodError) {
         newErrors.password = e.errors[0].message;
       }
+    }
+
+    if (isSignUp && mobileNumber) {
+      try {
+        mobileSchema.parse(mobileNumber);
+      } catch (e) {
+        if (e instanceof z.ZodError) {
+          newErrors.mobile = e.errors[0].message;
+        }
+      }
+    }
+
+    if (isSignUp && !mobileNumber) {
+      newErrors.mobile = 'Mobile number is required';
     }
 
     setErrors(newErrors);
@@ -78,9 +96,37 @@ const Auth = () => {
             });
           }
         } else {
+          // After signup, update profile with mobile number and referral
+          const { data: { user: newUser } } = await supabase.auth.getUser();
+          
+          if (newUser) {
+            // Update profile with mobile number
+            await supabase
+              .from('profiles')
+              .update({ 
+                mobile_number: mobileNumber,
+                referred_by: referralId || null
+              })
+              .eq('user_id', newUser.id);
+
+            // Create wallet for user
+            await supabase
+              .from('wallets')
+              .insert({ user_id: newUser.id });
+
+            // Process referral if provided
+            if (referralId && referralId !== mobileNumber) {
+              await supabase.rpc('process_referral', {
+                p_referred_user_id: newUser.id,
+                p_referred_mobile: mobileNumber,
+                p_referrer_mobile: referralId
+              });
+            }
+          }
+
           toast({
             title: 'Account created!',
-            description: 'You can now access your dashboard.',
+            description: 'You can now access your dashboard. ₹100 welcome bonus added!',
           });
           navigate('/dashboard');
         }
@@ -163,7 +209,51 @@ const Auth = () => {
                 )}
               </div>
 
-              <Button 
+              {isSignUp && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile">Mobile Number *</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="mobile"
+                        type="tel"
+                        placeholder="9876543210"
+                        value={mobileNumber}
+                        onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        className="pl-10"
+                        disabled={loading}
+                        maxLength={10}
+                      />
+                    </div>
+                    {errors.mobile && (
+                      <p className="text-sm text-destructive">{errors.mobile}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="referral">Referral ID (Optional)</Label>
+                    <div className="relative">
+                      <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="referral"
+                        type="tel"
+                        placeholder="Friend's mobile number"
+                        value={referralId}
+                        onChange={(e) => setReferralId(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        className="pl-10"
+                        disabled={loading}
+                        maxLength={10}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter your friend's mobile number to get referral benefits
+                    </p>
+                  </div>
+                </>
+              )}
+
+              <Button
                 type="submit" 
                 variant="gradient" 
                 className="w-full" 

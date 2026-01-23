@@ -12,9 +12,12 @@ import {
   User,
   Zap,
   AlertCircle,
-  Shield
+  Shield,
+  Wallet,
+  Gift
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import ReferButton from '@/components/ReferButton';
 
 interface Profile {
   generations_used: number;
@@ -27,6 +30,10 @@ interface AccountStatus {
   label: string;
 }
 
+interface WalletData {
+  total_balance: number;
+}
+
 const Dashboard = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -35,6 +42,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountStatus, setAccountStatus] = useState<AccountStatus>({ isActive: false, label: 'Inactive - Payment Pending' });
+  const [wallet, setWallet] = useState<WalletData | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,8 +55,33 @@ const Dashboard = () => {
       fetchProfile();
       checkAdminStatus();
       checkAccountStatus();
+      fetchWallet();
     }
   }, [user]);
+
+  const fetchWallet = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('total_balance')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error && error.code === 'PGRST116') {
+        // Wallet doesn't exist, create one
+        const { data: newWallet } = await supabase
+          .from('wallets')
+          .insert({ user_id: user?.id })
+          .select('total_balance')
+          .single();
+        if (newWallet) setWallet(newWallet);
+      } else if (data) {
+        setWallet(data);
+      }
+    } catch (error) {
+      console.error('Error fetching wallet:', error);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -141,6 +174,14 @@ const Dashboard = () => {
             <span className="font-display font-bold text-xl">InternReport.in</span>
           </Link>
           <div className="flex items-center gap-4">
+            {/* Wallet Balance */}
+            <Link 
+              to="/refer" 
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors text-sm font-medium"
+            >
+              <Wallet className="w-4 h-4" />
+              <span>₹{wallet?.total_balance ?? 0}</span>
+            </Link>
             {isAdmin && (
               <Link to="/admin">
                 <Button variant="outline" size="sm" className="gap-2">
@@ -273,6 +314,11 @@ const Dashboard = () => {
               </CardContent>
             </Link>
           </Card>
+        </div>
+
+        {/* Refer & Earn Button */}
+        <div className="mt-8">
+          <ReferButton />
         </div>
       </main>
     </div>

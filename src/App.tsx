@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
 import MyReports from "./pages/MyReports";
+import Refer from "./pages/Refer";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Refund from "./pages/Refund";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create-report" element={<CreateReport />} />
             <Route path="/my-reports" element={<MyReports />} />
+            <Route path="/refer" element={<Refer />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/refund" element={<Refund />} />
