@@ -97,7 +97,7 @@ const Index = () => {
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">IPRG - Internship Project Report Generator</span>
+            <span className="font-display font-bold text-xl">InternReport.in</span>
           </div>
           <div className="flex items-center gap-4">
             {user ? <Link to="/dashboard">
@@ -150,7 +150,7 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-            Why Choose IPRG?
+            Why Choose InternReport.in?
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Built specifically for Indian university students with deep understanding of academic requirements
@@ -263,7 +263,7 @@ const Index = () => {
                 <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
                   <FileText className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="font-display font-bold text-xl">IPRG</span>
+                <span className="font-display font-bold text-xl">InternReport.in</span>
               </div>
               <p className="text-muted-foreground text-sm">
                 AI-powered internship project report generator for Indian university students.
@@ -289,14 +289,14 @@ const Index = () => {
             <div>
               <h4 className="font-display font-semibold mb-4">Contact</h4>
               <p className="text-sm text-muted-foreground">
-                support@iprg.in<br />
+                support@internreport.in<br />
                 +91 9738959525<br />
                 Omlaytechnologies@gmail.com
               </p>
             </div>
           </div>
           <div className="border-t border-border/50 mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2024 IPRG. All rights reserved. AI-assisted academic reference tool.</p>
+            <p>© 2024 InternReport.in. All rights reserved. AI-powered Internship Report Generator.</p>
           </div>
         </div>
       </footer>

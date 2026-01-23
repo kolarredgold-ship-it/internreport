@@ -138,7 +138,7 @@ const Dashboard = () => {
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">IPRG</span>
+            <span className="font-display font-bold text-xl">InternReport.in</span>
           </Link>
           <div className="flex items-center gap-4">
             {isAdmin && (

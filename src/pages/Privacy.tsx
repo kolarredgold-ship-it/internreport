@@ -15,7 +15,7 @@ const Privacy = () => {
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">IPRG</span>
+            <span className="font-display font-bold text-xl">InternReport.in</span>
           </div>
         </div>
       </header>
@@ -85,7 +85,7 @@ const Privacy = () => {
             <p>We use essential cookies for authentication and session management. No tracking cookies are used.</p>
 
             <h2 className="font-display text-xl font-semibold mt-6 mb-3">8. Contact</h2>
-            <p>For privacy concerns, contact us at <a href="mailto:support@iprg.in" className="text-primary hover:underline">support@iprg.in</a></p>
+            <p>For privacy concerns, contact us at <a href="mailto:support@internreport.in" className="text-primary hover:underline">support@internreport.in</a></p>
           </CardContent>
         </Card>
       </main>
