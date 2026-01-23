@@ -94,7 +94,9 @@ export type Database = {
           full_name: string | null
           generations_used: number | null
           id: string
+          mobile_number: string | null
           phone: string | null
+          referred_by: string | null
           register_number: string | null
           university: string | null
           updated_at: string
@@ -108,7 +110,9 @@ export type Database = {
           full_name?: string | null
           generations_used?: number | null
           id?: string
+          mobile_number?: string | null
           phone?: string | null
+          referred_by?: string | null
           register_number?: string | null
           university?: string | null
           updated_at?: string
@@ -122,11 +126,49 @@ export type Database = {
           full_name?: string | null
           generations_used?: number | null
           id?: string
+          mobile_number?: string | null
           phone?: string | null
+          referred_by?: string | null
           register_number?: string | null
           university?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          bonus_amount: number | null
+          created_at: string
+          earning_amount: number
+          id: string
+          referred_mobile: string
+          referred_user_id: string
+          referrer_mobile: string
+          referrer_user_id: string | null
+          status: string
+        }
+        Insert: {
+          bonus_amount?: number | null
+          created_at?: string
+          earning_amount?: number
+          id?: string
+          referred_mobile: string
+          referred_user_id: string
+          referrer_mobile: string
+          referrer_user_id?: string | null
+          status?: string
+        }
+        Update: {
+          bonus_amount?: number | null
+          created_at?: string
+          earning_amount?: number
+          id?: string
+          referred_mobile?: string
+          referred_user_id?: string
+          referrer_mobile?: string
+          referrer_user_id?: string | null
+          status?: string
         }
         Relationships: []
       }
@@ -220,11 +262,87 @@ export type Database = {
         }
         Relationships: []
       }
+      wallets: {
+        Row: {
+          created_at: string
+          id: string
+          referral_earnings: number
+          total_balance: number
+          updated_at: string
+          user_id: string
+          welcome_bonus: number
+          withdrawable_balance: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referral_earnings?: number
+          total_balance?: number
+          updated_at?: string
+          user_id: string
+          welcome_bonus?: number
+          withdrawable_balance?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referral_earnings?: number
+          total_balance?: number
+          updated_at?: string
+          user_id?: string
+          welcome_bonus?: number
+          withdrawable_balance?: number
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          id: string
+          processed_at: string | null
+          processed_by: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          upi_id: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          upi_id: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          id?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          upi_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_withdraw: { Args: { p_user_id: string }; Returns: Json }
       claim_generation_slot: { Args: { p_user_id: string }; Returns: Json }
       has_role: {
         Args: {
@@ -232,6 +350,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      process_referral: {
+        Args: {
+          p_referred_mobile: string
+          p_referred_user_id: string
+          p_referrer_mobile: string
+        }
+        Returns: Json
+      }
+      request_withdrawal: {
+        Args: { p_amount: number; p_upi_id: string; p_user_id: string }
+        Returns: Json
       }
     }
     Enums: {
