@@ -15,7 +15,7 @@ const Refund = () => {
             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">IPRG</span>
+            <span className="font-display font-bold text-xl">InternReport.in</span>
           </div>
         </div>
       </header>
@@ -29,7 +29,7 @@ const Refund = () => {
             <p className="text-muted-foreground">Last updated: January 2024</p>
 
             <h2 className="font-display text-xl font-semibold mt-6 mb-3">1. Digital Product Nature</h2>
-            <p>IPRG provides AI-generated digital content (internship project reports). Due to the nature of digital products that are delivered instantly, the following refund policy applies.</p>
+            <p>InternReport.in provides AI-generated digital content (internship project reports). Due to the nature of digital products that are delivered instantly, the following refund policy applies.</p>
 
             <h2 className="font-display text-xl font-semibold mt-6 mb-3">2. No Refund After Generation</h2>
             <p>Once a report has been successfully generated and made available for download, <strong>no refund will be provided</strong>. This is because:</p>
@@ -51,7 +51,7 @@ const Refund = () => {
             <p>To request a refund:</p>
             <ol className="list-decimal pl-6 space-y-2">
               <li>Submit a request within <strong>48 hours</strong> of the issue</li>
-              <li>Email <a href="mailto:support@iprg.in" className="text-primary hover:underline">support@iprg.in</a> with:
+              <li>Email <a href="mailto:support@internreport.in" className="text-primary hover:underline">support@internreport.in</a> with:
                 <ul className="list-disc pl-6 mt-2">
                   <li>Your registered email</li>
                   <li>Payment ID / Order ID</li>
@@ -81,7 +81,7 @@ const Refund = () => {
             </ul>
 
             <h2 className="font-display text-xl font-semibold mt-6 mb-3">7. Contact</h2>
-            <p>For refund queries, contact us at <a href="mailto:support@iprg.in" className="text-primary hover:underline">support@iprg.in</a></p>
+            <p>For refund queries, contact us at <a href="mailto:support@internreport.in" className="text-primary hover:underline">support@internreport.in</a></p>
           </CardContent>
         </Card>
       </main>
