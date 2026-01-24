@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift } from 'lucide-react';
+import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import WalletHeader from '@/components/WalletHeader';
@@ -145,6 +146,11 @@ const Index = () => {
             </a>
           </div>
           <p className="text-sm text-muted-foreground mt-4">₹499 • 3 Report Generations • Instant Download</p>
+        </div>
+
+        {/* Demo Report Generator */}
+        <div className="max-w-3xl mx-auto mt-16">
+          <DemoReportGenerator />
         </div>
       </section>
 
