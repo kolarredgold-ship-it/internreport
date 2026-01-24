@@ -63,7 +63,19 @@ interface UserProfile {
   user_id: string;
   email: string | null;
   full_name: string | null;
+  mobile_number: string | null;
   created_at: string;
+}
+
+interface Withdrawal {
+  id: string;
+  user_id: string;
+  amount: number;
+  upi_id: string;
+  status: string;
+  transaction_id: string | null;
+  created_at: string;
+  processed_at: string | null;
 }
 
 const Admin = () => {
@@ -83,6 +95,12 @@ const Admin = () => {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
+
+  // Withdrawal management state
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
+  const [transactionId, setTransactionId] = useState('');
+  const [processingWithdrawal, setProcessingWithdrawal] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -116,6 +134,7 @@ const Admin = () => {
       setIsAdmin(true);
       fetchPayments();
       fetchUsers();
+      fetchWithdrawals();
     } catch (error: any) {
       console.error('Admin check error:', error);
       navigate('/dashboard');
@@ -160,6 +179,115 @@ const Admin = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const fetchWithdrawals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('withdrawals')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setWithdrawals(data || []);
+    } catch (error: any) {
+      console.error('Fetch withdrawals error:', error);
+    }
+  };
+
+  const handleApproveWithdrawal = async (withdrawal: Withdrawal) => {
+    if (!transactionId.trim()) {
+      toast({
+        title: 'Transaction ID Required',
+        description: 'Please enter the transaction ID after transferring the amount.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setProcessingWithdrawal(withdrawal.id);
+    try {
+      const { error } = await supabase
+        .from('withdrawals')
+        .update({ 
+          status: 'success', 
+          transaction_id: transactionId.trim(),
+          processed_at: new Date().toISOString(),
+          processed_by: user?.id
+        })
+        .eq('id', withdrawal.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Withdrawal Approved',
+        description: 'The withdrawal has been marked as successful.',
+      });
+      setSelectedWithdrawal(null);
+      setTransactionId('');
+      fetchWithdrawals();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingWithdrawal(null);
+    }
+  };
+
+  const handleRejectWithdrawal = async (withdrawal: Withdrawal) => {
+    setProcessingWithdrawal(withdrawal.id);
+    try {
+      // Refund the amount to user's wallet
+      const { data: walletData } = await supabase
+        .from('wallets')
+        .select('total_balance, withdrawable_balance')
+        .eq('user_id', withdrawal.user_id)
+        .single();
+
+      if (walletData) {
+        await supabase
+          .from('wallets')
+          .update({ 
+            total_balance: walletData.total_balance + withdrawal.amount,
+            withdrawable_balance: walletData.withdrawable_balance + withdrawal.amount
+          })
+          .eq('user_id', withdrawal.user_id);
+      }
+
+      const { error } = await supabase
+        .from('withdrawals')
+        .update({ 
+          status: 'rejected',
+          processed_at: new Date().toISOString(),
+          processed_by: user?.id
+        })
+        .eq('id', withdrawal.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Withdrawal Rejected',
+        description: 'Amount has been refunded to user\'s wallet.',
+      });
+      setSelectedWithdrawal(null);
+      fetchWithdrawals();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingWithdrawal(null);
+    }
+  };
+
+  const getUserInfo = (userId: string) => {
+    const userProfile = users.find(u => u.user_id === userId);
+    return userProfile?.email || userProfile?.mobile_number || userId.slice(0, 8);
   };
 
   // Extract file path from the screenshot URL
@@ -422,6 +550,10 @@ const Admin = () => {
               <IndianRupee className="w-4 h-4" />
               Payments
             </TabsTrigger>
+            <TabsTrigger value="withdrawals" className="gap-2">
+              <IndianRupee className="w-4 h-4" />
+              Withdrawals
+            </TabsTrigger>
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               Users
@@ -647,6 +779,88 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Withdrawals Tab */}
+          <TabsContent value="withdrawals" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display flex items-center gap-2">
+                  <IndianRupee className="w-5 h-5" />
+                  Withdrawal Requests
+                </CardTitle>
+                <CardDescription>
+                  Pending: {withdrawals.filter(w => w.status === 'pending').length} | 
+                  Completed: {withdrawals.filter(w => w.status === 'success').length}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>UPI ID</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Txn ID</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {withdrawals.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            No withdrawal requests
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        withdrawals.map((w) => (
+                          <TableRow key={w.id}>
+                            <TableCell className="font-medium">
+                              {new Date(w.created_at).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                              })}
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">
+                              {getUserInfo(w.user_id)}
+                            </TableCell>
+                            <TableCell className="font-bold">₹{w.amount}</TableCell>
+                            <TableCell className="font-mono text-sm">{w.upi_id}</TableCell>
+                            <TableCell>
+                              {w.status === 'success' ? (
+                                <Badge className="bg-green-100 text-green-800">Success</Badge>
+                              ) : w.status === 'rejected' ? (
+                                <Badge variant="destructive">Rejected</Badge>
+                              ) : (
+                                <Badge className="bg-amber-100 text-amber-800">Pending</Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {w.transaction_id || '-'}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {w.status === 'pending' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedWithdrawal(w)}
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  Process
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -790,6 +1004,71 @@ const Admin = () => {
                   disabled={updatingPassword}
                 >
                   Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Withdrawal Processing Dialog */}
+      <Dialog open={!!selectedWithdrawal} onOpenChange={() => setSelectedWithdrawal(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">Process Withdrawal</DialogTitle>
+          </DialogHeader>
+          {selectedWithdrawal && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">User</p>
+                  <p className="font-medium">{getUserInfo(selectedWithdrawal.user_id)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Amount</p>
+                  <p className="font-bold text-lg text-green-600">₹{selectedWithdrawal.amount}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-muted-foreground">UPI ID</p>
+                  <p className="font-mono font-medium">{selectedWithdrawal.upi_id}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="txnId">Transaction ID (after transfer)</Label>
+                <Input
+                  id="txnId"
+                  placeholder="Enter UPI Transaction ID"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={() => handleApproveWithdrawal(selectedWithdrawal)}
+                  disabled={processingWithdrawal === selectedWithdrawal.id}
+                >
+                  {processingWithdrawal === selectedWithdrawal.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                  )}
+                  Approve
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={() => handleRejectWithdrawal(selectedWithdrawal)}
+                  disabled={processingWithdrawal === selectedWithdrawal.id}
+                >
+                  {processingWithdrawal === selectedWithdrawal.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <XCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Reject
                 </Button>
               </div>
             </div>
