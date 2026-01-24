@@ -7,36 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  ArrowLeft, 
-  FileText, 
-  Share2, 
-  Wallet, 
-  Users, 
-  IndianRupee,
-  Copy,
-  Gift,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Loader2
-} from 'lucide-react';
+import { ArrowLeft, FileText, Share2, Wallet, Users, IndianRupee, Copy, Gift, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-
 interface WalletData {
   welcome_bonus: number;
   referral_earnings: number;
   total_balance: number;
   withdrawable_balance: number;
 }
-
 interface Referral {
   id: string;
   referred_mobile: string;
   earning_amount: number;
   created_at: string;
 }
-
 interface Withdrawal {
   id: string;
   amount: number;
@@ -45,12 +29,15 @@ interface Withdrawal {
   transaction_id: string | null;
   created_at: string;
 }
-
 const Refer = () => {
-  const { user, loading: authLoading } = useAuth();
+  const {
+    user,
+    loading: authLoading
+  } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
+  const {
+    toast
+  } = useToast();
   const [loading, setLoading] = useState(true);
   const [mobileNumber, setMobileNumber] = useState<string | null>(null);
   const [wallet, setWallet] = useState<WalletData | null>(null);
@@ -58,83 +45,76 @@ const Refer = () => {
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [canWithdraw, setCanWithdraw] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
-  
+
   // Withdrawal form
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [upiId, setUpiId] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
-
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
-
   useEffect(() => {
     if (!user) return;
-    
     const fetchData = async () => {
       try {
         // Fetch profile for mobile number
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('mobile_number')
-          .eq('user_id', user.id)
-          .single();
-        
+        const {
+          data: profile
+        } = await supabase.from('profiles').select('mobile_number').eq('user_id', user.id).single();
         if (profile?.mobile_number) {
           setMobileNumber(profile.mobile_number);
         }
 
         // Fetch or create wallet
-        let { data: walletData, error: walletError } = await supabase
-          .from('wallets')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
+        let {
+          data: walletData,
+          error: walletError
+        } = await supabase.from('wallets').select('*').eq('user_id', user.id).single();
         if (walletError && walletError.code === 'PGRST116') {
-          const { data: newWallet } = await supabase
-            .from('wallets')
-            .insert({ user_id: user.id })
-            .select('*')
-            .single();
+          const {
+            data: newWallet
+          } = await supabase.from('wallets').insert({
+            user_id: user.id
+          }).select('*').single();
           walletData = newWallet;
         }
-
         if (walletData) {
           setWallet(walletData);
         }
 
         // Check if can withdraw
-        const { data: withdrawCheck } = await supabase.rpc('can_withdraw', {
+        const {
+          data: withdrawCheck
+        } = await supabase.rpc('can_withdraw', {
           p_user_id: user.id
         });
-        
         if (withdrawCheck && typeof withdrawCheck === 'object' && !Array.isArray(withdrawCheck)) {
-          const checkData = withdrawCheck as { can_withdraw: boolean; referral_count: number };
+          const checkData = withdrawCheck as {
+            can_withdraw: boolean;
+            referral_count: number;
+          };
           setCanWithdraw(checkData.can_withdraw);
           setReferralCount(checkData.referral_count);
         }
 
         // Fetch referrals
-        const { data: referralsData } = await supabase
-          .from('referrals')
-          .select('*')
-          .eq('referrer_user_id', user.id)
-          .order('created_at', { ascending: false });
-
+        const {
+          data: referralsData
+        } = await supabase.from('referrals').select('*').eq('referrer_user_id', user.id).order('created_at', {
+          ascending: false
+        });
         if (referralsData) {
           setReferrals(referralsData);
         }
 
         // Fetch withdrawals
-        const { data: withdrawalsData } = await supabase
-          .from('withdrawals')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
+        const {
+          data: withdrawalsData
+        } = await supabase.from('withdrawals').select('*').eq('user_id', user.id).order('created_at', {
+          ascending: false
+        });
         if (withdrawalsData) {
           setWithdrawals(withdrawalsData);
         }
@@ -144,146 +124,124 @@ const Refer = () => {
         setLoading(false);
       }
     };
-
     fetchData();
 
     // Subscribe to realtime updates
-    const walletChannel = supabase
-      .channel('wallet-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'wallets',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (payload.new) {
-            setWallet(payload.new as WalletData);
-          }
-        }
-      )
-      .subscribe();
-
+    const walletChannel = supabase.channel('wallet-realtime').on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'wallets',
+      filter: `user_id=eq.${user.id}`
+    }, payload => {
+      if (payload.new) {
+        setWallet(payload.new as WalletData);
+      }
+    }).subscribe();
     return () => {
       supabase.removeChannel(walletChannel);
     };
   }, [user]);
-
   const handleCopyReferralId = () => {
     if (mobileNumber) {
       navigator.clipboard.writeText(mobileNumber);
       toast({
         title: 'Copied!',
-        description: 'Referral ID copied to clipboard',
+        description: 'Referral ID copied to clipboard'
       });
     }
   };
-
   const handleWhatsAppShare = () => {
     if (!mobileNumber) {
       toast({
         title: 'Mobile number required',
         description: 'Please add your mobile number to share referral',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
-
-    const message = encodeURIComponent(
-      `I earned ₹5,000 by referring this app 🤯\n\nYou can earn ₹150 for every friend you invite.\n\nJoin using my number as referral ID: ${mobileNumber}\n\nhttps://project-scribe-gen.lovable.app/`
-    );
+    const message = encodeURIComponent(`I earned ₹5,000 by referring this app 🤯\n\nYou can earn ₹150 for every friend you invite.\n\nJoin using my number as referral ID: ${mobileNumber}\n\nhttps://project-scribe-gen.lovable.app/`);
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
-
   const handleWithdraw = async () => {
     if (!wallet || !user) return;
-    
     const amount = parseInt(withdrawAmount);
-    
     if (isNaN(amount) || amount <= 0) {
       toast({
         title: 'Invalid amount',
         description: 'Please enter a valid amount',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
-
     if (amount > wallet.withdrawable_balance) {
       toast({
         title: 'Insufficient balance',
         description: 'You don\'t have enough balance to withdraw',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
-
     if (!upiId.trim()) {
       toast({
         title: 'UPI ID required',
         description: 'Please enter your UPI ID',
-        variant: 'destructive',
+        variant: 'destructive'
       });
       return;
     }
-
     setWithdrawing(true);
     try {
-      const { data, error } = await supabase.rpc('request_withdrawal', {
+      const {
+        data,
+        error
+      } = await supabase.rpc('request_withdrawal', {
         p_user_id: user.id,
         p_amount: amount,
         p_upi_id: upiId.trim()
       });
-
       if (error) throw error;
-
-      const result = data as { success: boolean; error?: string } | null;
-      
+      const result = data as {
+        success: boolean;
+        error?: string;
+      } | null;
       if (result?.success) {
         toast({
           title: 'Withdrawal requested!',
-          description: 'Your withdrawal request has been submitted',
+          description: 'Your withdrawal request has been submitted'
         });
         setWithdrawAmount('');
         setUpiId('');
-        
+
         // Refresh data
-        const { data: withdrawalsData } = await supabase
-          .from('withdrawals')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+        const {
+          data: withdrawalsData
+        } = await supabase.from('withdrawals').select('*').eq('user_id', user.id).order('created_at', {
+          ascending: false
+        });
         if (withdrawalsData) setWithdrawals(withdrawalsData);
       } else {
         toast({
           title: 'Withdrawal failed',
           description: result?.error || 'Something went wrong',
-          variant: 'destructive',
+          variant: 'destructive'
         });
       }
     } catch (error: any) {
       toast({
         title: 'Error',
         description: error.message,
-        variant: 'destructive',
+        variant: 'destructive'
       });
     } finally {
       setWithdrawing(false);
     }
   };
-
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen hero-gradient flex items-center justify-center">
+    return <div className="min-h-screen hero-gradient flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen hero-gradient">
+  return <div className="min-h-screen hero-gradient">
       {/* Header */}
       <header className="sticky top-0 z-50 glass-effect border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -307,9 +265,7 @@ const Refer = () => {
         <Card className="mb-8 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20">
           <CardContent className="p-6 text-center">
             <div className="text-4xl mb-4">💸</div>
-            <h1 className="font-display text-2xl md:text-3xl font-bold mb-2">
-              I earned ₹5,000 this week just by referring this app!
-            </h1>
+            <h1 className="font-display text-2xl md:text-3xl font-bold mb-2">Earn ₹5,000 per Day by referring this app!</h1>
             <p className="text-lg text-muted-foreground">
               Earn <span className="text-green-600 font-bold">₹150</span> for every friend you invite.
             </p>
@@ -363,8 +319,7 @@ const Refer = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {mobileNumber ? (
-              <>
+            {mobileNumber ? <>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 bg-secondary/50 rounded-lg px-4 py-3 font-mono text-lg">
                     {mobileNumber}
@@ -373,24 +328,18 @@ const Refer = () => {
                     <Copy className="w-4 h-4" />
                   </Button>
                 </div>
-                <Button 
-                  className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  onClick={handleWhatsAppShare}
-                >
+                <Button className="w-full bg-green-500 hover:bg-green-600 text-white" onClick={handleWhatsAppShare}>
                   <Share2 className="w-4 h-4 mr-2" />
                   Share on WhatsApp
                 </Button>
-              </>
-            ) : (
-              <div className="text-center py-4">
+              </> : <div className="text-center py-4">
                 <p className="text-muted-foreground mb-4">
                   Add your mobile number to start referring friends
                 </p>
                 <Link to="/dashboard">
                   <Button variant="outline">Update Profile</Button>
                 </Link>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
 
@@ -402,64 +351,35 @@ const Refer = () => {
               Withdraw Earnings
             </CardTitle>
             <CardDescription>
-              {canWithdraw 
-                ? `Withdrawable Balance: ₹${wallet?.withdrawable_balance ?? 0}`
-                : `Need ${2 - referralCount} more referrals to unlock withdrawals`
-              }
+              {canWithdraw ? `Withdrawable Balance: ₹${wallet?.withdrawable_balance ?? 0}` : `Need ${2 - referralCount} more referrals to unlock withdrawals`}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!canWithdraw ? (
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
+            {!canWithdraw ? <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
                 <p className="text-amber-600 text-sm">
                   🔒 Complete {2 - referralCount} more referral{2 - referralCount !== 1 ? 's' : ''} to unlock withdrawals
                 </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
+              </div> : <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount">Amount (₹)</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    placeholder="Enter amount"
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                    max={wallet?.withdrawable_balance ?? 0}
-                  />
+                  <Input id="amount" type="number" placeholder="Enter amount" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} max={wallet?.withdrawable_balance ?? 0} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="upi">UPI ID</Label>
-                  <Input
-                    id="upi"
-                    type="text"
-                    placeholder="yourname@paytm"
-                    value={upiId}
-                    onChange={(e) => setUpiId(e.target.value)}
-                  />
+                  <Input id="upi" type="text" placeholder="yourname@paytm" value={upiId} onChange={e => setUpiId(e.target.value)} />
                 </div>
-                <Button 
-                  className="w-full" 
-                  onClick={handleWithdraw}
-                  disabled={withdrawing || (wallet?.withdrawable_balance ?? 0) <= 0}
-                >
-                  {withdrawing ? (
-                    <>
+                <Button className="w-full" onClick={handleWithdraw} disabled={withdrawing || (wallet?.withdrawable_balance ?? 0) <= 0}>
+                  {withdrawing ? <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       Processing...
-                    </>
-                  ) : (
-                    'Request Withdrawal'
-                  )}
+                    </> : 'Request Withdrawal'}
                 </Button>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
 
         {/* Withdrawal History */}
-        {withdrawals.length > 0 && (
-          <Card className="mb-8">
+        {withdrawals.length > 0 && <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
@@ -468,11 +388,7 @@ const Refer = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {withdrawals.map((withdrawal) => (
-                  <div 
-                    key={withdrawal.id} 
-                    className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg"
-                  >
+                {withdrawals.map(withdrawal => <div key={withdrawal.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
                     <div>
                       <p className="font-medium">₹{withdrawal.amount}</p>
                       <p className="text-xs text-muted-foreground">{withdrawal.upi_id}</p>
@@ -481,35 +397,22 @@ const Refer = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <Badge 
-                        variant={
-                          withdrawal.status === 'success' ? 'default' : 
-                          withdrawal.status === 'pending' ? 'secondary' : 'destructive'
-                        }
-                        className={
-                          withdrawal.status === 'success' ? 'bg-green-500' : ''
-                        }
-                      >
+                      <Badge variant={withdrawal.status === 'success' ? 'default' : withdrawal.status === 'pending' ? 'secondary' : 'destructive'} className={withdrawal.status === 'success' ? 'bg-green-500' : ''}>
                         {withdrawal.status === 'success' && <CheckCircle2 className="w-3 h-3 mr-1" />}
                         {withdrawal.status === 'rejected' && <XCircle className="w-3 h-3 mr-1" />}
                         {withdrawal.status}
                       </Badge>
-                      {withdrawal.transaction_id && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                      {withdrawal.transaction_id && <p className="text-xs text-muted-foreground mt-1">
                           TxnID: {withdrawal.transaction_id}
-                        </p>
-                      )}
+                        </p>}
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         {/* Referral List */}
-        {referrals.length > 0 && (
-          <Card>
+        {referrals.length > 0 && <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
@@ -518,11 +421,7 @@ const Refer = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {referrals.map((referral) => (
-                  <div 
-                    key={referral.id} 
-                    className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg"
-                  >
+                {referrals.map(referral => <div key={referral.id} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
                     <div>
                       <p className="font-medium">
                         {referral.referred_mobile.slice(0, 4)}****{referral.referred_mobile.slice(-2)}
@@ -534,15 +433,11 @@ const Refer = () => {
                     <Badge className="bg-green-500">
                       +₹{referral.earning_amount}
                     </Badge>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default Refer;
