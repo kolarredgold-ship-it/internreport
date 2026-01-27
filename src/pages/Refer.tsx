@@ -14,12 +14,14 @@ interface WalletData {
   referral_earnings: number;
   total_balance: number;
   withdrawable_balance: number;
+  pending_earnings: number;
 }
 interface Referral {
   id: string;
   referred_mobile: string;
   earning_amount: number;
   created_at: string;
+  status: string;
 }
 interface Withdrawal {
   id: string;
@@ -159,7 +161,7 @@ const Refer = () => {
       });
       return;
     }
-    const message = encodeURIComponent(`I earned ₹5,000 by referring this app 🤯\n\nYou can earn ₹150 for every friend you invite.\n\nJoin using my number as referral ID: ${mobileNumber}\n\nhttps://project-scribe-gen.lovable.app/`);
+    const message = encodeURIComponent(`I earned ₹5,000 by referring this app 🤯\n\nYou can earn ₹150 for every friend you invite.\n\nJoin using my number as referral ID: ${mobileNumber}\n\nhttps://internreport.in/`);
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
   const handleWithdraw = async () => {
@@ -276,12 +278,19 @@ const Refer = () => {
         </Card>
 
         {/* Wallet Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Card>
             <CardContent className="p-4 text-center">
               <Wallet className="w-6 h-6 mx-auto mb-2 text-green-600" />
               <p className="text-2xl font-bold text-green-600">₹{wallet?.total_balance ?? 0}</p>
               <p className="text-xs text-muted-foreground">Wallet Balance</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Clock className="w-6 h-6 mx-auto mb-2 text-orange-500" />
+              <p className="text-2xl font-bold text-orange-500">₹{wallet?.pending_earnings ?? 0}</p>
+              <p className="text-xs text-muted-foreground">Pending for Payment</p>
             </CardContent>
           </Card>
           <Card>
@@ -430,8 +439,8 @@ const Refer = () => {
                         {new Date(referral.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <Badge className="bg-green-500">
-                      +₹{referral.earning_amount}
+                    <Badge className={referral.status === 'completed' ? 'bg-green-500' : 'bg-orange-500'}>
+                      {referral.status === 'completed' ? `+₹${referral.earning_amount}` : 'Pending Payment'}
                     </Badge>
                   </div>)}
               </div>
