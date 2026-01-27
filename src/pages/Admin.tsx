@@ -436,6 +436,23 @@ const Admin = () => {
         }
       }
 
+      // Credit referral earnings when payment is approved (₹499 payment)
+      if (payment.amount === 499) {
+        const { data: referralResult, error: referralError } = await supabase.rpc(
+          'credit_referral_earnings',
+          { p_referred_user_id: payment.user_id }
+        );
+        
+        if (referralError) {
+          console.error('Error crediting referral:', referralError);
+        } else if (referralResult && typeof referralResult === 'object') {
+          const result = referralResult as { success: boolean };
+          if (result.success) {
+            console.log('Referral earnings credited successfully');
+          }
+        }
+      }
+
       toast({
         title: 'Payment Approved',
         description: payment.payment_type === 'topup' 

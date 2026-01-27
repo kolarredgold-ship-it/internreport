@@ -266,6 +266,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          pending_earnings: number
           referral_earnings: number
           total_balance: number
           updated_at: string
@@ -276,6 +277,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          pending_earnings?: number
           referral_earnings?: number
           total_balance?: number
           updated_at?: string
@@ -286,6 +288,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          pending_earnings?: number
           referral_earnings?: number
           total_balance?: number
           updated_at?: string
@@ -344,6 +347,10 @@ export type Database = {
     Functions: {
       can_withdraw: { Args: { p_user_id: string }; Returns: Json }
       claim_generation_slot: { Args: { p_user_id: string }; Returns: Json }
+      credit_referral_earnings: {
+        Args: { p_referred_user_id: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
