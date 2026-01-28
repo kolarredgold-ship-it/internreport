@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, Calendar, Clock, ArrowRight, ArrowLeft, GraduationCap, Tag, BookOpen, Share2 } from 'lucide-react';
 import { getPostBySlug, blogPosts } from '@/data/blogPosts';
 import { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -57,9 +58,68 @@ const BlogPost = () => {
     }
   };
 
+  // Generate structured data for the blog post
+  const structuredData = post ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": post.title,
+    "description": post.excerpt,
+    "datePublished": post.publishedAt,
+    "dateModified": post.publishedAt,
+    "author": {
+      "@type": "Organization",
+      "name": "InternReport.in"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "InternReport.in",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://internreport.in/favicon.ico"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `https://internreport.in/blog/${post.slug}`
+    },
+    "keywords": post.keywords.join(", "),
+    "articleSection": post.category,
+    "wordCount": post.content.split(/\s+/).length
+  } : null;
+
   return (
     <div className="min-h-screen hero-gradient">
-      {/* SEO Meta Tags are handled by the head */}
+      {/* SEO Meta Tags */}
+      {post && (
+        <Helmet>
+          <title>{post.title} | InternReport.in Blog</title>
+          <meta name="description" content={post.excerpt} />
+          <meta name="keywords" content={post.keywords.join(", ")} />
+          <link rel="canonical" href={`https://internreport.in/blog/${post.slug}`} />
+          
+          {/* Open Graph */}
+          <meta property="og:type" content="article" />
+          <meta property="og:title" content={post.title} />
+          <meta property="og:description" content={post.excerpt} />
+          <meta property="og:url" content={`https://internreport.in/blog/${post.slug}`} />
+          <meta property="og:site_name" content="InternReport.in" />
+          <meta property="article:published_time" content={post.publishedAt} />
+          <meta property="article:section" content={post.category} />
+          {post.keywords.map((keyword, i) => (
+            <meta key={i} property="article:tag" content={keyword} />
+          ))}
+          
+          {/* Twitter */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={post.title} />
+          <meta name="twitter:description" content={post.excerpt} />
+          
+          {/* Structured Data */}
+          <script type="application/ld+json">
+            {JSON.stringify(structuredData)}
+          </script>
+        </Helmet>
+      )}
       
       {/* Navigation */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">

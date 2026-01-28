@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, FileText, Share2, Wallet, Users, IndianRupee, Copy, Gift, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, FileText, Share2, Wallet, Users, IndianRupee, Copy, Gift, Clock, CheckCircle2, XCircle, Loader2, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 interface WalletData {
   welcome_bonus: number;
@@ -52,6 +52,11 @@ const Refer = () => {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [upiId, setUpiId] = useState('');
   const [withdrawing, setWithdrawing] = useState(false);
+  
+  // Mobile number edit state
+  const [isEditingMobile, setIsEditingMobile] = useState(false);
+  const [newMobileNumber, setNewMobileNumber] = useState('');
+  const [updatingMobile, setUpdatingMobile] = useState(false);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
@@ -152,6 +157,47 @@ const Refer = () => {
       });
     }
   };
+  
+  const handleUpdateMobile = async () => {
+    if (!user || newMobileNumber.length !== 10) return;
+    
+    // Validate mobile number format
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!mobileRegex.test(newMobileNumber)) {
+      toast({
+        title: 'Invalid mobile number',
+        description: 'Please enter a valid 10-digit mobile number starting with 6-9',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setUpdatingMobile(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ mobile_number: newMobileNumber })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setMobileNumber(newMobileNumber);
+      setIsEditingMobile(false);
+      toast({
+        title: 'Success!',
+        description: 'Your referral ID has been updated'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update mobile number',
+        variant: 'destructive'
+      });
+    } finally {
+      setUpdatingMobile(false);
+    }
+  };
+  
   const handleWhatsAppShare = () => {
     if (!mobileNumber) {
       toast({
@@ -329,25 +375,81 @@ const Refer = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {mobileNumber ? <>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-secondary/50 rounded-lg px-4 py-3 font-mono text-lg">
-                    {mobileNumber}
+                {isEditingMobile ? (
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <Input
+                        type="tel"
+                        placeholder="Enter new mobile number"
+                        value={newMobileNumber}
+                        onChange={(e) => setNewMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        maxLength={10}
+                        className="text-lg"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        className="flex-1" 
+                        onClick={handleUpdateMobile}
+                        disabled={updatingMobile || newMobileNumber.length !== 10}
+                      >
+                        {updatingMobile ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                        Save
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setIsEditingMobile(false);
+                          setNewMobileNumber(mobileNumber);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                  <Button variant="outline" size="icon" onClick={handleCopyReferralId}>
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                </div>
-                <Button className="w-full bg-green-500 hover:bg-green-600 text-white" onClick={handleWhatsAppShare}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share on WhatsApp
-                </Button>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-secondary/50 rounded-lg px-4 py-3 font-mono text-lg">
+                        {mobileNumber}
+                      </div>
+                      <Button variant="outline" size="icon" onClick={handleCopyReferralId}>
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button variant="outline" size="icon" onClick={() => {
+                        setIsEditingMobile(true);
+                        setNewMobileNumber(mobileNumber);
+                      }}>
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <Button className="w-full bg-green-500 hover:bg-green-600 text-white" onClick={handleWhatsAppShare}>
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share on WhatsApp
+                    </Button>
+                  </>
+                )}
               </> : <div className="text-center py-4">
                 <p className="text-muted-foreground mb-4">
                   Add your mobile number to start referring friends
                 </p>
-                <Link to="/dashboard">
-                  <Button variant="outline">Update Profile</Button>
-                </Link>
+                <div className="space-y-3">
+                  <Input
+                    type="tel"
+                    placeholder="Enter your mobile number"
+                    value={newMobileNumber}
+                    onChange={(e) => setNewMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    maxLength={10}
+                    className="text-lg text-center"
+                  />
+                  <Button 
+                    onClick={handleUpdateMobile}
+                    disabled={updatingMobile || newMobileNumber.length !== 10}
+                  >
+                    {updatingMobile ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Save Mobile Number
+                  </Button>
+                </div>
               </div>}
           </CardContent>
         </Card>

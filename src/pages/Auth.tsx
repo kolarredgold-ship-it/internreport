@@ -80,6 +80,23 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
+        // Check if email already exists
+        const { data: existingProfiles } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('email', email.toLowerCase().trim())
+          .limit(1);
+        
+        if (existingProfiles && existingProfiles.length > 0) {
+          toast({
+            title: 'Account exists',
+            description: 'This email is already registered. Please sign in.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+        
         const { error } = await signUp(email, password);
         if (error) {
           if (error.message.includes('already registered')) {

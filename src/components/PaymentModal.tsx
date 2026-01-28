@@ -138,6 +138,26 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess, pa
       return;
     }
 
+    // Check for duplicate transaction number
+    const { data: existingPayments, error: checkError } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('transaction_number', formData.transactionNumber.trim())
+      .limit(1);
+    
+    if (checkError) {
+      console.error('Error checking transaction:', checkError);
+    }
+    
+    if (existingPayments && existingPayments.length > 0) {
+      toast({
+        title: 'Duplicate Transaction ID',
+        description: 'This transaction ID has already been used. Please enter a unique transaction ID.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setSubmitting(true);
 
     try {
