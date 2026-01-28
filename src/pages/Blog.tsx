@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { FileText, Search, Calendar, Clock, ArrowRight, BookOpen, GraduationCap, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { blogPosts, getAllCategories, getAllUniversities, getAllDomains, searchPosts } from '@/data/blogPosts';
+import { Helmet } from 'react-helmet-async';
 
 const POSTS_PER_PAGE = 12;
 
@@ -58,6 +59,42 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen hero-gradient">
+      <Helmet>
+        <title>Internship Report Blog - 500+ Guides for Indian Students | InternReport.in</title>
+        <meta name="description" content="Browse 500+ articles on internship report writing, formatting guides, and tips for Indian university students. Find resources for your specific university and domain." />
+        <meta name="keywords" content="internship report blog, internship report guide, university internship format, engineering project report, AI internship report" />
+        <link rel="canonical" href="https://internreport.in/blog" />
+        
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Internship Report Blog - 500+ Guides | InternReport.in" />
+        <meta property="og:description" content="Browse 500+ articles on internship report writing for Indian university students." />
+        <meta property="og:url" content="https://internreport.in/blog" />
+        
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Internship Report Blog | InternReport.in" />
+        <meta name="twitter:description" content="500+ guides for writing internship reports tailored for Indian universities." />
+        
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            "name": "InternReport.in Blog",
+            "description": "500+ articles on internship report writing for Indian university students",
+            "url": "https://internreport.in/blog",
+            "publisher": {
+              "@type": "Organization",
+              "name": "InternReport.in"
+            },
+            "blogPost": paginatedPosts.slice(0, 10).map(post => ({
+              "@type": "BlogPosting",
+              "headline": post.title,
+              "description": post.excerpt,
+              "url": `https://internreport.in/blog/${post.slug}`,
+              "datePublished": post.publishedAt
+            }))
+          })}
+        </script>
+      </Helmet>
       {/* Navigation */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">

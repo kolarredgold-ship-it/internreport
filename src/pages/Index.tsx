@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift, IndianRupee } from 'lucide-react';
 import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -265,21 +265,69 @@ const Index = () => {
       {/* Refer & Earn CTA */}
       <section className="container mx-auto px-4 py-8">
         <Card className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20">
-          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-center md:text-left">
-              <h3 className="font-display text-xl font-bold mb-1 flex items-center gap-2 justify-center md:justify-start">
-                <Gift className="w-5 h-5 text-green-600" />
-                Refer & Earn ₹150 Per Referral
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 text-green-600 mb-4">
+                <Gift className="w-4 h-4" />
+                <span className="text-sm font-medium">Refer & Earn Program</span>
+              </div>
+              <h3 className="font-display text-2xl md:text-3xl font-bold mb-2">
+                Earn ₹150 For Every Friend You Invite!
               </h3>
-              <p className="text-muted-foreground text-sm">
-                I earned ₹5,000 this week just by referring this app! 💸
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Join thousands of students earning real money by sharing InternReport.in
               </p>
             </div>
-            <Link to={user ? "/refer" : "/auth?signup=true"}>
-              <Button className="bg-green-500 hover:bg-green-600 text-white">
-                Start Earning Now
-              </Button>
-            </Link>
+            
+            <div className="grid md:grid-cols-3 gap-6 mb-6">
+              <div className="text-center p-4 bg-background/50 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+                  <span className="font-bold text-green-600">1</span>
+                </div>
+                <h4 className="font-semibold mb-1">Sign Up & Get ₹100</h4>
+                <p className="text-sm text-muted-foreground">Create account and receive ₹100 welcome bonus instantly</p>
+              </div>
+              <div className="text-center p-4 bg-background/50 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+                  <span className="font-bold text-green-600">2</span>
+                </div>
+                <h4 className="font-semibold mb-1">Share Your Referral ID</h4>
+                <p className="text-sm text-muted-foreground">Share your mobile number as referral ID via WhatsApp</p>
+              </div>
+              <div className="text-center p-4 bg-background/50 rounded-xl">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+                  <span className="font-bold text-green-600">3</span>
+                </div>
+                <h4 className="font-semibold mb-1">Earn ₹150 Per Referral</h4>
+                <p className="text-sm text-muted-foreground">Get ₹150 when your friend makes a payment. Withdraw via UPI!</p>
+              </div>
+            </div>
+            
+            <div className="bg-green-500/10 rounded-lg p-4 mb-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <IndianRupee className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-green-700 dark:text-green-400">Bonus: +₹50 for 2nd Level Referrals!</p>
+                    <p className="text-sm text-muted-foreground">When your referral invites someone, you earn ₹50 extra!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <Link to={user ? "/refer" : "/auth?signup=true"}>
+                <Button size="lg" className="bg-green-500 hover:bg-green-600 text-white">
+                  <Gift className="w-5 h-5 mr-2" />
+                  Start Earning Now
+                </Button>
+              </Link>
+              <p className="text-sm text-muted-foreground mt-3">
+                ✓ Instant UPI Withdrawals &nbsp; ✓ No Minimum Payout &nbsp; ✓ Real Cash Rewards
+              </p>
+            </div>
           </CardContent>
         </Card>
       </section>

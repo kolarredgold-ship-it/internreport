@@ -101,6 +101,9 @@ const Admin = () => {
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
   const [transactionId, setTransactionId] = useState('');
   const [processingWithdrawal, setProcessingWithdrawal] = useState<string | null>(null);
+  
+  // Duplicate transaction tracking
+  const [duplicateTransactions, setDuplicateTransactions] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -152,6 +155,23 @@ const Admin = () => {
 
       if (error) throw error;
       setPayments(data || []);
+      
+      // Find duplicate transaction numbers
+      if (data) {
+        const txnCounts = new Map<string, number>();
+        data.forEach(payment => {
+          if (payment.transaction_number) {
+            const txn = payment.transaction_number.trim().toLowerCase();
+            txnCounts.set(txn, (txnCounts.get(txn) || 0) + 1);
+          }
+        });
+        // Only keep duplicates (count > 1)
+        const duplicates = new Map<string, number>();
+        txnCounts.forEach((count, txn) => {
+          if (count > 1) duplicates.set(txn, count);
+        });
+        setDuplicateTransactions(duplicates);
+      }
     } catch (error: any) {
       console.error('Fetch payments error:', error);
       toast({
@@ -686,7 +706,15 @@ const Admin = () => {
                             <TableCell>{payment.payer_name || '-'}</TableCell>
                             <TableCell>{payment.payer_mobile || '-'}</TableCell>
                             <TableCell className="font-mono text-sm">
-                              {payment.transaction_number || '-'}
+                              <div className="flex items-center gap-2">
+                                {payment.transaction_number || '-'}
+                                {payment.transaction_number && 
+                                  duplicateTransactions.has(payment.transaction_number.trim().toLowerCase()) && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    ⚠️ Duplicate ({duplicateTransactions.get(payment.transaction_number.trim().toLowerCase())})
+                                  </Badge>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell className="font-semibold">₹{payment.amount}</TableCell>
                             <TableCell>{getStatusBadge(payment.status)}</TableCell>
