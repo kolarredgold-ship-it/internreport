@@ -52,15 +52,12 @@ const initialFormData: FormData = {
 // Chapters to generate (in order) - function to allow dynamic title for Chapter 1
 const getChapters = (internshipTitle?: string) => [
   { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, TOC' },
-  { key: '1', label: 'Chapter 1', description: `Introduction to ${internshipTitle || 'Internship Title'}` },
-  { key: '2', label: 'Chapter 2', description: 'Introduction to Industry and Company Profile' },
-  { key: '3', label: 'Chapter 3', description: 'Literature Review' },
-  { key: '4', label: 'Chapter 4', description: 'External Learning' },
-  { key: '5', label: 'Chapter 5', description: 'Internship Outcome' },
-  { key: '6', label: 'Chapter 6', description: 'Data Analysis & Findings' },
-  { key: '7', label: 'Chapter 7', description: 'Challenges & Solutions' },
-  { key: '8', label: 'Chapter 8', description: 'Recommendations' },
-  { key: '9', label: 'Chapter 9', description: 'Conclusion & References' },
+  { key: 'exec', label: 'Executive Summary', description: 'Overview of internship experience and key findings' },
+  { key: '1', label: 'Chapter 1', description: 'Introduction' },
+  { key: '2', label: 'Chapter 2', description: 'Description of the Organisation' },
+  { key: '3', label: 'Chapter 3', description: 'External Learning' },
+  { key: '4', label: 'Chapter 4', description: 'Internship Outcomes and Conclusion' },
+  { key: '5', label: 'Chapter 5', description: 'Bibliography' },
 ];
 
 // Sound notification function
