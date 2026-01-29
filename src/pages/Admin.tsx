@@ -442,8 +442,8 @@ const Admin = () => {
         if (profileError) {
           console.error('Error fetching profile:', profileError);
         } else {
-          // Subtract 3 from generations_used (giving them 3 more generations)
-          const newGenerationsUsed = Math.max(0, (profile.generations_used || 0) - 3);
+          // Subtract 5 from generations_used (giving them 5 more generations)
+          const newGenerationsUsed = Math.max(0, (profile.generations_used || 0) - 5);
           
           const { error: updateError } = await supabase
             .from('profiles')
@@ -476,7 +476,7 @@ const Admin = () => {
       toast({
         title: 'Payment Approved',
         description: payment.payment_type === 'topup' 
-          ? 'Payment verified and 3 generations added to user account.' 
+          ? 'Payment verified and 5 generations added to user account.' 
           : 'The payment has been verified and activated.',
       });
 
