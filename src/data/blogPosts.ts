@@ -66,7 +66,12 @@ const domains = [
   "Network Administration",
   "IT Support",
   "E-commerce",
-  "Social Media Marketing"
+  "Social Media Marketing",
+  "Commerce",
+  "Accounting",
+  "Banking",
+  "Insurance",
+  "Retail Management"
 ];
 
 const categories = [
@@ -77,7 +82,133 @@ const categories = [
   "Industry Insights",
   "Technical Guide",
   "Format & Structure",
-  "Examples & Templates"
+  "Examples & Templates",
+  "Commerce & Management",
+  "Sample PDF & Downloads"
+];
+
+// Featured blog posts - manually curated high-value SEO posts
+const featuredPosts: Array<{title: string; excerpt: string; domain: string; category: string}> = [
+  {
+    title: "Internship Report Format Samples and PDF Complete Guide for Students",
+    excerpt: "Complete guide to internship report format with samples, templates, and PDF downloads. Perfect for all Indian university students.",
+    domain: "General",
+    category: "Format & Structure"
+  },
+  {
+    title: "Internship Report Format Sample PDF Front Page and Template",
+    excerpt: "Download internship report format with sample PDF, front page design, and ready-to-use templates for college submissions.",
+    domain: "General",
+    category: "Examples & Templates"
+  },
+  {
+    title: "Internship Report Generator AI Free Samples Format and PDF Download",
+    excerpt: "Use our AI internship report generator to create free samples with proper format and instant PDF download.",
+    domain: "General",
+    category: "Technical Guide"
+  },
+  {
+    title: "Internship Report Sample PDF Format Cover Page and Front Page",
+    excerpt: "Get internship report sample PDF with professional format, cover page design, and front page templates.",
+    domain: "General",
+    category: "Sample PDF & Downloads"
+  },
+  {
+    title: "How to Write an Internship Report Format Template and Sample PDF",
+    excerpt: "Step-by-step guide on how to write an internship report with format guidelines, templates, and sample PDF downloads.",
+    domain: "General",
+    category: "Report Writing Guide"
+  },
+  {
+    title: "Internship Report Format with Sample PDF and Cover Page",
+    excerpt: "Professional internship report format with sample PDF and cover page design for university submissions.",
+    domain: "General",
+    category: "Format & Structure"
+  },
+  {
+    title: "Internship Report Template Free Download PDF and Word",
+    excerpt: "Free internship report template download in PDF and Word format. Ready to customize for any domain.",
+    domain: "General",
+    category: "Examples & Templates"
+  },
+  {
+    title: "Internship Report Front Page Format and Sample PDF for College Students",
+    excerpt: "Design your internship report front page with our format guide and sample PDF for college students.",
+    domain: "General",
+    category: "Format & Structure"
+  },
+  {
+    title: "Internship Report on Sales and Marketing Sample PDF and Format",
+    excerpt: "Complete sales and marketing internship report with sample PDF, format guidelines, and project examples.",
+    domain: "Sales & Marketing",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Internship Report Made Easy Format Samples and Free PDF",
+    excerpt: "Simplify your internship report writing with easy format samples and free PDF downloads.",
+    domain: "General",
+    category: "Report Writing Guide"
+  },
+  {
+    title: "Download Internship Report Sample PDF with Format and Front Page",
+    excerpt: "Instant download internship report sample PDF with proper format and professional front page design.",
+    domain: "General",
+    category: "Sample PDF & Downloads"
+  },
+  {
+    title: "Complete Internship Report Guide Format Template and PDF",
+    excerpt: "Your complete internship report guide covering format, template, and PDF download options.",
+    domain: "General",
+    category: "Report Writing Guide"
+  },
+  {
+    title: "AI Internship Report Generator with Ready Made Samples and PDFs",
+    excerpt: "Generate professional internship reports instantly with AI. Includes ready-made samples and PDF downloads.",
+    domain: "General",
+    category: "Technical Guide"
+  },
+  {
+    title: "Commerce Internship Report Sample PDF Format and Template",
+    excerpt: "Complete commerce internship report with sample PDF, format guidelines, and templates for B.Com students.",
+    domain: "Commerce",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Management Internship Report Format Sample PDF for MBA Students",
+    excerpt: "Professional management internship report format with sample PDF designed for MBA and BBA students.",
+    domain: "Business Analytics",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Finance Internship Report Sample PDF with Format and Cover Page",
+    excerpt: "Download finance internship report sample PDF with professional format and cover page for commerce students.",
+    domain: "Finance",
+    category: "Commerce & Management"
+  },
+  {
+    title: "HR Internship Report Format and Sample PDF for Management Students",
+    excerpt: "Human resources internship report format with sample PDF for HR management and MBA students.",
+    domain: "Human Resources",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Accounting Internship Report Sample PDF Format and Template",
+    excerpt: "Complete accounting internship report with sample PDF, format guidelines for CA and B.Com students.",
+    domain: "Accounting",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Banking Internship Report Format Sample PDF for Commerce Students",
+    excerpt: "Professional banking internship report format with sample PDF for commerce and finance students.",
+    domain: "Banking",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Retail Management Internship Report Sample PDF and Format Guide",
+    excerpt: "Complete retail management internship report with sample PDF and format guide for management students.",
+    domain: "Retail Management",
+    category: "Commerce & Management"
+  }
 ];
 
 // Domain-specific details for richer content
@@ -261,6 +392,42 @@ const domainDetails: Record<string, { skills: string[]; tools: string[]; project
     tools: ["Hootsuite", "Buffer", "Sprout Social", "Meta Business Suite", "Canva", "Google Analytics", "Later"],
     projects: ["Social media strategy", "Content calendar", "Paid campaign", "Influencer collaboration", "Analytics report"],
     careers: ["Social Media Manager", "Content Creator", "Community Manager", "Digital Marketing Manager", "Brand Manager"]
+  },
+  "Commerce": {
+    skills: ["Financial accounting", "Business law", "Economics", "Taxation", "Auditing", "Cost accounting", "Business communication"],
+    tools: ["Tally", "Excel", "QuickBooks", "SAP", "Zoho Books", "Microsoft Office", "Google Sheets"],
+    projects: ["Financial analysis project", "Tax computation study", "Audit report preparation", "Business plan development", "Market research study"],
+    careers: ["Accountant", "Tax Consultant", "Auditor", "Financial Analyst", "Business Consultant"]
+  },
+  "Accounting": {
+    skills: ["Financial accounting", "Cost accounting", "Tax accounting", "Auditing", "Financial reporting", "Bookkeeping", "GST compliance"],
+    tools: ["Tally ERP", "QuickBooks", "SAP FICO", "Excel", "Zoho Books", "Busy Accounting", "MYOB"],
+    projects: ["Financial statement preparation", "Tax filing project", "Audit documentation", "Cost analysis report", "Budgeting project"],
+    careers: ["Chartered Accountant", "Cost Accountant", "Tax Consultant", "Auditor", "Financial Controller"]
+  },
+  "Banking": {
+    skills: ["Banking operations", "Credit analysis", "Risk management", "Customer service", "Loan processing", "KYC compliance", "Financial products"],
+    tools: ["Core Banking System", "Excel", "Finacle", "Oracle FLEXCUBE", "CRM systems", "Bloomberg Terminal", "Reuters"],
+    projects: ["Loan processing study", "KYC verification project", "Customer service analysis", "Credit risk assessment", "Digital banking analysis"],
+    careers: ["Bank Officer", "Credit Analyst", "Relationship Manager", "Branch Manager", "Risk Analyst"]
+  },
+  "Insurance": {
+    skills: ["Insurance products", "Risk assessment", "Claims processing", "Underwriting", "Customer service", "Regulatory compliance", "Sales"],
+    tools: ["Insurance CRM", "Excel", "Policy management systems", "Claims software", "Actuarial tools", "Microsoft Office", "Salesforce"],
+    projects: ["Claims analysis project", "Policy comparison study", "Customer retention analysis", "Risk assessment report", "Sales strategy project"],
+    careers: ["Insurance Agent", "Underwriter", "Claims Adjuster", "Actuary", "Insurance Manager"]
+  },
+  "Retail Management": {
+    skills: ["Inventory management", "Visual merchandising", "Customer service", "Sales management", "Store operations", "Supply chain", "POS systems"],
+    tools: ["POS systems", "Inventory software", "Excel", "SAP Retail", "CRM systems", "Power BI", "Tableau"],
+    projects: ["Store operations analysis", "Inventory optimization", "Customer experience study", "Sales performance analysis", "Visual merchandising project"],
+    careers: ["Store Manager", "Retail Buyer", "Visual Merchandiser", "Operations Manager", "Retail Analyst"]
+  },
+  "General": {
+    skills: ["Communication", "Problem solving", "Teamwork", "Time management", "Professional writing", "Presentation skills", "Critical thinking"],
+    tools: ["Microsoft Office", "Google Workspace", "Project management tools", "Presentation software", "Documentation tools", "Email", "Collaboration platforms"],
+    projects: ["Main internship project", "Documentation task", "Research assignment", "Team project", "Analysis report"],
+    careers: ["Professional", "Manager", "Analyst", "Consultant", "Specialist"]
   }
 };
 
@@ -291,9 +458,12 @@ const universityDetails: Record<string, { location: string; type: string; establ
 const generateSlug = (title: string): string => {
   return title
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9\s]/g, '')
     .replace(/\s+/g, '-')
-    .substring(0, 80);
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 60);
 };
 
 // Deterministic date generator based on post ID
@@ -575,14 +745,136 @@ const blogTemplates = [
   }
 ];
 
+const generateFeaturedContent = (title: string, domain: string, category: string, postId: number): string => {
+  const domainInfo = domainDetails[domain] || domainDetails["Web Development"] || {
+    skills: ["Professional skills", "Industry knowledge", "Communication", "Teamwork"],
+    tools: ["Microsoft Office", "Google Workspace", "Project tools", "Reporting software"],
+    projects: ["Main project", "Secondary project", "Analysis task"],
+    careers: ["Industry professional", "Manager", "Analyst"]
+  };
+  
+  return `
+## Introduction
+
+This comprehensive guide covers everything you need to know about internship report writing. Whether you're a commerce, management, or technical student, this guide will help you create a professional internship report.
+
+## What is an Internship Report?
+
+An internship report is a formal document that summarizes your work experience, learning outcomes, and professional development during your internship period. It typically includes:
+
+- Company overview and profile
+- Your role and responsibilities
+- Projects completed and tasks handled
+- Skills acquired and learning outcomes
+- Challenges faced and solutions implemented
+
+## Standard Internship Report Format
+
+### Cover Page / Front Page
+Your report should start with a professional cover page including:
+- Report title
+- Your name and registration number
+- College and university name
+- Internship duration and company details
+
+### Table of Contents
+A well-organized table of contents helps readers navigate your report easily.
+
+### Chapter 1: Introduction
+- Background of the internship
+- Objectives and scope
+- Methodology
+
+### Chapter 2: Company Profile
+- About the organization
+- Industry overview
+- Organizational structure
+
+### Chapter 3: Training/Project Details
+${domain !== "General" ? `Your ${domain} internship should cover:
+${domainInfo.skills.map(skill => `- **${skill}**: Practical application and learning`).join('\n')}` : 
+`- Daily tasks and responsibilities
+- Project assignments
+- Skills developed`}
+
+### Chapter 4: Learning Outcomes
+- Technical skills acquired
+- Soft skills development
+- Professional growth
+
+### Chapter 5: Conclusion
+- Summary of experience
+- Recommendations
+- Future career plans
+
+## Download Sample PDF
+
+Looking for ready-made samples? Our AI Internship Report Generator creates professional, university-compliant reports instantly:
+
+- **Instant Generation**: Get your complete report in minutes
+- **DOCX Download**: Ready-to-edit Word document
+- **University Format**: Follows standard academic guidelines
+- **Plagiarism-Free**: Unique content for each report
+
+## Tips for Writing a Great Report
+
+1. **Start Early**: Don't wait until the last minute
+2. **Keep Daily Notes**: Document your work regularly
+3. **Include Visuals**: Add charts, screenshots, and diagrams
+4. **Proofread Carefully**: Check for spelling and grammar errors
+5. **Follow Guidelines**: Adhere to your university's specific format
+
+## Conclusion
+
+A well-written internship report showcases your professional growth and learning. Use InternReport.in to generate a professional report that meets all academic standards.
+
+---
+
+*Keywords: internship report format, sample PDF, front page design, report template, download internship report, AI report generator, ${category.toLowerCase()}*
+`;
+};
+
 const generateBlogPosts = (): BlogPost[] => {
   const posts: BlogPost[] = [];
   let postId = 1;
 
-  // Generate posts by combining universities, domains, and templates
+  // First, add featured posts (high-priority SEO posts)
+  for (const featured of featuredPosts) {
+    const slug = generateSlug(featured.title) + '-' + postId;
+    const publishedDate = generateDeterministicDate(postId);
+    
+    posts.push({
+      id: `blog-${postId}`,
+      slug,
+      title: featured.title,
+      excerpt: featured.excerpt,
+      content: generateFeaturedContent(featured.title, featured.domain, featured.category, postId),
+      category: featured.category,
+      university: "All Indian Universities",
+      domain: featured.domain,
+      keywords: [
+        "internship report format",
+        "internship report sample pdf",
+        "internship report template",
+        "download internship report",
+        "AI internship report generator",
+        "front page design",
+        "cover page template",
+        "internship report pdf",
+        featured.category.toLowerCase(),
+        featured.domain.toLowerCase() + " internship"
+      ],
+      publishedAt: publishedDate,
+      readTime: 6 + (postId % 4)
+    });
+    
+    postId++;
+  }
+
+  // Then generate posts by combining universities, domains, and templates
   for (let templateIndex = 0; templateIndex < blogTemplates.length; templateIndex++) {
     for (let uniIndex = 0; uniIndex < universities.length; uniIndex++) {
-      if (postId > 500) break;
+      if (postId > 520) break; // 20 featured + 500 regular = 520 total
       
       const domainIndex = (templateIndex + uniIndex) % domains.length;
       const categoryIndex = (templateIndex + uniIndex) % categories.length;
@@ -635,7 +927,7 @@ const generateBlogPosts = (): BlogPost[] => {
       
       postId++;
     }
-    if (postId > 500) break;
+    if (postId > 520) break;
   }
 
   // Sort by date (newest first)
