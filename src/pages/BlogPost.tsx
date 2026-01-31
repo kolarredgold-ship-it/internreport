@@ -161,11 +161,11 @@ const BlogPost = () => {
               <Badge variant="secondary">{post.domain}</Badge>
             </div>
             
-            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+            <h1 className="font-display text-2xl md:text-3xl font-bold mb-4 leading-tight">
               {post.title}
             </h1>
             
-            <p className="text-xl text-muted-foreground mb-6">
+            <p className="text-base text-muted-foreground mb-4">
               {post.excerpt}
             </p>
             
@@ -216,16 +216,16 @@ const BlogPost = () => {
           </Card>
 
           {/* Article Content */}
-          <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+          <div className="prose prose-base dark:prose-invert max-w-none mb-12">
             <div 
-              className="blog-content"
+              className="blog-content text-base"
               dangerouslySetInnerHTML={{ 
                 __html: post.content
-                  .replace(/## /g, '<h2 class="font-display text-2xl font-bold mt-8 mb-4">')
-                  .replace(/### /g, '<h3 class="font-display text-xl font-semibold mt-6 mb-3">')
+                  .replace(/## /g, '<h2 class="font-display text-xl font-bold mt-6 mb-3">')
+                  .replace(/### /g, '<h3 class="font-display text-lg font-semibold mt-4 mb-2">')
                   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                  .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground leading-relaxed">')
-                  .replace(/^- (.*?)$/gm, '<li class="ml-4 mb-2">$1</li>')
+                  .replace(/\n\n/g, '</p><p class="mb-3 text-muted-foreground leading-relaxed text-sm">')
+                  .replace(/^- (.*?)$/gm, '<li class="ml-4 mb-1 text-sm">$1</li>')
                   .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
               }}
             />
