@@ -161,11 +161,11 @@ const BlogPost = () => {
               <Badge variant="secondary">{post.domain}</Badge>
             </div>
             
-            <h1 className="font-display text-2xl md:text-3xl font-bold mb-4 leading-tight">
+            <h1 className="font-display text-xl md:text-2xl font-bold mb-3 leading-tight">
               {post.title}
             </h1>
             
-            <p className="text-base text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-3">
               {post.excerpt}
             </p>
             
@@ -216,16 +216,16 @@ const BlogPost = () => {
           </Card>
 
           {/* Article Content */}
-          <div className="prose prose-base dark:prose-invert max-w-none mb-12">
+          <div className="prose prose-sm dark:prose-invert max-w-none mb-10">
             <div 
-              className="blog-content text-base"
+              className="blog-content text-sm"
               dangerouslySetInnerHTML={{ 
                 __html: post.content
-                  .replace(/## /g, '<h2 class="font-display text-xl font-bold mt-6 mb-3">')
-                  .replace(/### /g, '<h3 class="font-display text-lg font-semibold mt-4 mb-2">')
+                  .replace(/## /g, '<h2 class="font-display text-lg font-bold mt-5 mb-2">')
+                  .replace(/### /g, '<h3 class="font-display text-base font-semibold mt-3 mb-2">')
                   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                  .replace(/\n\n/g, '</p><p class="mb-3 text-muted-foreground leading-relaxed text-sm">')
-                  .replace(/^- (.*?)$/gm, '<li class="ml-4 mb-1 text-sm">$1</li>')
+                  .replace(/\n\n/g, '</p><p class="mb-2 text-muted-foreground leading-relaxed text-sm">')
+                  .replace(/^- (.*?)$/gm, '<li class="ml-4 mb-1 text-xs">$1</li>')
                   .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
               }}
             />
@@ -251,12 +251,12 @@ const BlogPost = () => {
           </div>
 
           {/* Final CTA */}
-          <Card className="gradient-bg text-primary-foreground mb-12">
-            <CardContent className="p-8 text-center">
-              <h2 className="font-display text-2xl font-bold mb-4">
+          <Card className="gradient-bg text-primary-foreground mb-10">
+            <CardContent className="p-6 text-center">
+              <h2 className="font-display text-xl font-bold mb-3">
                 Ready to Create Your Internship Report?
               </h2>
-              <p className="text-primary-foreground/80 mb-6 max-w-xl mx-auto">
+              <p className="text-primary-foreground/80 mb-4 max-w-xl mx-auto text-sm">
                 Our AI generates professional, {post.university}-compliant reports 
                 for {post.domain} internships. Join 10,000+ students who trust InternReport.in.
               </p>
@@ -274,8 +274,8 @@ const BlogPost = () => {
 
           {/* Related Posts */}
           {relatedPosts.length > 0 && (
-            <div className="mb-12">
-              <h2 className="font-display text-2xl font-bold mb-6 flex items-center gap-2">
+            <div className="mb-10">
+              <h2 className="font-display text-lg font-bold mb-4 flex items-center gap-2">
                 <BookOpen className="w-6 h-6" />
                 Related Articles
               </h2>
