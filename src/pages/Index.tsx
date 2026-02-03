@@ -369,8 +369,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Coursera Recommended Courses - Affiliate */}
-      <CourseraRecommendations />
 
       {/* Pricing */}
       <section id="pricing" className="container mx-auto px-4 py-20">
@@ -617,6 +615,9 @@ const Index = () => {
           </Link>
         </div>
       </section>
+
+      {/* Coursera Recommended Courses - Affiliate */}
+      <CourseraRecommendations />
 
       {/* Footer */}
       <footer className="border-t border-border/50 mt-20">
