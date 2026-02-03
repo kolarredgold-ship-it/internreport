@@ -15,6 +15,7 @@ import SharePopup from '@/components/SharePopup';
 import FloatingShareButton from '@/components/FloatingShareButton';
 import StatsCounter from '@/components/StatsCounter';
 import StickyBanner from '@/components/StickyBanner';
+import CourseraRecommendations from '@/components/CourseraRecommendations';
 const Index = () => {
   const {
     user
@@ -367,6 +368,9 @@ const Index = () => {
             </div>)}
         </div>
       </section>
+
+      {/* Coursera Recommended Courses - Affiliate */}
+      <CourseraRecommendations />
 
       {/* Pricing */}
       <section id="pricing" className="container mx-auto px-4 py-20">
