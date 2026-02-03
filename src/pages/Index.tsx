@@ -263,8 +263,8 @@ const Index = () => {
           </div>
 
           {/* SEO Headline H1 */}
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">Free Internship Reports
-Generator & Student Career Resources<span className="gradient-text">Internship Reports</span>
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">Free Internship Reports
+& Student Career Resources<span className="gradient-text">Internship Reports</span>
             <br />& Student Career Resources
           </h1>
           
