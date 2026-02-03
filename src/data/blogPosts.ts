@@ -89,6 +89,7 @@ const categories = [
 
 // Featured blog posts - manually curated high-value SEO posts
 const featuredPosts: Array<{title: string; excerpt: string; domain: string; category: string}> = [
+  // Primary SEO target posts
   {
     title: "Internship Report Format Samples and PDF Complete Guide for Students",
     excerpt: "Complete guide to internship report format with samples, templates, and PDF downloads. Perfect for all Indian university students.",
@@ -167,6 +168,7 @@ const featuredPosts: Array<{title: string; excerpt: string; domain: string; cate
     domain: "General",
     category: "Technical Guide"
   },
+  // Commerce and Management focused posts
   {
     title: "Commerce Internship Report Sample PDF Format and Template",
     excerpt: "Complete commerce internship report with sample PDF, format guidelines, and templates for B.Com students.",
@@ -207,6 +209,97 @@ const featuredPosts: Array<{title: string; excerpt: string; domain: string; cate
     title: "Retail Management Internship Report Sample PDF and Format Guide",
     excerpt: "Complete retail management internship report with sample PDF and format guide for management students.",
     domain: "Retail Management",
+    category: "Commerce & Management"
+  },
+  // Additional Commerce and Management posts
+  {
+    title: "BBA Internship Report Format Sample PDF and Template Download",
+    excerpt: "Professional BBA internship report format with sample PDF templates for business administration students.",
+    domain: "Business Analytics",
+    category: "Commerce & Management"
+  },
+  {
+    title: "MBA Summer Internship Report Format Sample PDF Guide",
+    excerpt: "Comprehensive MBA summer internship report format with sample PDF for management students.",
+    domain: "Business Analytics",
+    category: "Commerce & Management"
+  },
+  {
+    title: "BCom Internship Report Sample PDF Format for Commerce Students",
+    excerpt: "Download BCom internship report sample PDF with proper format and front page for commerce students.",
+    domain: "Commerce",
+    category: "Commerce & Management"
+  },
+  {
+    title: "CA Articleship Report Format Sample PDF and Template",
+    excerpt: "Complete CA articleship report format with sample PDF for chartered accountancy students.",
+    domain: "Accounting",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Insurance Internship Report Sample PDF Format and Guide",
+    excerpt: "Professional insurance internship report with sample PDF and format guidelines for commerce students.",
+    domain: "Insurance",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Marketing Internship Report Format Sample PDF for MBA",
+    excerpt: "Marketing internship report format with sample PDF designed for MBA marketing students.",
+    domain: "Sales & Marketing",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Operations Management Internship Report Sample PDF Format",
+    excerpt: "Complete operations management internship report with sample PDF for MBA operations students.",
+    domain: "Operations Management",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Supply Chain Internship Report Format Sample PDF Guide",
+    excerpt: "Professional supply chain internship report format with sample PDF for logistics and SCM students.",
+    domain: "Supply Chain Management",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Financial Analysis Internship Report Sample PDF and Format",
+    excerpt: "Download financial analysis internship report sample PDF with format for finance and commerce students.",
+    domain: "Finance",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Audit Internship Report Format Sample PDF for CA Students",
+    excerpt: "Complete audit internship report format with sample PDF for CA and accounting students.",
+    domain: "Accounting",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Tax Internship Report Sample PDF Format and Template",
+    excerpt: "Professional tax internship report with sample PDF and format for CA and commerce students.",
+    domain: "Accounting",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Bank Internship Report Format Sample PDF for Finance Students",
+    excerpt: "Download bank internship report format with sample PDF for banking and finance students.",
+    domain: "Banking",
+    category: "Commerce & Management"
+  },
+  {
+    title: "Stock Market Internship Report Sample PDF Format Guide",
+    excerpt: "Complete stock market internship report with sample PDF and format for commerce students.",
+    domain: "Finance",
+    category: "Commerce & Management"
+  },
+  {
+    title: "FMCG Internship Report Format Sample PDF for Management",
+    excerpt: "Professional FMCG internship report format with sample PDF for marketing and management students.",
+    domain: "Sales & Marketing",
+    category: "Commerce & Management"
+  },
+  {
+    title: "E-commerce Internship Report Sample PDF Format and Template",
+    excerpt: "Download e-commerce internship report sample PDF with format for business and commerce students.",
+    domain: "E-commerce",
     category: "Commerce & Management"
   }
 ];
@@ -463,7 +556,7 @@ const generateSlug = (title: string): string => {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
-    .substring(0, 60);
+    .substring(0, 50);
 };
 
 // Deterministic date generator based on post ID
