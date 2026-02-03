@@ -561,60 +561,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Recent Blogs Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
-            <BookOpen className="w-4 h-4" />
-            <span className="text-sm font-medium">From Our Blog</span>
-          </div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-            Latest Internship Report Guides
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Expert tips, templates, and guides to help you write the perfect internship report
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {blogPosts.slice(0, 4).map(post => <Link key={post.id} to={`/blog/${post.slug}`}>
-              <Card className="h-full hover:shadow-lg transition-all duration-300 border-0 shadow-soft group">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {post.category}
-                    </Badge>
-                  </div>
-                  <CardTitle className="font-display text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">
-                    {post.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-muted-foreground text-xs mb-3 line-clamp-2">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
-                    <span>{new Date(post.publishedAt).toLocaleDateString('en-IN', {
-                    month: 'short',
-                    day: 'numeric'
-                  })}</span>
-                    <span>•</span>
-                    <Clock className="w-3 h-3" />
-                    <span>{post.readTime} min</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>)}
-        </div>
-        <div className="text-center mt-8">
-          <Link to="/blog">
-            <Button variant="outline" size="lg">
-              View All Articles
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+
 
       {/* Coursera Recommended Courses - Affiliate */}
       <CourseraRecommendations />
