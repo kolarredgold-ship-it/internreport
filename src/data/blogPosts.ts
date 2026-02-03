@@ -87,6 +87,124 @@ const categories = [
   "Sample PDF & Downloads"
 ];
 
+// Internship title-based blog posts
+const internshipTitlePosts: Array<{title: string; company: string; domain: string; category: string}> = [
+  { title: "Study On Green Marketing Related To Picking up Inventory Process at Instakart Pvt Ltd", company: "Instakart Pvt Ltd", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Worked as an Accountant", company: "CA Firm", domain: "Accounting", category: "Commerce & Management" },
+  { title: "Pharmacy Inventory Management System", company: "Pharmacy", domain: "Operations Management", category: "Technical Guide" },
+  { title: "A Report on Consumer Behaviour and Customer Service at IOCL Sri Sai Balaji Service Station", company: "IOCL", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Study on Material Management at BEML Ltd", company: "BEML Ltd", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "Internship on Human Resource and Employee Welfare", company: "Corporate", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Study of Inventory Management and Supply Chain", company: "Logistics Company", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Marketing Research at SMP Tiles and Ceramics", company: "SMP Tiles", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Sales Promotions", company: "Retail", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Study of Practicing Tax Consultant and GST Practitioner", company: "Tax Consultancy", domain: "Accounting", category: "Commerce & Management" },
+  { title: "Digital Marketing", company: "Digital Agency", domain: "Digital Marketing", category: "Technical Guide" },
+  { title: "A Study on Classroom Supporter at Vision Computers", company: "Vision Computers", domain: "IT Support", category: "Technical Guide" },
+  { title: "Study on Marketing Strategy", company: "Marketing Firm", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Raw Material Purchase and Maintenance", company: "Manufacturing", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Cost and Revenue Analysis", company: "Finance Firm", domain: "Finance", category: "Commerce & Management" },
+  { title: "A Study on Financial Development for Agricultural Sectors in DCC Bank", company: "DCC Bank", domain: "Banking", category: "Commerce & Management" },
+  { title: "A Study on HR Role in Employee Skill Development and Career Growth at Supertech Engineer", company: "Supertech Engineer", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Study on Quality Control and Production Department at Vishwakarma Refractories", company: "Vishwakarma Refractories", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "Integrated Learning in Audit and Accounting Practical Internship Experience at a CA Firm", company: "CA Firm", domain: "Accounting", category: "Commerce & Management" },
+  { title: "A Study on Marketing Department at Sri RV Advent Ride Yamaha", company: "Yamaha", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Customer Satisfaction Towards Sri RV Advent Ride Yamaha", company: "Yamaha", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study Report on Marketing at Agroes Service Pvt Ltd", company: "Agroes Pvt Ltd", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Sales Executive in Prestige Xclusive", company: "Prestige", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Comparison of Logistics and Packing at Flipkart", company: "Flipkart", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Brand Image of Nandhini Products", company: "Nandini", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Customer Relationship with Company", company: "Corporate", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Report on Pharmacy Inventory Management System", company: "Pharmacy", domain: "Operations Management", category: "Technical Guide" },
+  { title: "Smilez Events", company: "Event Management", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Supply Chain Management", company: "Logistics", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Sales Support and Coordination", company: "Sales Firm", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Study on Sales Executive in Prestige Exclusive", company: "Prestige", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Report on Marketing Department at LG Showroom", company: "LG", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Finance and Auditing", company: "Finance Firm", domain: "Finance", category: "Commerce & Management" },
+  { title: "Report on Strategic Sales and Financial Analysis", company: "Corporate", domain: "Finance", category: "Commerce & Management" },
+  { title: "Product and Market Analysis of Shriram Life Insurance", company: "Shriram Life Insurance", domain: "Insurance", category: "Commerce & Management" },
+  { title: "Overall Organisations Towards Nandini Milk Products", company: "KOMUL", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Marketing Strategies of Life Insurance Products", company: "Insurance", domain: "Insurance", category: "Commerce & Management" },
+  { title: "A Study on Organization Structure", company: "Corporate", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Study on Effectiveness of Promoting Nandini Milk Products at KOMUL", company: "KOMUL", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Finance Staff at Vel Murugan Finance Company", company: "Vel Murugan Finance", domain: "Finance", category: "Commerce & Management" },
+  { title: "A Study on Sales and Accounting Operations Using Zoho Books", company: "Zoho Partner", domain: "Accounting", category: "Commerce & Management" },
+  { title: "A Study on Financial Analysis of AU Small Finance Bank", company: "AU Small Finance Bank", domain: "Banking", category: "Commerce & Management" },
+  { title: "A Study on Buying Behaviour of Customers Mahindra Tractor", company: "Mahindra", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Report on Gram Panchayath Schemes", company: "Government", domain: "Commerce", category: "Commerce & Management" },
+  { title: "A Study on Consumer Buying Behavior at Sri Balaji Offset Printers", company: "Sri Balaji Printers", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Customer Perception Towards Nandi Suzuki Automobiles", company: "Suzuki", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Customer Prescription Towards Nandi Suzuki Automobile", company: "Suzuki", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Income Tax Filing Matter", company: "Tax Consultancy", domain: "Accounting", category: "Commerce & Management" },
+  { title: "Reliance Fresh Outlet", company: "Reliance", domain: "Retail Management", category: "Commerce & Management" },
+  { title: "A Study on Inventory and Supply Chain", company: "Logistics", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "Report on Marketing and Sales at Okaya", company: "Okaya", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Internship Report on Trading and Marketing of Pesticides Seeds and Fertilizers at Agro Pvt Ltd", company: "Agro Pvt Ltd", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Logistics of Picking and Marketing", company: "Logistics", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Onboarding Experience and Employee Retention", company: "Corporate", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Study on Consumer Buying Behaviour at Reliance Smart Point", company: "Reliance", domain: "Retail Management", category: "Commerce & Management" },
+  { title: "A Study on Packing Department at Flipkart Company", company: "Flipkart", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Non Performing Assets in DCC Bank Limited", company: "DCC Bank", domain: "Banking", category: "Commerce & Management" },
+  { title: "Consumer Preference and Services", company: "Retail", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on the Role of Digital Marketing in Boosting Sales at Honda Pvt Ltd", company: "Honda", domain: "Digital Marketing", category: "Commerce & Management" },
+  { title: "Marketing Development", company: "Marketing Firm", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Inventory Management and Its Analysis", company: "Warehouse", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Sale of Products at Krishna Traders", company: "Krishna Traders", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Customer Relationship Management and Home Appliances at Reddy Electronics", company: "Reddy Electronics", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Marketing at Navami Textiles", company: "Navami Textiles", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Home Loans and Personal Loans", company: "Finance Company", domain: "Banking", category: "Commerce & Management" },
+  { title: "Administration and Human Resource Department", company: "Corporate", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Study on Automotive Parts Produced by Injection Moulding Machine", company: "Auto Manufacturing", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "A Study on Corporate Social Responsibility at Tata Electronics Solution", company: "Tata Electronics", domain: "Commerce", category: "Commerce & Management" },
+  { title: "Consumer Buying Behaviour Towards Shriram Life Insurance", company: "Shriram Life Insurance", domain: "Insurance", category: "Commerce & Management" },
+  { title: "Internship Report on Income Tax", company: "Tax Consultancy", domain: "Accounting", category: "Commerce & Management" },
+  { title: "A Report on Production Department at VRPL", company: "VRPL", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "Agroes Pvt Ltd", company: "Agroes Pvt Ltd", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Internship Report on Production Department at Image Labels Pvt Ltd", company: "Image Labels", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "GST Filing Procedure and Inventory Control", company: "CA Firm", domain: "Accounting", category: "Commerce & Management" },
+  { title: "Consumer Relationship Management at Keerthi Pradhan Chits Pvt Ltd", company: "Keerthi Pradhan Chits", domain: "Finance", category: "Commerce & Management" },
+  { title: "Report on Sales and Distribution", company: "FMCG", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study in Human Resource Management", company: "Corporate", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Study on Customer Relationship Management at Narayan Enterprises", company: "Narayan Enterprises", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Study on Taxation in Saartha Holidays", company: "Saartha Holidays", domain: "Accounting", category: "Commerce & Management" },
+  { title: "Study on Financial Reporting in Saartha Holidays", company: "Saartha Holidays", domain: "Finance", category: "Commerce & Management" },
+  { title: "Warehouse Operations", company: "Logistics", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "Internship Report on Overall Maintenance Practices at VRPL", company: "VRPL", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "A Study on Sales and Marketing Executive in Hindustan Petroleum Outlet", company: "HPCL", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "Income Tax Filings", company: "Tax Consultancy", domain: "Accounting", category: "Commerce & Management" },
+  { title: "Customer Relationship Management", company: "Corporate", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Quality Standards in Manufacturing at Belrise Industries Ltd", company: "Belrise Industries", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "Study on Organisation Structure", company: "Corporate", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "Inventory Management at Reliance Smart Point", company: "Reliance", domain: "Retail Management", category: "Commerce & Management" },
+  { title: "Marketing in IT Solutions and Services", company: "IT Company", domain: "Digital Marketing", category: "Technical Guide" },
+  { title: "Business Analytics in Shriram Life Insurance Company", company: "Shriram Life Insurance", domain: "Business Analytics", category: "Commerce & Management" },
+  { title: "Warehousing", company: "Logistics", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "Sonalika Tractors", company: "Sonalika", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study about the Activities of an NGO at Antharaganga Vidya Samsthe", company: "NGO", domain: "Commerce", category: "Commerce & Management" },
+  { title: "Study of Accounts Department", company: "Corporate", domain: "Accounting", category: "Commerce & Management" },
+  { title: "A Study on Sales Management at Sri RV Advent Ride Yamaha", company: "Yamaha", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Supply Chain Management at LCM Logistics Pvt Ltd", company: "LCM Logistics", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Customer Satisfaction Towards Access 125cc at Shree Nandi Suzuki", company: "Suzuki", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Organization with Reference to Employee Training and Development at KOMUL", company: "KOMUL", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "Employee Welfare in Maini Material Movement Pvt Ltd", company: "Maini Material Movement", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Report on Sustainability and Eco Friendly Practices at Prestige", company: "Prestige", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "Study on Sales Performance in TVS Motors", company: "TVS Motors", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on Store Management at Srimathe Ramanuja Tractors", company: "Srimathe Ramanuja Tractors", domain: "Retail Management", category: "Commerce & Management" },
+  { title: "A Report on Home Loans and Personal Loans at Vinaya Home Loans", company: "Vinaya Home Loans", domain: "Banking", category: "Commerce & Management" },
+  { title: "Study on Financial Assistance to Development for Agricultural Sectors in DCC Bank", company: "DCC Bank", domain: "Banking", category: "Commerce & Management" },
+  { title: "A Study on Silk Production Process at Khans Silk Industry", company: "Khans Silk Industry", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "Study on Insurance Products and Financial Investments", company: "Insurance Company", domain: "Insurance", category: "Commerce & Management" },
+  { title: "Internship Report on Customer Satisfaction Towards Sonalika Tractors", company: "Sonalika", domain: "Sales & Marketing", category: "Commerce & Management" },
+  { title: "A Study on GST Registration and Filing Process", company: "Tax Consultancy", domain: "Accounting", category: "Commerce & Management" },
+  { title: "A Study on Customer Relationship and Warehouse at Flipkart", company: "Flipkart", domain: "Supply Chain Management", category: "Commerce & Management" },
+  { title: "A Study on Visual Merchandising Towards Vishal Mega Mart", company: "Vishal Mega Mart", domain: "Retail Management", category: "Commerce & Management" },
+  { title: "Protium Finance", company: "Protium Finance", domain: "Finance", category: "Commerce & Management" },
+  { title: "A Study of Manufacturing Products at Belrise Industries", company: "Belrise Industries", domain: "Operations Management", category: "Commerce & Management" },
+  { title: "Human Resources and Onboarding Department", company: "Corporate", domain: "Human Resources", category: "Commerce & Management" },
+  { title: "A Study on Sales Management at Alanguru Milk Producers Co Operative Society Limited", company: "KOMUL", domain: "Sales & Marketing", category: "Commerce & Management" }
+];
+
 // Featured blog posts - manually curated high-value SEO posts
 const featuredPosts: Array<{title: string; excerpt: string; domain: string; category: string}> = [
   // Primary SEO target posts
@@ -121,186 +239,10 @@ const featuredPosts: Array<{title: string; excerpt: string; domain: string; cate
     category: "Report Writing Guide"
   },
   {
-    title: "Internship Report Format with Sample PDF and Cover Page",
-    excerpt: "Professional internship report format with sample PDF and cover page design for university submissions.",
-    domain: "General",
-    category: "Format & Structure"
-  },
-  {
-    title: "Internship Report Template Free Download PDF and Word",
-    excerpt: "Free internship report template download in PDF and Word format. Ready to customize for any domain.",
-    domain: "General",
-    category: "Examples & Templates"
-  },
-  {
-    title: "Internship Report Front Page Format and Sample PDF for College Students",
-    excerpt: "Design your internship report front page with our format guide and sample PDF for college students.",
-    domain: "General",
-    category: "Format & Structure"
-  },
-  {
-    title: "Internship Report on Sales and Marketing Sample PDF and Format",
-    excerpt: "Complete sales and marketing internship report with sample PDF, format guidelines, and project examples.",
-    domain: "Sales & Marketing",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Internship Report Made Easy Format Samples and Free PDF",
-    excerpt: "Simplify your internship report writing with easy format samples and free PDF downloads.",
-    domain: "General",
-    category: "Report Writing Guide"
-  },
-  {
-    title: "Download Internship Report Sample PDF with Format and Front Page",
-    excerpt: "Instant download internship report sample PDF with proper format and professional front page design.",
-    domain: "General",
-    category: "Sample PDF & Downloads"
-  },
-  {
-    title: "Complete Internship Report Guide Format Template and PDF",
-    excerpt: "Your complete internship report guide covering format, template, and PDF download options.",
-    domain: "General",
-    category: "Report Writing Guide"
-  },
-  {
     title: "AI Internship Report Generator with Ready Made Samples and PDFs",
     excerpt: "Generate professional internship reports instantly with AI. Includes ready-made samples and PDF downloads.",
     domain: "General",
     category: "Technical Guide"
-  },
-  // Commerce and Management focused posts
-  {
-    title: "Commerce Internship Report Sample PDF Format and Template",
-    excerpt: "Complete commerce internship report with sample PDF, format guidelines, and templates for B.Com students.",
-    domain: "Commerce",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Management Internship Report Format Sample PDF for MBA Students",
-    excerpt: "Professional management internship report format with sample PDF designed for MBA and BBA students.",
-    domain: "Business Analytics",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Finance Internship Report Sample PDF with Format and Cover Page",
-    excerpt: "Download finance internship report sample PDF with professional format and cover page for commerce students.",
-    domain: "Finance",
-    category: "Commerce & Management"
-  },
-  {
-    title: "HR Internship Report Format and Sample PDF for Management Students",
-    excerpt: "Human resources internship report format with sample PDF for HR management and MBA students.",
-    domain: "Human Resources",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Accounting Internship Report Sample PDF Format and Template",
-    excerpt: "Complete accounting internship report with sample PDF, format guidelines for CA and B.Com students.",
-    domain: "Accounting",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Banking Internship Report Format Sample PDF for Commerce Students",
-    excerpt: "Professional banking internship report format with sample PDF for commerce and finance students.",
-    domain: "Banking",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Retail Management Internship Report Sample PDF and Format Guide",
-    excerpt: "Complete retail management internship report with sample PDF and format guide for management students.",
-    domain: "Retail Management",
-    category: "Commerce & Management"
-  },
-  // Additional Commerce and Management posts
-  {
-    title: "BBA Internship Report Format Sample PDF and Template Download",
-    excerpt: "Professional BBA internship report format with sample PDF templates for business administration students.",
-    domain: "Business Analytics",
-    category: "Commerce & Management"
-  },
-  {
-    title: "MBA Summer Internship Report Format Sample PDF Guide",
-    excerpt: "Comprehensive MBA summer internship report format with sample PDF for management students.",
-    domain: "Business Analytics",
-    category: "Commerce & Management"
-  },
-  {
-    title: "BCom Internship Report Sample PDF Format for Commerce Students",
-    excerpt: "Download BCom internship report sample PDF with proper format and front page for commerce students.",
-    domain: "Commerce",
-    category: "Commerce & Management"
-  },
-  {
-    title: "CA Articleship Report Format Sample PDF and Template",
-    excerpt: "Complete CA articleship report format with sample PDF for chartered accountancy students.",
-    domain: "Accounting",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Insurance Internship Report Sample PDF Format and Guide",
-    excerpt: "Professional insurance internship report with sample PDF and format guidelines for commerce students.",
-    domain: "Insurance",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Marketing Internship Report Format Sample PDF for MBA",
-    excerpt: "Marketing internship report format with sample PDF designed for MBA marketing students.",
-    domain: "Sales & Marketing",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Operations Management Internship Report Sample PDF Format",
-    excerpt: "Complete operations management internship report with sample PDF for MBA operations students.",
-    domain: "Operations Management",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Supply Chain Internship Report Format Sample PDF Guide",
-    excerpt: "Professional supply chain internship report format with sample PDF for logistics and SCM students.",
-    domain: "Supply Chain Management",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Financial Analysis Internship Report Sample PDF and Format",
-    excerpt: "Download financial analysis internship report sample PDF with format for finance and commerce students.",
-    domain: "Finance",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Audit Internship Report Format Sample PDF for CA Students",
-    excerpt: "Complete audit internship report format with sample PDF for CA and accounting students.",
-    domain: "Accounting",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Tax Internship Report Sample PDF Format and Template",
-    excerpt: "Professional tax internship report with sample PDF and format for CA and commerce students.",
-    domain: "Accounting",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Bank Internship Report Format Sample PDF for Finance Students",
-    excerpt: "Download bank internship report format with sample PDF for banking and finance students.",
-    domain: "Banking",
-    category: "Commerce & Management"
-  },
-  {
-    title: "Stock Market Internship Report Sample PDF Format Guide",
-    excerpt: "Complete stock market internship report with sample PDF and format for commerce students.",
-    domain: "Finance",
-    category: "Commerce & Management"
-  },
-  {
-    title: "FMCG Internship Report Format Sample PDF for Management",
-    excerpt: "Professional FMCG internship report format with sample PDF for marketing and management students.",
-    domain: "Sales & Marketing",
-    category: "Commerce & Management"
-  },
-  {
-    title: "E-commerce Internship Report Sample PDF Format and Template",
-    excerpt: "Download e-commerce internship report sample PDF with format for business and commerce students.",
-    domain: "E-commerce",
-    category: "Commerce & Management"
   }
 ];
 
@@ -927,11 +869,83 @@ A well-written internship report showcases your professional growth and learning
 `;
 };
 
+// Generate minimal content for internship-title posts
+const generateInternshipTitleContent = (title: string, company: string, domain: string, category: string): string => {
+  return `
+## About This Internship Report
+
+Looking for a professional internship report on "${title}"? InternReport.in helps you create university-compliant reports instantly.
+
+## Report Overview
+
+**Internship Title:** ${title}
+**Company/Organization:** ${company}
+**Domain:** ${domain}
+**Category:** ${category}
+
+## What This Report Covers
+
+- Introduction and company profile
+- Internship objectives and scope
+- Daily tasks and responsibilities
+- Projects completed during internship
+- Skills acquired and learning outcomes
+- Challenges faced and solutions
+- Conclusion and recommendations
+
+## Why Use InternReport.in?
+
+✅ **AI-Powered Generation** - Get your complete report in 2-5 minutes
+✅ **University Format** - Follows Indian university guidelines
+✅ **DOCX Download** - Ready-to-submit Word document
+✅ **Plagiarism Free** - Unique content for each report
+
+## Generate Your Report Now
+
+Don't spend hours writing your internship report. Let our AI create a professional, exam-ready report based on your internship details.
+
+**Click the Download button above to see a demo of how our AI generates reports!**
+
+---
+
+*Keywords: ${title.toLowerCase()}, ${domain.toLowerCase()} internship report, ${company.toLowerCase()} internship, internship report format, AI report generator*
+`;
+};
+
 const generateBlogPosts = (): BlogPost[] => {
   const posts: BlogPost[] = [];
   let postId = 1;
 
-  // First, add featured posts (high-priority SEO posts)
+  // First, add internship-title posts (highest priority)
+  for (const internship of internshipTitlePosts) {
+    const slug = generateSlug(internship.title) + '-' + postId;
+    const publishedDate = generateDeterministicDate(postId);
+    
+    posts.push({
+      id: `blog-${postId}`,
+      slug,
+      title: internship.title + " Internship Report Sample PDF",
+      excerpt: `Download ${internship.title} internship report sample PDF. Professional format for ${internship.company}. Generate your report instantly with AI.`,
+      content: generateInternshipTitleContent(internship.title, internship.company, internship.domain, internship.category),
+      category: internship.category,
+      university: "All Indian Universities",
+      domain: internship.domain,
+      keywords: [
+        internship.title.toLowerCase(),
+        internship.company.toLowerCase() + " internship",
+        internship.domain.toLowerCase() + " internship report",
+        "internship report sample pdf",
+        "download internship report",
+        "AI internship report generator"
+      ],
+      publishedAt: publishedDate,
+      readTime: 3
+    });
+    
+    postId++;
+  }
+
+  // Add featured posts (high-priority SEO posts)
   for (const featured of featuredPosts) {
     const slug = generateSlug(featured.title) + '-' + postId;
     const publishedDate = generateDeterministicDate(postId);
@@ -967,7 +981,7 @@ const generateBlogPosts = (): BlogPost[] => {
   // Then generate posts by combining universities, domains, and templates
   for (let templateIndex = 0; templateIndex < blogTemplates.length; templateIndex++) {
     for (let uniIndex = 0; uniIndex < universities.length; uniIndex++) {
-      if (postId > 520) break; // 20 featured + 500 regular = 520 total
+      if (postId > 650) break; // internship titles + featured + regular
       
       const domainIndex = (templateIndex + uniIndex) % domains.length;
       const categoryIndex = (templateIndex + uniIndex) % categories.length;
@@ -1020,7 +1034,7 @@ const generateBlogPosts = (): BlogPost[] => {
       
       postId++;
     }
-    if (postId > 520) break;
+    if (postId > 650) break;
   }
 
   // Sort by date (newest first)
