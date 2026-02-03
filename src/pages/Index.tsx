@@ -1,14 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift, IndianRupee, Calendar } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift, IndianRupee, Calendar, Sparkles, Users, Award } from 'lucide-react';
 import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { blogPosts } from '@/data/blogPosts';
 import WalletHeader from '@/components/WalletHeader';
+import ShareButtons from '@/components/ShareButtons';
+import SharePopup from '@/components/SharePopup';
+import FloatingShareButton from '@/components/FloatingShareButton';
+import StatsCounter from '@/components/StatsCounter';
+import StickyBanner from '@/components/StickyBanner';
 
 const Index = () => {
   const { user } = useAuth();
@@ -42,6 +48,7 @@ const Index = () => {
     title: 'Plagiarism Free',
     description: 'Each report is uniquely generated for your specific internship'
   }];
+
   const pricing = [{
     pages: '3-10',
     price: 99,
@@ -58,6 +65,7 @@ const Index = () => {
     popular: true,
     disabled: false
   }];
+
   const steps = [{
     step: 1,
     title: 'Create Account',
@@ -75,12 +83,50 @@ const Index = () => {
     title: 'Download Report',
     description: 'Get DOCX file instantly'
   }];
+
   const handlePlanClick = (plan: typeof pricing[0]) => {
     if (plan.disabled) {
       setShowServerBusyDialog(true);
     }
   };
-  return <div className="min-h-screen hero-gradient">
+
+  const studentReviews = [
+    { name: "Priya Sharma", college: "BMS College, Bangalore", course: "BBA", review: "Amazing service! Got my 40-page marketing internship report in just 10 minutes. The format was exactly what my professor needed.", avatar: "PS" },
+    { name: "Rahul Kumar", college: "Christ University", course: "BCom", review: "Saved me 2 weeks of work! The AI understood my internship at a CA firm perfectly. Highly recommend for commerce students.", avatar: "RK" },
+    { name: "Sneha Patil", college: "Mount Carmel College", course: "MBA", review: "Best ₹499 I ever spent! My HR internship report was accepted without any changes. Thank you InternReport.in!", avatar: "SP" },
+    { name: "Arun Reddy", college: "PES University", course: "BCA", review: "The report quality is excellent. My guide was impressed with the structure and content. Will definitely use again!", avatar: "AR" },
+    { name: "Kavitha M", college: "Jain University", course: "BBM", review: "I was skeptical at first, but the report was beyond my expectations. Perfect formatting for Bangalore University.", avatar: "KM" },
+    { name: "Vikram Singh", college: "REVA University", course: "BCom", review: "Got my banking internship report done in minutes! The content was relevant and plagiarism-free. Great value!", avatar: "VS" },
+    { name: "Ananya Rao", college: "St. Joseph's College", course: "BBA", review: "The instant download feature is a lifesaver! Submitted my report just before deadline. Super grateful!", avatar: "AR" },
+    { name: "Mohammed Faisal", college: "CMR University", course: "MBA", review: "Professional quality report with proper citations. My internship at a finance company was perfectly documented.", avatar: "MF" },
+    { name: "Deepika S", college: "Dayananda Sagar College", course: "BCA", review: "Used it for my IT internship report. The technical content was accurate and well-structured. 5 stars!", avatar: "DS" },
+    { name: "Karthik Nair", college: "Kristu Jayanti College", course: "BCom", review: "The customer support was helpful and the report was delivered instantly. Best platform for students!", avatar: "KN" },
+    { name: "Pooja Hegde", college: "Presidency College", course: "BBA", review: "My sales & marketing internship report was perfect! The AI captured all the important aspects of my work.", avatar: "PH" },
+    { name: "Suresh Babu", college: "MES College", course: "MBA", review: "Excellent service! Got my supply chain management report with all diagrams and flowcharts. Impressed!", avatar: "SB" },
+    { name: "Lakshmi Devi", college: "Acharya Institute", course: "BCom", review: "The report followed proper academic format. My professor couldn't believe it was AI-generated. Amazing!", avatar: "LD" },
+    { name: "Ajay Gowda", college: "NMKRV College", course: "BBA", review: "Super fast and reliable! The report content was unique and matched my internship experience perfectly.", avatar: "AG" },
+    { name: "Meghana R", college: "Garden City College", course: "MBA", review: "Worth every rupee! The digital marketing internship report was comprehensive and well-researched. Thank you!", avatar: "MR" }
+  ];
+
+  return (
+    <div className="min-h-screen hero-gradient">
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>Internship Report Generator | Free Reports for BCA, BTech, MBA Students – InternReport.in</title>
+        <meta name="description" content="Generate professional internship project reports instantly. Free samples for BCA, BTech, MBA, BCom students. AI-powered, plagiarism-free, university-compliant format. Trusted by 10,000+ students across India." />
+        <meta name="keywords" content="internship report PDF, internship report format, free internship report, internship certificate, internship report BCA, internship report BTech, internship report MBA, AI report generator, student resources" />
+        <link rel="canonical" href="https://internreport.in/" />
+      </Helmet>
+
+      {/* Share Popup (after 30 seconds) */}
+      <SharePopup trigger="time" delay={30000} />
+
+      {/* Floating Share Button */}
+      <FloatingShareButton />
+
+      {/* Sticky Banner */}
+      <StickyBanner />
+
       {/* Server Busy Dialog */}
       <AlertDialog open={showServerBusyDialog} onOpenChange={setShowServerBusyDialog}>
         <AlertDialogContent>
@@ -130,41 +176,78 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
+      {/* Hero Section - SEO Optimized */}
       <section className="container mx-auto px-4 py-20 lg:py-32">
         <div className="max-w-4xl mx-auto text-center animate-slide-up">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
-            <Star className="w-4 h-4" />
-            <span className="text-sm font-medium">Trusted by 10,000+ Students</span>
+          {/* Trust Badge */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600">
+              <Users className="w-4 h-4" />
+              <span className="text-sm font-medium">10,000+ Students Served</span>
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600">
+              <Star className="w-4 h-4 fill-yellow-500" />
+              <span className="text-sm font-medium">4.8/5 Rating</span>
+            </div>
           </div>
+
+          {/* SEO Headline H1 */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Generate <span className="gradient-text">Internship Reports</span>
-            <br />in Minutes, Not Days
+            Internships, <span className="gradient-text">Internship Reports</span>
+            <br />& Student Career Resources
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          
+          {/* Sub-heading for trust */}
+          <p className="text-lg md:text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
             AI-powered report generator that creates university-compliant internship project reports. 
             Perfect formatting, academic writing style, exam-ready content.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          
+          {/* Keywords for SEO */}
+          <p className="text-sm text-muted-foreground mb-8 max-w-xl mx-auto">
+            Free samples for BCA, BTech, MBA, BCom, BBA • Plagiarism-free • Instant Download
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Link to={user ? "/dashboard" : "/auth?signup=true"}>
               <Button variant="hero" size="xl" className="w-full sm:w-auto">
-                Generate Report Now
-                <ArrowRight className="w-5 h-5" />
+                <Download className="w-5 h-5" />
+                Download Free Internship Reports
               </Button>
             </Link>
-            <a href="#pricing">
-              <Button variant="outline" size="xl" className="w-full sm:w-auto">
-                View Pricing
-              </Button>
-            </a>
+            <Button variant="outline" size="xl" className="w-full sm:w-auto" asChild>
+              <a href="#share-section">
+                <Sparkles className="w-5 h-5" />
+                Share with Friends
+              </a>
+            </Button>
           </div>
-          <p className="text-sm text-muted-foreground mt-4">₹499 • 3 Report Generations • Instant Download</p>
+
+          {/* Quick share buttons */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="text-sm text-muted-foreground">Share:</span>
+            <ShareButtons variant="inline" />
+          </div>
+
+          <p className="text-sm text-muted-foreground">₹499 • 3 Report Generations • Instant Download</p>
         </div>
 
         {/* Demo Report Generator */}
         <div ref={demoRef} className="max-w-3xl mx-auto mt-16">
           <DemoReportGenerator />
         </div>
+      </section>
+
+      {/* Stats Counter Section */}
+      <section className="container mx-auto px-4 py-8 bg-secondary/30 rounded-3xl my-8">
+        <div className="text-center mb-6">
+          <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
+            Trusted by Students Across India
+          </h2>
+          <p className="text-muted-foreground">Join thousands of students who saved time with InternReport.in</p>
+        </div>
+        <StatsCounter />
       </section>
 
       {/* Features */}
@@ -275,6 +358,25 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Share Section - Viral CTA */}
+      <section id="share-section" className="container mx-auto px-4 py-8">
+        <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/20">
+          <CardContent className="p-8 text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/20 text-blue-600 mb-4">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-medium">Share & Help Students</span>
+            </div>
+            <h3 className="font-display text-2xl md:text-3xl font-bold mb-4">
+              Found This Useful? Share with Your Friends!
+            </h3>
+            <p className="text-muted-foreground max-w-xl mx-auto mb-6">
+              Help fellow students discover free internship reports and career resources. Share in your college WhatsApp groups!
+            </p>
+            <ShareButtons className="justify-center" />
+          </CardContent>
+        </Card>
+      </section>
+
       {/* Refer & Earn CTA */}
       <section className="container mx-auto px-4 py-8">
         <Card className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20">
@@ -360,23 +462,7 @@ const Index = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { name: "Priya Sharma", college: "BMS College, Bangalore", course: "BBA", review: "Amazing service! Got my 40-page marketing internship report in just 10 minutes. The format was exactly what my professor needed.", avatar: "PS" },
-            { name: "Rahul Kumar", college: "Christ University", course: "BCom", review: "Saved me 2 weeks of work! The AI understood my internship at a CA firm perfectly. Highly recommend for commerce students.", avatar: "RK" },
-            { name: "Sneha Patil", college: "Mount Carmel College", course: "MBA", review: "Best ₹499 I ever spent! My HR internship report was accepted without any changes. Thank you InternReport.in!", avatar: "SP" },
-            { name: "Arun Reddy", college: "PES University", course: "BCA", review: "The report quality is excellent. My guide was impressed with the structure and content. Will definitely use again!", avatar: "AR" },
-            { name: "Kavitha M", college: "Jain University", course: "BBM", review: "I was skeptical at first, but the report was beyond my expectations. Perfect formatting for Bangalore University.", avatar: "KM" },
-            { name: "Vikram Singh", college: "REVA University", course: "BCom", review: "Got my banking internship report done in minutes! The content was relevant and plagiarism-free. Great value!", avatar: "VS" },
-            { name: "Ananya Rao", college: "St. Joseph's College", course: "BBA", review: "The instant download feature is a lifesaver! Submitted my report just before deadline. Super grateful!", avatar: "AR" },
-            { name: "Mohammed Faisal", college: "CMR University", course: "MBA", review: "Professional quality report with proper citations. My internship at a finance company was perfectly documented.", avatar: "MF" },
-            { name: "Deepika S", college: "Dayananda Sagar College", course: "BCA", review: "Used it for my IT internship report. The technical content was accurate and well-structured. 5 stars!", avatar: "DS" },
-            { name: "Karthik Nair", college: "Kristu Jayanti College", course: "BCom", review: "The customer support was helpful and the report was delivered instantly. Best platform for students!", avatar: "KN" },
-            { name: "Pooja Hegde", college: "Presidency College", course: "BBA", review: "My sales & marketing internship report was perfect! The AI captured all the important aspects of my work.", avatar: "PH" },
-            { name: "Suresh Babu", college: "MES College", course: "MBA", review: "Excellent service! Got my supply chain management report with all diagrams and flowcharts. Impressed!", avatar: "SB" },
-            { name: "Lakshmi Devi", college: "Acharya Institute", course: "BCom", review: "The report followed proper academic format. My professor couldn't believe it was AI-generated. Amazing!", avatar: "LD" },
-            { name: "Ajay Gowda", college: "NMKRV College", course: "BBA", review: "Super fast and reliable! The report content was unique and matched my internship experience perfectly.", avatar: "AG" },
-            { name: "Meghana R", college: "Garden City College", course: "MBA", review: "Worth every rupee! The digital marketing internship report was comprehensive and well-researched. Thank you!", avatar: "MR" }
-          ].map((review, index) => (
+          {studentReviews.map((review, index) => (
             <Card key={index} className="border-0 shadow-soft hover:shadow-lg transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center gap-1 mb-3">
@@ -471,9 +557,10 @@ const Index = () => {
                 </div>
                 <span className="font-display font-bold text-xl">InternReport.in</span>
               </div>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-sm mb-4">
                 AI-powered internship project report generator for Indian university students.
               </p>
+              <ShareButtons variant="compact" />
             </div>
             <div>
               <h4 className="font-display font-semibold mb-4">Quick Links</h4>
@@ -485,6 +572,14 @@ const Index = () => {
               </ul>
             </div>
             <div>
+              <h4 className="font-display font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/blog" className="hover:text-primary transition-colors">Internship Report Format</Link></li>
+                <li><Link to="/blog" className="hover:text-primary transition-colors">Free Report Samples</Link></li>
+                <li><Link to="/refer" className="hover:text-primary transition-colors">Refer & Earn ₹150</Link></li>
+              </ul>
+            </div>
+            <div>
               <h4 className="font-display font-semibold mb-4">Policies</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
@@ -492,20 +587,24 @@ const Index = () => {
                 <li><Link to="/refund" className="hover:text-primary transition-colors">Refund Policy</Link></li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-display font-semibold mb-4">Contact</h4>
-              <p className="text-sm text-muted-foreground">
-                support@internreport.in<br />
-                +91 9738959525<br />
-                Omlaytechnologies@gmail.com
-              </p>
-            </div>
           </div>
-          <div className="border-t border-border/50 mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2024 InternReport.in. All rights reserved. AI-powered Internship Report Generator.</p>
+          <div className="border-t border-border/50 mt-8 pt-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-muted-foreground">
+                © 2024 InternReport.in. All rights reserved. AI-powered Internship Report Generator.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Contact:</span>
+                <span>support@internreport.in</span>
+                <span>•</span>
+                <span>+91 9738959525</span>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
