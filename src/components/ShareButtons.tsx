@@ -79,22 +79,22 @@ Check it out: ${shareUrl}`;
   }
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center gap-3 ${className}`}>
+    <div className={`flex flex-col sm:flex-row items-center justify-center gap-3 ${className}`}>
       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-        <Button className="w-full bg-[#25D366] hover:bg-[#20BD5C] text-white gap-2">
-          <MessageCircle className="w-5 h-5" />
-          Share on WhatsApp
+        <Button className="w-full bg-[#25D366] hover:bg-[#20BD5C] text-white gap-2 h-10">
+          <MessageCircle className="w-5 h-5 flex-shrink-0" />
+          <span>Share on WhatsApp</span>
         </Button>
       </a>
       <a href={telegramUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-        <Button className="w-full bg-[#0088CC] hover:bg-[#0077B5] text-white gap-2">
-          <Send className="w-5 h-5" />
-          Share on Telegram
+        <Button className="w-full bg-[#0088CC] hover:bg-[#0077B5] text-white gap-2 h-10">
+          <Send className="w-5 h-5 flex-shrink-0" />
+          <span>Share on Telegram</span>
         </Button>
       </a>
-      <Button variant="outline" onClick={handleCopyLink} className="w-full sm:w-auto gap-2">
-        {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-        {copied ? 'Copied!' : 'Copy Link'}
+      <Button variant="outline" onClick={handleCopyLink} className="w-full sm:w-auto gap-2 h-10">
+        {copied ? <Check className="w-5 h-5 flex-shrink-0" /> : <Copy className="w-5 h-5 flex-shrink-0" />}
+        <span>{copied ? 'Copied!' : 'Copy Link'}</span>
       </Button>
     </div>
   );
