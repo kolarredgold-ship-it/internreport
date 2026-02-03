@@ -4,11 +4,12 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift, IndianRupee, Calendar, Sparkles, Users, Award } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award } from 'lucide-react';
+import Autoplay from 'embla-carousel-autoplay';
 import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { blogPosts } from '@/data/blogPosts';
 import WalletHeader from '@/components/WalletHeader';
 import ShareButtons from '@/components/ShareButtons';
 import SharePopup from '@/components/SharePopup';
@@ -520,7 +521,7 @@ const Index = () => {
         </Card>
       </section>
 
-      {/* Student Reviews Section */}
+      {/* Student Reviews Section - Auto Slider */}
       <section className="container mx-auto px-4 py-16 bg-secondary/30 rounded-3xl my-8">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600 mb-4">
@@ -534,26 +535,51 @@ const Index = () => {
             Join 10,000+ students who got their reports generated instantly
           </p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {studentReviews.map((review, index) => <Card key={index} className="border-0 shadow-soft hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">"{review.review}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary">{review.avatar}</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">{review.name}</p>
-                    <p className="text-xs text-muted-foreground">{review.course} • {review.college}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>)}
-        </div>
-        <div className="text-center mt-8">
+        
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          plugins={[
+            Autoplay({
+              delay: 3000,
+              stopOnInteraction: false,
+              stopOnMouseEnter: true,
+            }),
+          ]}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {studentReviews.map((review, index) => (
+              <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                <Card className="border-0 shadow-soft hover:shadow-lg transition-all duration-300 h-full">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-1 mb-3">
+                      {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">"{review.review}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-sm font-semibold text-primary">{review.avatar}</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{review.name}</p>
+                        <p className="text-xs text-muted-foreground">{review.course} • {review.college}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="flex justify-center gap-2 mt-6">
+            <CarouselPrevious className="static translate-y-0" />
+            <CarouselNext className="static translate-y-0" />
+          </div>
+        </Carousel>
+        
+        <div className="text-center mt-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600">
             <CheckCircle2 className="w-4 h-4" />
             <span className="text-sm font-medium">Verified Student Reviews</span>
