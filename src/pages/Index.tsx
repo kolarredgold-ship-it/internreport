@@ -275,67 +275,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Student Reviews Section */}
-      <section className="container mx-auto px-4 py-16 bg-secondary/30 rounded-3xl my-8">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600 mb-4">
-            <Star className="w-4 h-4 fill-yellow-500" />
-            <span className="text-sm font-medium">Student Reviews</span>
-          </div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-            What Our Students Say
-          </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Join 10,000+ students who got their reports generated instantly
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { name: "Priya Sharma", college: "BMS College, Bangalore", course: "BBA", review: "Amazing service! Got my 40-page marketing internship report in just 10 minutes. The format was exactly what my professor needed.", avatar: "PS" },
-            { name: "Rahul Kumar", college: "Christ University", course: "BCom", review: "Saved me 2 weeks of work! The AI understood my internship at a CA firm perfectly. Highly recommend for commerce students.", avatar: "RK" },
-            { name: "Sneha Patil", college: "Mount Carmel College", course: "MBA", review: "Best ₹499 I ever spent! My HR internship report was accepted without any changes. Thank you InternReport.in!", avatar: "SP" },
-            { name: "Arun Reddy", college: "PES University", course: "BCA", review: "The report quality is excellent. My guide was impressed with the structure and content. Will definitely use again!", avatar: "AR" },
-            { name: "Kavitha M", college: "Jain University", course: "BBM", review: "I was skeptical at first, but the report was beyond my expectations. Perfect formatting for Bangalore University.", avatar: "KM" },
-            { name: "Vikram Singh", college: "REVA University", course: "BCom", review: "Got my banking internship report done in minutes! The content was relevant and plagiarism-free. Great value!", avatar: "VS" },
-            { name: "Ananya Rao", college: "St. Joseph's College", course: "BBA", review: "The instant download feature is a lifesaver! Submitted my report just before deadline. Super grateful!", avatar: "AR" },
-            { name: "Mohammed Faisal", college: "CMR University", course: "MBA", review: "Professional quality report with proper citations. My internship at a finance company was perfectly documented.", avatar: "MF" },
-            { name: "Deepika S", college: "Dayananda Sagar College", course: "BCA", review: "Used it for my IT internship report. The technical content was accurate and well-structured. 5 stars!", avatar: "DS" },
-            { name: "Karthik Nair", college: "Kristu Jayanti College", course: "BCom", review: "The customer support was helpful and the report was delivered instantly. Best platform for students!", avatar: "KN" },
-            { name: "Pooja Hegde", college: "Presidency College", course: "BBA", review: "My sales & marketing internship report was perfect! The AI captured all the important aspects of my work.", avatar: "PH" },
-            { name: "Suresh Babu", college: "MES College", course: "MBA", review: "Excellent service! Got my supply chain management report with all diagrams and flowcharts. Impressed!", avatar: "SB" },
-            { name: "Lakshmi Devi", college: "Acharya Institute", course: "BCom", review: "The report followed proper academic format. My professor couldn't believe it was AI-generated. Amazing!", avatar: "LD" },
-            { name: "Ajay Gowda", college: "NMKRV College", course: "BBA", review: "Super fast and reliable! The report content was unique and matched my internship experience perfectly.", avatar: "AG" },
-            { name: "Meghana R", college: "Garden City College", course: "MBA", review: "Worth every rupee! The digital marketing internship report was comprehensive and well-researched. Thank you!", avatar: "MR" }
-          ].map((review, index) => (
-            <Card key={index} className="border-0 shadow-soft hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">"{review.review}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary">{review.avatar}</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">{review.name}</p>
-                    <p className="text-xs text-muted-foreground">{review.course} • {review.college}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <div className="text-center mt-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600">
-            <CheckCircle2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Verified Student Reviews</span>
-          </div>
-        </div>
-      </section>
-
       {/* Refer & Earn CTA */}
       <section className="container mx-auto px-4 py-8">
         <Card className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20">
@@ -404,6 +343,67 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+      </section>
+
+      {/* Student Reviews Section */}
+      <section className="container mx-auto px-4 py-16 bg-secondary/30 rounded-3xl my-8">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600 mb-4">
+            <Star className="w-4 h-4 fill-yellow-500" />
+            <span className="text-sm font-medium">Student Reviews</span>
+          </div>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+            What Our Students Say
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Join 10,000+ students who got their reports generated instantly
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { name: "Priya Sharma", college: "BMS College, Bangalore", course: "BBA", review: "Amazing service! Got my 40-page marketing internship report in just 10 minutes. The format was exactly what my professor needed.", avatar: "PS" },
+            { name: "Rahul Kumar", college: "Christ University", course: "BCom", review: "Saved me 2 weeks of work! The AI understood my internship at a CA firm perfectly. Highly recommend for commerce students.", avatar: "RK" },
+            { name: "Sneha Patil", college: "Mount Carmel College", course: "MBA", review: "Best ₹499 I ever spent! My HR internship report was accepted without any changes. Thank you InternReport.in!", avatar: "SP" },
+            { name: "Arun Reddy", college: "PES University", course: "BCA", review: "The report quality is excellent. My guide was impressed with the structure and content. Will definitely use again!", avatar: "AR" },
+            { name: "Kavitha M", college: "Jain University", course: "BBM", review: "I was skeptical at first, but the report was beyond my expectations. Perfect formatting for Bangalore University.", avatar: "KM" },
+            { name: "Vikram Singh", college: "REVA University", course: "BCom", review: "Got my banking internship report done in minutes! The content was relevant and plagiarism-free. Great value!", avatar: "VS" },
+            { name: "Ananya Rao", college: "St. Joseph's College", course: "BBA", review: "The instant download feature is a lifesaver! Submitted my report just before deadline. Super grateful!", avatar: "AR" },
+            { name: "Mohammed Faisal", college: "CMR University", course: "MBA", review: "Professional quality report with proper citations. My internship at a finance company was perfectly documented.", avatar: "MF" },
+            { name: "Deepika S", college: "Dayananda Sagar College", course: "BCA", review: "Used it for my IT internship report. The technical content was accurate and well-structured. 5 stars!", avatar: "DS" },
+            { name: "Karthik Nair", college: "Kristu Jayanti College", course: "BCom", review: "The customer support was helpful and the report was delivered instantly. Best platform for students!", avatar: "KN" },
+            { name: "Pooja Hegde", college: "Presidency College", course: "BBA", review: "My sales & marketing internship report was perfect! The AI captured all the important aspects of my work.", avatar: "PH" },
+            { name: "Suresh Babu", college: "MES College", course: "MBA", review: "Excellent service! Got my supply chain management report with all diagrams and flowcharts. Impressed!", avatar: "SB" },
+            { name: "Lakshmi Devi", college: "Acharya Institute", course: "BCom", review: "The report followed proper academic format. My professor couldn't believe it was AI-generated. Amazing!", avatar: "LD" },
+            { name: "Ajay Gowda", college: "NMKRV College", course: "BBA", review: "Super fast and reliable! The report content was unique and matched my internship experience perfectly.", avatar: "AG" },
+            { name: "Meghana R", college: "Garden City College", course: "MBA", review: "Worth every rupee! The digital marketing internship report was comprehensive and well-researched. Thank you!", avatar: "MR" }
+          ].map((review, index) => (
+            <Card key={index} className="border-0 shadow-soft hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground mb-4 line-clamp-3">"{review.review}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-primary">{review.avatar}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{review.name}</p>
+                    <p className="text-xs text-muted-foreground">{review.course} • {review.college}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center mt-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600">
+            <CheckCircle2 className="w-4 h-4" />
+            <span className="text-sm font-medium">Verified Student Reviews</span>
+          </div>
+        </div>
       </section>
 
       {/* Recent Blogs Section */}
