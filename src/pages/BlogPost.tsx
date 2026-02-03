@@ -193,21 +193,21 @@ const BlogPost = () => {
             </div>
           </div>
 
-          {/* CTA Banner */}
+          {/* CTA Banner - Download triggers demo */}
           <Card className="border-primary/20 bg-primary/5 mb-8">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="font-display font-semibold text-lg mb-1">
-                    🚀 Generate Your Report Instantly with AI
+                    📥 Download Sample Report for "{post.title.substring(0, 40)}..."
                   </h3>
                   <p className="text-muted-foreground text-sm">
-                    Skip the manual work. Get a university-compliant report in minutes.
+                    See how our AI generates professional reports instantly!
                   </p>
                 </div>
-                <Link to="/auth?signup=true">
+                <Link to="/?demo=true">
                   <Button variant="gradient">
-                    Try AI Generator
+                    Download Sample
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, ArrowRight, AlertTriangle, Gift, IndianRupee } from 'lucide-react';
@@ -7,11 +7,22 @@ import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import WalletHeader from '@/components/WalletHeader';
+
 const Index = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const demoRef = useRef<HTMLDivElement>(null);
   const [showServerBusyDialog, setShowServerBusyDialog] = useState(false);
+
+  // Auto-scroll to demo when ?demo=true is in URL
+  useEffect(() => {
+    if (searchParams.get('demo') === 'true' && demoRef.current) {
+      setTimeout(() => {
+        demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
+    }
+  }, [searchParams]);
+
   const features = [{
     icon: Zap,
     title: 'AI-Powered Generation',
@@ -149,7 +160,7 @@ const Index = () => {
         </div>
 
         {/* Demo Report Generator */}
-        <div className="max-w-3xl mx-auto mt-16">
+        <div ref={demoRef} className="max-w-3xl mx-auto mt-16">
           <DemoReportGenerator />
         </div>
       </section>
