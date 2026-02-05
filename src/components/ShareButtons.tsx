@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { MessageCircle, Send, Copy, Share2, Check } from 'lucide-react';
+import { MessageCircle, Send } from 'lucide-react';
 
 interface ShareButtonsProps {
   variant?: 'default' | 'compact' | 'inline';
@@ -9,8 +8,6 @@ interface ShareButtonsProps {
 }
 
 const ShareButtons = ({ variant = 'default', className = '' }: ShareButtonsProps) => {
-  const [copied, setCopied] = useState(false);
-  
   const shareUrl = 'https://internreport.in';
   const shareText = `🎓 I found free internship reports & student resources on InternReport.in – very useful for college students!
 
@@ -23,17 +20,6 @@ Check it out: ${shareUrl}`;
 
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      toast.success('Link copied to clipboard!');
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast.error('Failed to copy link');
-    }
-  };
 
   if (variant === 'inline') {
     return (
@@ -48,9 +34,6 @@ Check it out: ${shareUrl}`;
             <Send className="w-4 h-4" />
           </Button>
         </a>
-        <Button size="sm" variant="outline" onClick={handleCopyLink}>
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-        </Button>
       </div>
     );
   }
@@ -70,10 +53,6 @@ Check it out: ${shareUrl}`;
             Telegram
           </Button>
         </a>
-        <Button size="sm" variant="outline" onClick={handleCopyLink} className="gap-1">
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          Copy
-        </Button>
       </div>
     );
   }
@@ -92,10 +71,6 @@ Check it out: ${shareUrl}`;
           <span>Share on Telegram</span>
         </Button>
       </a>
-      <Button variant="outline" onClick={handleCopyLink} className="w-full sm:w-auto gap-2 h-10">
-        {copied ? <Check className="w-5 h-5 flex-shrink-0" /> : <Copy className="w-5 h-5 flex-shrink-0" />}
-        <span>{copied ? 'Copied!' : 'Copy Link'}</span>
-      </Button>
     </div>
   );
 };
