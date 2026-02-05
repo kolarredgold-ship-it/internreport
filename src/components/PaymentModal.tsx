@@ -171,10 +171,9 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess, pa
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('payment-screenshots')
-        .getPublicUrl(fileName);
+      // Store file path instead of public URL
+      // Admin will generate signed URLs when viewing (private bucket)
+      const screenshotPath = fileName;
 
       // Create payment record
       const { error: insertError } = await supabase
@@ -190,7 +189,7 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess, pa
           payer_name: formData.payerName,
           payer_mobile: formData.payerMobile,
           payer_email: formData.payerEmail,
-          screenshot_url: urlData.publicUrl,
+        screenshot_url: screenshotPath,
         });
 
       if (insertError) throw insertError;
