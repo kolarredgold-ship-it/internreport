@@ -88,7 +88,17 @@ const MyReports = () => {
       return;
     }
 
-    const sections = report.report_content.split('\n\n');
+    // Clean up any markers before processing
+    let cleanContent = report.report_content;
+    cleanContent = cleanContent.replace(/\(In-Depth\)/gi, '');
+    cleanContent = cleanContent.replace(/\(In Deep\)/gi, '');
+    cleanContent = cleanContent.replace(/In-Depth:/gi, '');
+    cleanContent = cleanContent.replace(/In Deep:/gi, '');
+    cleanContent = cleanContent.replace(/\*\*/g, '');
+    cleanContent = cleanContent.replace(/\*/g, '');
+    cleanContent = cleanContent.replace(/`/g, '');
+
+    const sections = cleanContent.split('\n\n');
     const children: Paragraph[] = [];
 
     // Title page
