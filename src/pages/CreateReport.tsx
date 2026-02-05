@@ -351,6 +351,7 @@ const CreateReport = () => {
       if (hasVerifiedPayment && usedCount < 3) {
         setCanGenerate(true);
         setNeedsTopup(false);
+        setPaymentStatus('verified');
       } else if (hasVerifiedPayment && usedCount >= 3) {
         const { data: topupPayments } = await supabase
           .from('payments')
@@ -372,30 +373,36 @@ const CreateReport = () => {
           if ((reportsAfterTopup || 0) < 3) {
             setCanGenerate(true);
             setNeedsTopup(false);
+            setPaymentStatus('verified');
           } else {
             setCanGenerate(false);
             setNeedsTopup(true);
+            setPaymentStatus('verified');
           }
         } else {
           setCanGenerate(false);
           setNeedsTopup(true);
+          setPaymentStatus('verified');
         }
-      } else if (!hasVerifiedPayment) {
+      } else {
+        // No verified payment - check for pending
         setCanGenerate(false);
         setNeedsTopup(false);
-      }
 
-      const { data: pendingPayment } = await supabase
-        .from('payments')
-        .select('id, report_id')
-        .eq('user_id', user?.id)
-        .eq('status', 'pending')
-        .limit(1);
+        const { data: pendingPayment } = await supabase
+          .from('payments')
+          .select('id, report_id')
+          .eq('user_id', user?.id)
+          .eq('status', 'pending')
+          .limit(1);
 
-      if (pendingPayment && pendingPayment.length > 0) {
-        setPaymentStatus('pending');
-        if (pendingPayment[0].report_id) {
-          setPendingReportId(pendingPayment[0].report_id);
+        if (pendingPayment && pendingPayment.length > 0) {
+          setPaymentStatus('pending');
+          if (pendingPayment[0].report_id) {
+            setPendingReportId(pendingPayment[0].report_id);
+          }
+        } else {
+          setPaymentStatus('none');
         }
       }
     } catch (error) {
