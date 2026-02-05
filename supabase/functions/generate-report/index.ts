@@ -193,13 +193,50 @@
  (Write abstract - 200-250 words summarizing the internship experience, objectives, methodology, findings)
  
  # TABLE OF CONTENTS
- (List all chapters with section numbers:
- - Chapter I: Introduction (5-8 pages)
- - Chapter II: Description of the Organisation (8-12 pages)
- - Chapter III: Experiential Learning (6-10 pages)
- - Chapter IV: Internship Outcomes and Conclusion (6-10 pages)
- - Bibliography
- - Annexures)
+(Create a simple, clean table of contents WITHOUT page numbers in this exact format:
+
+Certificate
+Declaration
+Acknowledgement
+Abstract
+
+CHAPTER I: INTRODUCTION
+   Background of the Study
+   Meaning and Concepts
+   Importance in the Industry
+   Objectives of the Study
+   Scope of the Study
+   Need and Significance
+   Methodology
+   Limitations
+
+CHAPTER II: DESCRIPTION OF THE ORGANISATION
+   Company Profile
+   History
+   Vision and Mission
+   Organizational Structure
+   Products and Services
+   Market Presence
+   Role of Marketing
+
+CHAPTER III: EXPERIENTIAL LEARNING
+   Internship Overview
+   Department Worked
+   Daily Activities and Tasks
+   Skills and Knowledge Acquired
+   Challenges Faced
+
+CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION
+   Outcomes of Internship
+   Findings
+   Operational Impact
+   Key Learnings
+   Suggestions and Recommendations
+   Conclusion
+
+BIBLIOGRAPHY
+
+ANNEXURES)
  
  # LIST OF FIGURES
  (Placeholder list)
@@ -222,31 +259,39 @@
  
  # CHAPTER I: INTRODUCTION
  
- ## 1.1 Background of the Study (In-Depth)
- (Write 400-500 words - elaborate extensively on the industry context, historical development of the field, current market scenario, relevance of this study to ${topicSpecialization}, importance of internships in bridging academic and professional gaps)
+## 1.1 Background of the Study
+(Write 400-500 words - Elaborate extensively on the industry context, historical development of the field, current market scenario, relevance of this study to ${topicSpecialization}, importance of internships in bridging academic and professional gaps. Provide comprehensive coverage with multiple paragraphs.)
  
- ## 1.2 Meaning of ${topicSpecialization} (In-Depth)
- (Write 350-450 words - define and explain the core concept related to the internship topic, theoretical framework, key terminologies, evolution of the concept, its application in modern business context)
+## 1.2 Meaning of ${topicSpecialization}
+(Write 350-450 words - Define and explain the core concept related to the internship topic, theoretical framework, key terminologies, evolution of the concept, its application in modern business context. Include definitions from various scholars.)
  
- ## 1.3 Importance of ${topicSpecialization} in the Industry (In-Depth)
- (Write 350-450 words - discuss why this topic is crucial for the industry ${companyName} operates in, industry statistics, competitive advantages it provides, current trends and future outlook)
+## 1.3 Importance of ${topicSpecialization} in the Industry
+(Write 350-450 words - Discuss why this topic is crucial for the industry ${companyName} operates in, industry statistics, competitive advantages it provides, current trends and future outlook. Elaborate with examples and data.)
  
- ## 1.4 Objectives of the Study (In-Depth)
- (Write 300-400 words - list 6-8 specific, measurable objectives with detailed explanations for each. Include primary and secondary objectives)
+## 1.4 Objectives of the Study
+(Write a brief introductory paragraph followed by objectives in bullet format. Format as:
+"The objectives of the study are:"
+• To study [specific aspect related to ${topicSpecialization} at ${companyName}]
+• To analyse [specific aspect related to the internship topic]
+• To experience [practical learning aspect during the internship]
+• To understand [relevant business/industry aspect]
+• To evaluate [assessment aspect related to the topic]
+• To identify [discovery aspect]
+Each objective should be a single clear sentence starting with "To".)
  
- ## 1.5 Scope of the Study (In-Depth)
- (Write 250-350 words - clearly define what is included and excluded, geographical scope, time period, functional areas covered, limitations of scope)
+## 1.5 Scope of the Study
+(Write 250-350 words - Clearly define what is included and excluded, geographical scope at ${companyLocation}, time period of ${internshipDuration}, functional areas covered, limitations of scope. Be specific about boundaries.)
  
- ## 1.6 Need and Significance of the Study (In-Depth)
- (Write 300-400 words - justify the importance for academia, industry, and personal development. Explain the gap this study fills, contribution to existing knowledge)
+## 1.6 Need and Significance of the Study
+(Write 300-400 words - Justify the importance for academia, industry, and personal development. Explain the gap this study fills, contribution to existing knowledge, practical relevance.)
  
- ## 1.7 Research Methodology (In-Depth)
- (Write 250-350 words - describe research design, data collection methods (primary/secondary), sampling techniques, tools used, observation and analysis techniques)
+## 1.7 Research Methodology
+(Write 250-350 words - Describe research design, data collection methods (primary/secondary), sampling techniques, tools used, observation and analysis techniques. Be comprehensive about the approach.)
  
- ## 1.8 Limitations of the Study (In-Depth)
- (Write 200-300 words - honestly discuss constraints faced, time limitations, resource constraints, scope limitations, how they were addressed)
+## 1.8 Limitations of the Study
+(Write 200-300 words - Honestly discuss constraints faced during the internship and study, time limitations, resource constraints, scope limitations, how they were managed.)
  
- Write clear, professional, comprehensive content with formal academic English. Elaborate each section in depth.`
+IMPORTANT: DO NOT include "(In-Depth)", "(In Deep)", or any similar markers in the output. Write naturally flowing academic prose. No asterisks or bold formatting.`
        },
        '2': {
          label: 'Chapter II: Description of the Organisation',
@@ -258,28 +303,28 @@
  
  # CHAPTER II: DESCRIPTION OF THE ORGANISATION
  
- ## 2.1 Company Profile (In-Depth)
- (Write 400-500 words - comprehensive overview of ${companyName}, founding year, founders, headquarters at ${companyLocation}, nature of business, scale of operations, employee strength, annual turnover if available, key milestones)
+## 2.1 Company Profile
+(Write 400-500 words - Comprehensive overview of ${companyName}, founding year, founders, headquarters at ${companyLocation}, nature of business, scale of operations, employee strength, annual turnover if available, key milestones. Provide rich company details.)
  
- ## 2.2 History of the Organisation (In-Depth)
- (Write 350-450 words - detailed chronological development of the company, major events, expansion phases, acquisitions if any, evolution over the years, key turning points)
+## 2.2 History of the Organisation
+(Write 350-450 words - Detailed chronological development of the company, major events, expansion phases, acquisitions if any, evolution over the years, key turning points. Present as a narrative journey.)
  
- ## 2.3 Vision and Mission (In-Depth)
- (Write 300-400 words - state and elaborate on the company's vision statement, mission statement, explain how these guide company operations, alignment with industry goals)
+## 2.3 Vision and Mission
+(Write 300-400 words - State and elaborate on the company's vision statement, mission statement, core values, explain how these guide company operations, alignment with industry goals.)
  
- ## 2.4 Organizational Structure (In-Depth)
- (Write 350-450 words - describe the hierarchy, departments, key positions, reporting structure, describe an organizational chart structure, management levels, decision-making process)
+## 2.4 Organizational Structure
+(Write 350-450 words - Describe the hierarchy, departments, key positions, reporting structure, describe an organizational chart structure, management levels, decision-making process. Explain how the organization is structured.)
  
- ## 2.5 Products and Services (In-Depth)
- (Write 400-500 words - detailed description of all major products/services offered, unique selling propositions, product categories, service portfolio, pricing strategy overview, target customer segments)
+## 2.5 Products and Services
+(Write 400-500 words - Detailed description of all major products/services offered by ${companyName}, unique selling propositions, product categories, service portfolio, pricing strategy overview, target customer segments. Be specific about offerings.)
  
- ## 2.6 Market Presence (In-Depth)
- (Write 300-400 words - geographical presence, market share, distribution network, customer base, brand positioning, competitive standing in ${companyLocation} and beyond)
+## 2.6 Market Presence
+(Write 300-400 words - Geographical presence, market share, distribution network, customer base, brand positioning, competitive standing in ${companyLocation} and beyond. Discuss market reach and positioning.)
  
- ## 2.7 Role of ${topicSpecialization} in the Organisation (In-Depth)
- (Write 400-500 words - explain how ${topicSpecialization} functions within ${companyName}, its strategic importance, integration with other functions, investment in this area, specific initiatives and campaigns)
+## 2.7 Role of ${topicSpecialization} in the Organisation
+(Write 400-500 words - Explain how ${topicSpecialization} functions within ${companyName}, its strategic importance, integration with other functions, investment in this area, specific initiatives and campaigns. Connect the topic to organizational strategy.)
  
- Write clear, professional, comprehensive content with formal academic English. Elaborate each section extensively with relevant details.`
+IMPORTANT: DO NOT include "(In-Depth)", "(In Deep)", or any similar markers in the output. Write naturally flowing academic prose. No asterisks or bold formatting.`
        },
        '3': {
          label: 'Chapter III: Experiential Learning',
@@ -291,17 +336,17 @@
  
  # CHAPTER III: EXPERIENTIAL LEARNING
  
- ## 3.1 Internship Overview (In-Depth)
- (Write 350-450 words - comprehensive overview of the internship at ${companyName}, ${companyLocation}, role assigned, reporting structure, team members, department placement, initial orientation and training received)
+## 3.1 Internship Overview
+(Write 350-450 words - Comprehensive overview of the internship at ${companyName}, ${companyLocation}, role assigned, reporting structure, team members, department placement, initial orientation and training received. Set the context for the experience.)
  
- ## 3.2 Department Worked (In-Depth)
- (Write 300-400 words - detailed description of the specific department/team, its functions, role in the organization, team composition, department objectives, KPIs monitored)
+## 3.2 Department Worked
+(Write 300-400 words - Detailed description of the specific department/team, its functions, role in the organization, team composition, department objectives, KPIs monitored. Explain the departmental context.)
  
- ## 3.3 Daily Activities and Tasks Undertaken (In-Depth)
- (Write 500-600 words - day-by-day or week-by-week breakdown of activities during ${internshipDuration}, specific tasks assigned, projects contributed to, responsibilities handled, tools and systems used)
+## 3.3 Daily Activities and Tasks Undertaken
+(Write 500-600 words - Day-by-day or week-by-week breakdown of activities during ${internshipDuration}, specific tasks assigned, projects contributed to, responsibilities handled, tools and systems used. Provide detailed account of work performed.)
  
- ## 3.4 Skills and Knowledge Acquired (In-Depth)
- (Write 450-550 words - comprehensive list of 8-10 technical and soft skills developed:
+## 3.4 Skills and Knowledge Acquired
+(Write 450-550 words - Comprehensive discussion of 8-10 technical and soft skills developed:
  - Technical skills related to ${topicSpecialization}
  - Software and tools proficiency
  - Industry-specific knowledge
@@ -311,10 +356,10 @@
  - Time management
  - Professional conduct and workplace ethics)
  
- ## 3.5 Challenges Faced (In-Depth)
- (Write 350-450 words - honest discussion of difficulties encountered, learning curve challenges, adaptation issues, how these were overcome, support received, lessons learned from each challenge)
+## 3.5 Challenges Faced
+(Write 350-450 words - Honest discussion of difficulties encountered, learning curve challenges, adaptation issues, how these were overcome, support received, lessons learned from each challenge. Be reflective and genuine.)
  
- Write clear, professional, comprehensive content with formal academic English. Include specific examples and personal experiences where appropriate.`
+IMPORTANT: DO NOT include "(In-Depth)", "(In Deep)", or any similar markers in the output. Write naturally flowing academic prose. No asterisks or bold formatting.`
        },
        '4': {
          label: 'Chapter IV: Internship Outcomes and Conclusion',
@@ -326,25 +371,25 @@
  
  # CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION
  
- ## 4.1 Outcomes of Internship (In-Depth)
- (Write 350-450 words - comprehensive summary of what was achieved during the internship, deliverables completed, contributions made to ${companyName}, tangible and intangible outcomes)
+## 4.1 Outcomes of Internship
+(Write 350-450 words - Comprehensive summary of what was achieved during the internship, deliverables completed, contributions made to ${companyName}, tangible and intangible outcomes. Highlight achievements.)
  
- ## 4.2 Findings Related to ${topicSpecialization} (In-Depth)
- (Write 400-500 words - present 5-7 major findings from the study, observations about how ${topicSpecialization} operates at ${companyName}, data-backed insights where possible, comparison with industry standards)
+## 4.2 Findings Related to ${topicSpecialization}
+(Write 400-500 words - Present 5-7 major findings from the study, observations about how ${topicSpecialization} operates at ${companyName}, data-backed insights where possible, comparison with industry standards. Be analytical and insightful.)
  
- ## 4.3 Operational Impact on Business Performance (In-Depth)
- (Write 350-450 words - analyze how ${topicSpecialization} impacts business results at ${companyName}, metrics observed, efficiency improvements, customer impact, revenue/cost implications)
+## 4.3 Operational Impact on Business Performance
+(Write 350-450 words - Analyze how ${topicSpecialization} impacts business results at ${companyName}, metrics observed, efficiency improvements, customer impact, revenue/cost implications. Connect marketing to business outcomes.)
  
- ## 4.4 Key Learnings (In-Depth)
- (Write 300-400 words - consolidate the most important lessons from the internship, professional growth, personal development, knowledge gained, perspective changes)
+## 4.4 Key Learnings
+(Write 300-400 words - Consolidate the most important lessons from the internship, professional growth, personal development, knowledge gained, perspective changes. Be reflective about the learning journey.)
  
- ## 4.5 Suggestions and Recommendations (In-Depth)
- (Write 350-450 words - provide 5-6 actionable recommendations for ${companyName} based on observations, suggest improvements, propose new initiatives, recommendations for future interns)
+## 4.5 Suggestions and Recommendations
+(Write 350-450 words - Provide 5-6 actionable recommendations for ${companyName} based on observations, suggest improvements, propose new initiatives, recommendations for future interns. Be constructive and practical.)
  
- ## 4.6 Conclusion (In-Depth)
- (Write 350-450 words - comprehensive summary of the entire internship experience, achievement of stated objectives, personal and professional growth, future career aspirations, acknowledgment of the opportunity)
+## 4.6 Conclusion
+(Write 350-450 words - Comprehensive summary of the entire internship experience, achievement of stated objectives, personal and professional growth, future career aspirations, acknowledgment of the opportunity. End on a positive note.)
  
- Write clear, professional, comprehensive content with formal academic English. Support findings with observations and data where applicable.`
+IMPORTANT: DO NOT include "(In-Depth)", "(In Deep)", or any similar markers in the output. Write naturally flowing academic prose. No asterisks or bold formatting.`
        },
        '5': {
          label: 'Bibliography & Annexures',
@@ -355,7 +400,7 @@
  # BIBLIOGRAPHY
  
  ## References
- (Include 20-25 properly formatted references in APA style:
+(Include 20-25 properly formatted references in APA style. Format each reference on its own line with proper indentation:
  - 6-8 academic journal articles relevant to ${topicSpecialization}
  - 4-5 books/textbooks on the subject
  - 3-4 industry reports and white papers
@@ -400,7 +445,7 @@
  
  Signature of Student: _______________
  
- Write clear, professional content with formal academic English.`
+Write clear, professional content with formal academic English. No markers like "(In-Depth)" in output.`
        }
      };
  
@@ -413,63 +458,63 @@
          },
          'part2_abstract': {
            label: 'Front Matter (Abstract, TOC, Lists)',
-           prompt: `${baseContext}\n\nGenerate ONLY these sections (500-600 words total):\n\n# ABSTRACT\n(Write 200-250 words)\n\n# TABLE OF CONTENTS\n(List: Chapter I: Introduction, Chapter II: Description of the Organisation, Chapter III: Experiential Learning, Chapter IV: Internship Outcomes and Conclusion, Bibliography, Annexures)\n\n# LIST OF FIGURES\n# LIST OF TABLES\n# LIST OF ABBREVIATIONS\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\nGenerate ONLY these sections (500-600 words total):\n\n# ABSTRACT\n(Write 200-250 words)\n\n# TABLE OF CONTENTS\n(Create a simple, clean table WITHOUT page numbers - just list: Certificate, Declaration, Acknowledgement, Abstract, CHAPTER I: INTRODUCTION with subsections, CHAPTER II: DESCRIPTION OF THE ORGANISATION with subsections, CHAPTER III: EXPERIENTIAL LEARNING with subsections, CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION with subsections, BIBLIOGRAPHY, ANNEXURES)\n\n# LIST OF FIGURES\n# LIST OF TABLES\n# LIST OF ABBREVIATIONS\n\nWrite clear, professional content.`
          }
        },
        '1': {
          'part1_background': {
            label: 'Chapter I (Background, Meaning)',
-           prompt: `${baseContext}\n\n# CHAPTER I: INTRODUCTION (Part 1) - 800-1000 words total\n\n## 1.1 Background of the Study (In-Depth)\n(Write 400-500 words on industry context for ${topicSpecialization})\n\n## 1.2 Meaning of ${topicSpecialization} (In-Depth)\n(Write 350-450 words on definition and theoretical framework)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER I: INTRODUCTION (Part 1) - 800-1000 words total\n\n## 1.1 Background of the Study\n(Write 400-500 words on industry context for ${topicSpecialization}. Elaborate extensively.)\n\n## 1.2 Meaning of ${topicSpecialization}\n(Write 350-450 words on definition and theoretical framework. Include scholarly definitions.)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part2_importance': {
            label: 'Chapter I (Importance, Objectives)',
-           prompt: `${baseContext}\n\n# CHAPTER I: INTRODUCTION (Part 2) - 700-900 words total\n\n## 1.3 Importance of ${topicSpecialization} in the Industry (In-Depth)\n(Write 350-450 words)\n\n## 1.4 Objectives of the Study (In-Depth)\n(Write 300-400 words - list 6-8 objectives)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER I: INTRODUCTION (Part 2) - 700-900 words total\n\n## 1.3 Importance of ${topicSpecialization} in the Industry\n(Write 350-450 words elaborating on industry significance)\n\n## 1.4 Objectives of the Study\n(Write a brief intro then list objectives as bullet points starting with "To study...", "To analyse...", "To experience...", "To understand...", "To evaluate...", "To identify...")\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part3_scope': {
            label: 'Chapter I (Scope, Need, Methodology, Limitations)',
-           prompt: `${baseContext}\n\n# CHAPTER I: INTRODUCTION (Part 3) - 900-1100 words total\n\n## 1.5 Scope of the Study (In-Depth)\n(Write 250-350 words)\n\n## 1.6 Need and Significance of the Study (In-Depth)\n(Write 300-400 words)\n\n## 1.7 Research Methodology (In-Depth)\n(Write 250-350 words)\n\n## 1.8 Limitations of the Study (In-Depth)\n(Write 200-300 words)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER I: INTRODUCTION (Part 3) - 900-1100 words total\n\n## 1.5 Scope of the Study\n(Write 250-350 words on boundaries and coverage)\n\n## 1.6 Need and Significance of the Study\n(Write 300-400 words justifying importance)\n\n## 1.7 Research Methodology\n(Write 250-350 words on research approach and data collection)\n\n## 1.8 Limitations of the Study\n(Write 200-300 words on constraints faced)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          }
        },
        '2': {
          'part1_company': {
            label: 'Chapter II (Profile, History, Vision)',
-           prompt: `${baseContext}\n\n# CHAPTER II: DESCRIPTION OF THE ORGANISATION (Part 1) - 1000-1200 words total\n\n## 2.1 Company Profile (In-Depth)\n(Write 400-500 words on ${companyName})\n\n## 2.2 History of the Organisation (In-Depth)\n(Write 350-450 words)\n\n## 2.3 Vision and Mission (In-Depth)\n(Write 300-400 words)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER II: DESCRIPTION OF THE ORGANISATION (Part 1) - 1000-1200 words total\n\n## 2.1 Company Profile\n(Write 400-500 words on ${companyName} comprehensive overview)\n\n## 2.2 History of the Organisation\n(Write 350-450 words on chronological development)\n\n## 2.3 Vision and Mission\n(Write 300-400 words on company vision, mission, values)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part2_structure': {
            label: 'Chapter II (Structure, Products, Market)',
-           prompt: `${baseContext}\n\n# CHAPTER II: DESCRIPTION OF THE ORGANISATION (Part 2) - 1100-1400 words total\n\n## 2.4 Organizational Structure (In-Depth)\n(Write 350-450 words)\n\n## 2.5 Products and Services (In-Depth)\n(Write 400-500 words)\n\n## 2.6 Market Presence (In-Depth)\n(Write 300-400 words)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER II: DESCRIPTION OF THE ORGANISATION (Part 2) - 1100-1400 words total\n\n## 2.4 Organizational Structure\n(Write 350-450 words on hierarchy and departments)\n\n## 2.5 Products and Services\n(Write 400-500 words on detailed offerings)\n\n## 2.6 Market Presence\n(Write 300-400 words on geographical presence and positioning)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part3_role': {
            label: 'Chapter II (Role of Topic in Organisation)',
-           prompt: `${baseContext}\n\n# CHAPTER II: DESCRIPTION OF THE ORGANISATION (Part 3) - 400-500 words total\n\n## 2.7 Role of ${topicSpecialization} in the Organisation (In-Depth)\n(Write 400-500 words on strategic importance and initiatives)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER II: DESCRIPTION OF THE ORGANISATION (Part 3) - 400-500 words total\n\n## 2.7 Role of ${topicSpecialization} in the Organisation\n(Write 400-500 words on strategic importance and initiatives)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          }
        },
        '3': {
          'part1_overview': {
            label: 'Chapter III (Overview, Department)',
-           prompt: `${baseContext}\n\n# CHAPTER III: EXPERIENTIAL LEARNING (Part 1) - 700-900 words total\n\n## 3.1 Internship Overview (In-Depth)\n(Write 350-450 words)\n\n## 3.2 Department Worked (In-Depth)\n(Write 300-400 words)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER III: EXPERIENTIAL LEARNING (Part 1) - 700-900 words total\n\n## 3.1 Internship Overview\n(Write 350-450 words on comprehensive internship overview)\n\n## 3.2 Department Worked\n(Write 300-400 words on department details and functions)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part2_activities': {
            label: 'Chapter III (Activities, Skills)',
-           prompt: `${baseContext}\n\n# CHAPTER III: EXPERIENTIAL LEARNING (Part 2) - 1000-1200 words total\n\n## 3.3 Daily Activities and Tasks Undertaken (In-Depth)\n(Write 500-600 words for ${internshipDuration})\n\n## 3.4 Skills and Knowledge Acquired (In-Depth)\n(Write 450-550 words on 8-10 skills)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER III: EXPERIENTIAL LEARNING (Part 2) - 1000-1200 words total\n\n## 3.3 Daily Activities and Tasks Undertaken\n(Write 500-600 words for ${internshipDuration} with detailed account)\n\n## 3.4 Skills and Knowledge Acquired\n(Write 450-550 words on 8-10 technical and soft skills developed)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part3_challenges': {
            label: 'Chapter III (Challenges)',
-           prompt: `${baseContext}\n\n# CHAPTER III: EXPERIENTIAL LEARNING (Part 3) - 350-450 words total\n\n## 3.5 Challenges Faced (In-Depth)\n(Write 350-450 words on difficulties and how they were overcome)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER III: EXPERIENTIAL LEARNING (Part 3) - 350-450 words total\n\n## 3.5 Challenges Faced\n(Write 350-450 words on difficulties encountered and how they were overcome)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          }
        },
        '4': {
          'part1_outcomes': {
            label: 'Chapter IV (Outcomes, Findings)',
-           prompt: `${baseContext}\n\n# CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION (Part 1) - 800-1000 words total\n\n## 4.1 Outcomes of Internship (In-Depth)\n(Write 350-450 words)\n\n## 4.2 Findings Related to ${topicSpecialization} (In-Depth)\n(Write 400-500 words on 5-7 major findings)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION (Part 1) - 800-1000 words total\n\n## 4.1 Outcomes of Internship\n(Write 350-450 words on achievements and deliverables)\n\n## 4.2 Findings Related to ${topicSpecialization}\n(Write 400-500 words presenting 5-7 major findings)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part2_impact': {
            label: 'Chapter IV (Impact, Learnings)',
-           prompt: `${baseContext}\n\n# CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION (Part 2) - 700-900 words total\n\n## 4.3 Operational Impact on Business Performance (In-Depth)\n(Write 350-450 words)\n\n## 4.4 Key Learnings (In-Depth)\n(Write 300-400 words)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION (Part 2) - 700-900 words total\n\n## 4.3 Operational Impact on Business Performance\n(Write 350-450 words analyzing business impact)\n\n## 4.4 Key Learnings\n(Write 300-400 words on most important lessons)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          },
          'part3_conclusion': {
            label: 'Chapter IV (Suggestions, Conclusion)',
-           prompt: `${baseContext}\n\n# CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION (Part 3) - 700-900 words total\n\n## 4.5 Suggestions and Recommendations (In-Depth)\n(Write 350-450 words with 5-6 recommendations)\n\n## 4.6 Conclusion (In-Depth)\n(Write 350-450 words on overall experience and future aspirations)\n\nWrite clear, professional content.`
+            prompt: `${baseContext}\n\n# CHAPTER IV: INTERNSHIP OUTCOMES AND CONCLUSION (Part 3) - 700-900 words total\n\n## 4.5 Suggestions and Recommendations\n(Write 350-450 words with 5-6 actionable recommendations)\n\n## 4.6 Conclusion\n(Write 350-450 words summarizing experience and future aspirations)\n\nWrite clear, professional content. NO "(In-Depth)" markers in output.`
          }
        },
        '5': {
@@ -520,7 +565,15 @@
            messages: [
              {
                role: "system",
-               content: `You are an expert academic writer creating an internship project report for an Indian university student. Write clear, professional content with formal academic language. IMPORTANT: Each section should be comprehensive and in-depth as specified. Use proper markdown formatting with headers and subheaders.`
+                content: `You are an expert academic writer creating an internship project report for an Indian university student. Write clear, professional content with formal academic language.
+
+CRITICAL FORMATTING RULES:
+1. Each section MUST be comprehensive and deeply elaborated with multiple paragraphs
+2. Use ## for section headers only - NO asterisks, bold, or italic formatting
+3. DO NOT include "(In-Depth)", "(In Deep)", "In-Depth:", or any similar markers in the output
+4. For "Objectives of the Study" section, format as: brief intro sentence followed by bullet points starting with "To study...", "To analyse...", "To experience...", etc.
+5. Table of contents should be simple - just section names without page numbers
+6. Write naturally flowing academic prose without any instruction markers`
              },
              {
                role: "user",
@@ -543,8 +596,16 @@
  
        const data = await response.json();
        generatedContent = data.choices[0]?.message?.content || "";
-       
-       console.log(`API call completed successfully for ${chapterLabel}, content length: ${generatedContent.length}`);
+
+        // Clean up any markers or formatting artifacts from the output
+        generatedContent = generatedContent.replace(/\(In-Depth\)/gi, '');
+        generatedContent = generatedContent.replace(/\(In Deep\)/gi, '');
+        generatedContent = generatedContent.replace(/In-Depth:/gi, '');
+        generatedContent = generatedContent.replace(/In Deep:/gi, '');
+        generatedContent = generatedContent.replace(/\*\*/g, '');
+        generatedContent = generatedContent.replace(/\*/g, '');
+
+        console.log(`API call completed successfully for ${chapterLabel}, content length: ${generatedContent.length}`);
      } catch (fetchError: unknown) {
        clearTimeout(timeoutId);
        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
