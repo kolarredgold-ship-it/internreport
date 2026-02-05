@@ -253,45 +253,52 @@ ANNEXURES)
          label: 'Chapter I: Introduction',
          prompt: `${baseContext}
  
- Generate CHAPTER I: INTRODUCTION (2500-3500 words total, 5-8 pages equivalent):
+Generate CHAPTER I: INTRODUCTION (2500-3500 words total, 5-8 pages equivalent).
  
- This chapter introduces the topic "${internshipTitle}", provides background information, and outlines the objectives and scope of the study.
+CRITICAL INSTRUCTION: This chapter focuses ONLY on the internship TOPIC and FIELD OF STUDY. DO NOT mention any company name in this chapter. Focus purely on the subject matter, industry concepts, and academic aspects.
+
+This chapter introduces the topic "${internshipTitle}", provides background information about the topic/field, and outlines the objectives and scope of the study.
  
  # CHAPTER I: INTRODUCTION
  
 ## 1.1 Background of the Study
-(Write 400-500 words - Elaborate extensively on the industry context, historical development of the field, current market scenario, relevance of this study to ${topicSpecialization}, importance of internships in bridging academic and professional gaps. Provide comprehensive coverage with multiple paragraphs.)
+(Write 400-500 words - Elaborate extensively on the industry context, historical development of the field related to ${topicSpecialization}, current market scenario, relevance of this study area, importance of internships in bridging academic and professional gaps. DO NOT mention any company name. Focus on the general industry and topic.)
  
 ## 1.2 Meaning of ${topicSpecialization}
-(Write 350-450 words - Define and explain the core concept related to the internship topic, theoretical framework, key terminologies, evolution of the concept, its application in modern business context. Include definitions from various scholars.)
+(Write 350-450 words - Define and explain the core concept of ${topicSpecialization}, theoretical framework, key terminologies, evolution of the concept, its application in modern business context. Include definitions from various scholars. NO company references.)
  
 ## 1.3 Importance of ${topicSpecialization} in the Industry
-(Write 350-450 words - Discuss why this topic is crucial for the industry ${companyName} operates in, industry statistics, competitive advantages it provides, current trends and future outlook. Elaborate with examples and data.)
+(Write 350-450 words - Discuss why ${topicSpecialization} is crucial for the industry in general, industry statistics, competitive advantages it provides, current trends and future outlook. Elaborate with examples and data. NO company references - discuss the industry as a whole.)
  
 ## 1.4 Objectives of the Study
 (Write a brief introductory paragraph followed by objectives in bullet format. Format as:
 "The objectives of the study are:"
-• To study [specific aspect related to ${topicSpecialization} at ${companyName}]
+• To study [specific aspect related to ${topicSpecialization}]
 • To analyse [specific aspect related to the internship topic]
 • To experience [practical learning aspect during the internship]
 • To understand [relevant business/industry aspect]
 • To evaluate [assessment aspect related to the topic]
 • To identify [discovery aspect]
-Each objective should be a single clear sentence starting with "To".)
+Each objective should be a single clear sentence starting with "To". NO company name in objectives.)
  
 ## 1.5 Scope of the Study
-(Write 250-350 words - Clearly define what is included and excluded, geographical scope at ${companyLocation}, time period of ${internshipDuration}, functional areas covered, limitations of scope. Be specific about boundaries.)
+(Write 250-350 words - Clearly define what is included and excluded, time period of ${internshipDuration}, functional areas covered related to ${topicSpecialization}, limitations of scope. NO company name - focus on the topic scope.)
  
 ## 1.6 Need and Significance of the Study
-(Write 300-400 words - Justify the importance for academia, industry, and personal development. Explain the gap this study fills, contribution to existing knowledge, practical relevance.)
+(Write 300-400 words - Justify the importance for academia, industry, and personal development. Explain the gap this study fills, contribution to existing knowledge about ${topicSpecialization}, practical relevance. NO company references.)
  
 ## 1.7 Research Methodology
-(Write 250-350 words - Describe research design, data collection methods (primary/secondary), sampling techniques, tools used, observation and analysis techniques. Be comprehensive about the approach.)
+(Write 250-350 words - Describe research design, data collection methods (primary/secondary), sampling techniques, tools used, observation and analysis techniques. Be comprehensive about the approach. NO company name.)
  
 ## 1.8 Limitations of the Study
-(Write 200-300 words - Honestly discuss constraints faced during the internship and study, time limitations, resource constraints, scope limitations, how they were managed.)
+(Write 200-300 words - Honestly discuss constraints faced during the study, time limitations, resource constraints, scope limitations, how they were managed. NO company references.)
  
-IMPORTANT: DO NOT include "(In-Depth)", "(In Deep)", or any similar markers in the output. Write naturally flowing academic prose. No asterisks or bold formatting.`
+CRITICAL RULES:
+- DO NOT mention any company name anywhere in this chapter
+- DO NOT include "(In-Depth)", "(In Deep)", or any similar markers
+- Write naturally flowing academic prose
+- No asterisks or bold formatting
+- Focus purely on the topic/field of study`
        },
        '2': {
          label: 'Chapter II: Description of the Organisation',
