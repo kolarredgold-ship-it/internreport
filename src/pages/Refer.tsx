@@ -469,8 +469,8 @@ const Refer = () => {
                   <AlertCircle className="w-4 h-4 text-red-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">Minimum Balance: ₹101</p>
-                  <p className="text-xs text-muted-foreground">Withdrawals are locked if your wallet balance is below ₹101.</p>
+                  <p className="font-medium text-sm">Minimum Wallet Balance: ₹499</p>
+                  <p className="text-xs text-muted-foreground">Your wallet balance must be at least ₹499 to withdraw.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
