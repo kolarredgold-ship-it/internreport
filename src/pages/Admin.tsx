@@ -19,7 +19,8 @@ import {
   Users,
   IndianRupee,
   Key,
-  Loader2
+  Loader2,
+  LayoutDashboard
 } from 'lucide-react';
 import {
   Table,
@@ -41,6 +42,9 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import AdminStats from '@/components/admin/AdminStats';
+import UserDetailsTable from '@/components/admin/UserDetailsTable';
+import UserDetailsDialog from '@/components/admin/UserDetailsDialog';
 
 interface Payment {
   id: string;
@@ -64,7 +68,22 @@ interface UserProfile {
   email: string | null;
   full_name: string | null;
   mobile_number: string | null;
+  college_name: string | null;
+  course: string | null;
+  university: string | null;
+  register_number: string | null;
+  generations_used: number | null;
+  referred_by: string | null;
   created_at: string;
+}
+
+interface UserWallet {
+  user_id: string;
+  total_balance: number;
+  referral_earnings: number;
+  pending_earnings: number;
+  withdrawable_balance: number;
+  welcome_bonus: number;
 }
 
 interface Withdrawal {
@@ -76,6 +95,23 @@ interface Withdrawal {
   transaction_id: string | null;
   created_at: string;
   processed_at: string | null;
+}
+
+interface Referral {
+  id: string;
+  status: string;
+  earning_amount: number;
+}
+
+interface ReportCount {
+  user_id: string;
+  count: number;
+}
+
+interface PaymentCount {
+  user_id: string;
+  verified_count: number;
+  total_paid: number;
 }
 
 const Admin = () => {
@@ -93,6 +129,7 @@ const Admin = () => {
   // User management state
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [viewingUser, setViewingUser] = useState<UserProfile | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
 
@@ -104,6 +141,13 @@ const Admin = () => {
   
   // Duplicate transaction tracking
   const [duplicateTransactions, setDuplicateTransactions] = useState<Map<string, number>>(new Map());
+
+  // Additional data for comprehensive stats
+  const [wallets, setWallets] = useState<UserWallet[]>([]);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [reportCounts, setReportCounts] = useState<ReportCount[]>([]);
+  const [paymentCounts, setPaymentCounts] = useState<PaymentCount[]>([]);
+  const [totalReports, setTotalReports] = useState(0);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -138,6 +182,9 @@ const Admin = () => {
       fetchPayments();
       fetchUsers();
       fetchWithdrawals();
+      fetchWallets();
+      fetchReferrals();
+      fetchReports();
     } catch (error: any) {
       console.error('Admin check error:', error);
       navigate('/dashboard');
@@ -212,6 +259,77 @@ const Admin = () => {
       setWithdrawals(data || []);
     } catch (error: any) {
       console.error('Fetch withdrawals error:', error);
+    }
+  };
+
+  const fetchWallets = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('user_id, total_balance, referral_earnings, pending_earnings, withdrawable_balance, welcome_bonus');
+
+      if (error) throw error;
+      setWallets(data || []);
+    } catch (error: any) {
+      console.error('Fetch wallets error:', error);
+    }
+  };
+
+  const fetchReferrals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('referrals')
+        .select('id, status, earning_amount');
+
+      if (error) throw error;
+      setReferrals(data || []);
+    } catch (error: any) {
+      console.error('Fetch referrals error:', error);
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('user_id');
+
+      if (error) throw error;
+      
+      // Count reports per user
+      const counts: Record<string, number> = {};
+      (data || []).forEach(report => {
+        counts[report.user_id] = (counts[report.user_id] || 0) + 1;
+      });
+      
+      const reportCountsArray = Object.entries(counts).map(([user_id, count]) => ({
+        user_id,
+        count,
+      }));
+      
+      setReportCounts(reportCountsArray);
+      setTotalReports(data?.length || 0);
+
+      // Calculate payment counts per user from payments
+      const paymentCountsMap: Record<string, { verified_count: number; total_paid: number }> = {};
+      payments.forEach(payment => {
+        if (payment.status === 'verified') {
+          if (!paymentCountsMap[payment.user_id]) {
+            paymentCountsMap[payment.user_id] = { verified_count: 0, total_paid: 0 };
+          }
+          paymentCountsMap[payment.user_id].verified_count++;
+          paymentCountsMap[payment.user_id].total_paid += payment.amount;
+        }
+      });
+      
+      const paymentCountsArray = Object.entries(paymentCountsMap).map(([user_id, data]) => ({
+        user_id,
+        ...data,
+      }));
+      
+      setPaymentCounts(paymentCountsArray);
+    } catch (error: any) {
+      console.error('Fetch reports error:', error);
     }
   };
 
@@ -538,11 +656,56 @@ const Admin = () => {
     }
   };
 
-  const stats = {
+  const paymentStats = {
     total: payments.length,
     pending: payments.filter(p => p.status === 'pending').length,
     verified: payments.filter(p => p.status === 'verified').length,
     totalAmount: payments.filter(p => p.status === 'verified').reduce((sum, p) => sum + p.amount, 0),
+  };
+
+  // Comprehensive stats for dashboard
+  const comprehensiveStats = {
+    totalUsers: users.length,
+    totalReports: totalReports,
+    totalPayments: payments.length,
+    pendingPayments: payments.filter(p => p.status === 'pending').length,
+    verifiedPayments: payments.filter(p => p.status === 'verified').length,
+    rejectedPayments: payments.filter(p => p.status === 'rejected').length,
+    totalRevenue: payments.filter(p => p.status === 'verified').reduce((sum, p) => sum + p.amount, 0),
+    pendingWithdrawals: withdrawals.filter(w => w.status === 'pending').length,
+    completedWithdrawals: withdrawals.filter(w => w.status === 'success').length,
+    totalWithdrawalAmount: withdrawals.filter(w => w.status === 'success').reduce((sum, w) => sum + w.amount, 0),
+    totalReferrals: referrals.length,
+    pendingReferrals: referrals.filter(r => r.status === 'pending').length,
+    completedReferrals: referrals.filter(r => r.status === 'completed').length,
+    totalWalletBalance: wallets.reduce((sum, w) => sum + w.total_balance, 0),
+    activeUsers: paymentCounts.length, // Users with at least one verified payment
+  };
+
+  // Get wallet for viewing user
+  const getWalletForUser = (userId: string) => {
+    return wallets.find(w => w.user_id === userId) || null;
+  };
+
+  const getPaymentTotalForUser = (userId: string) => {
+    return paymentCounts.find(p => p.user_id === userId)?.total_paid || 0;
+  };
+
+  const getReportCountForUser = (userId: string) => {
+    return reportCounts.find(r => r.user_id === userId)?.count || 0;
+  };
+
+  const isUserActive = (userId: string) => {
+    return paymentCounts.some(p => p.user_id === userId);
+  };
+
+  const refreshAllData = () => {
+    fetchPayments();
+    fetchUsers();
+    fetchWithdrawals();
+    fetchWallets();
+    fetchReferrals();
+    fetchReports();
   };
 
   if (authLoading || loading) {
@@ -575,27 +738,52 @@ const Admin = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold mb-2">Admin Panel</h1>
-          <p className="text-muted-foreground">Manage payments and users</p>
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-6">
+          <h1 className="font-display text-3xl font-bold mb-2">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Complete overview of all users, payments, and system stats</p>
         </div>
 
-        <Tabs defaultValue="payments" className="space-y-6">
-          <TabsList>
+        {/* Comprehensive Stats */}
+        <div className="mb-8">
+          <AdminStats stats={comprehensiveStats} />
+        </div>
+
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="flex-wrap">
+            <TabsTrigger value="overview" className="gap-2">
+              <LayoutDashboard className="w-4 h-4" />
+              Overview
+            </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2">
               <IndianRupee className="w-4 h-4" />
-              Payments
+              Payments ({paymentStats.pending} pending)
             </TabsTrigger>
             <TabsTrigger value="withdrawals" className="gap-2">
               <IndianRupee className="w-4 h-4" />
-              Withdrawals
+              Withdrawals ({withdrawals.filter(w => w.status === 'pending').length})
             </TabsTrigger>
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
-              Users
+              Users ({users.length})
             </TabsTrigger>
           </TabsList>
+
+          {/* Overview Tab with User Details */}
+          <TabsContent value="overview" className="space-y-6">
+            <UserDetailsTable
+              users={users}
+              wallets={wallets}
+              reportCounts={reportCounts}
+              paymentCounts={paymentCounts}
+              onRefresh={refreshAllData}
+              onEditPassword={(u) => {
+                setSelectedUser(u);
+                setNewPassword('');
+              }}
+              onViewUser={(u) => setViewingUser(u)}
+            />
+          </TabsContent>
 
           <TabsContent value="payments" className="space-y-6">
             {/* Stats */}
@@ -607,7 +795,7 @@ const Admin = () => {
                       <Users className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stats.total}</p>
+                      <p className="text-2xl font-bold">{paymentStats.total}</p>
                       <p className="text-xs text-muted-foreground">Total Payments</p>
                     </div>
                   </div>
@@ -620,7 +808,7 @@ const Admin = () => {
                       <Clock className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stats.pending}</p>
+                      <p className="text-2xl font-bold">{paymentStats.pending}</p>
                       <p className="text-xs text-muted-foreground">Pending</p>
                     </div>
                   </div>
@@ -633,7 +821,7 @@ const Admin = () => {
                       <CheckCircle2 className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stats.verified}</p>
+                      <p className="text-2xl font-bold">{paymentStats.verified}</p>
                       <p className="text-xs text-muted-foreground">Verified</p>
                     </div>
                   </div>
@@ -646,7 +834,7 @@ const Admin = () => {
                       <IndianRupee className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">₹{stats.totalAmount}</p>
+                      <p className="text-2xl font-bold">₹{paymentStats.totalAmount}</p>
                       <p className="text-xs text-muted-foreground">Revenue</p>
                     </div>
                   </div>
@@ -1120,6 +1308,16 @@ const Admin = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* User Details Dialog */}
+      <UserDetailsDialog
+        user={viewingUser}
+        wallet={viewingUser ? getWalletForUser(viewingUser.user_id) : null}
+        reportsCount={viewingUser ? getReportCountForUser(viewingUser.user_id) : 0}
+        paymentsTotal={viewingUser ? getPaymentTotalForUser(viewingUser.user_id) : 0}
+        isActive={viewingUser ? isUserActive(viewingUser.user_id) : false}
+        onClose={() => setViewingUser(null)}
+      />
     </div>
   );
 };
