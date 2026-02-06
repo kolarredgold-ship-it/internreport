@@ -4,6 +4,8 @@ User-agent: *
 Allow: /
 Allow: /blog
 Allow: /blog/*
+Disallow: /auth
+Disallow: /refer
 Disallow: /dashboard
 Disallow: /create-report
 Disallow: /my-reports
