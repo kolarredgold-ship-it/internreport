@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, FileText, Share2, Wallet, Users, IndianRupee, Copy, Gift, Clock, CheckCircle2, XCircle, Loader2, Pencil } from 'lucide-react';
+import { ArrowLeft, FileText, Share2, Wallet, Users, IndianRupee, Copy, Gift, Clock, CheckCircle2, XCircle, Loader2, Pencil, AlertCircle, Lock, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 interface WalletData {
   welcome_bonus: number;
@@ -454,6 +454,56 @@ const Refer = () => {
           </CardContent>
         </Card>
 
+        {/* Withdrawal Rules */}
+        <Card className="mb-8 border-blue-500/30 bg-blue-500/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Info className="w-5 h-5 text-blue-500" />
+              Withdrawal Rules
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">First Withdrawal Locked</p>
+                  <p className="text-xs text-muted-foreground">Your first withdrawal request is locked. Contact support to unlock.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                  <IndianRupee className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Minimum Withdrawal: ₹499</p>
+                  <p className="text-xs text-muted-foreground">Each withdrawal request must be at least ₹499.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-4 h-4 text-red-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Minimum Balance: ₹101</p>
+                  <p className="text-xs text-muted-foreground">Withdrawals are locked if your wallet balance is below ₹101.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Minimum 2 Referrals Required</p>
+                  <p className="text-xs text-muted-foreground">Complete at least 2 successful referrals to unlock withdrawals.</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Withdrawal Section */}
         <Card className="mb-8">
           <CardHeader>
@@ -473,13 +523,13 @@ const Refer = () => {
               </div> : <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount">Amount (₹)</Label>
-                  <Input id="amount" type="number" placeholder="Enter amount" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} max={wallet?.withdrawable_balance ?? 0} />
+                  <Input id="amount" type="number" placeholder="Min ₹499" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} min={499} max={wallet?.withdrawable_balance ?? 0} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="upi">UPI ID</Label>
                   <Input id="upi" type="text" placeholder="yourname@paytm" value={upiId} onChange={e => setUpiId(e.target.value)} />
                 </div>
-                <Button className="w-full" onClick={handleWithdraw} disabled={withdrawing || (wallet?.withdrawable_balance ?? 0) <= 0}>
+                <Button className="w-full" onClick={handleWithdraw} disabled={withdrawing || (wallet?.withdrawable_balance ?? 0) < 499}>
                   {withdrawing ? <>
                       <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       Processing...
