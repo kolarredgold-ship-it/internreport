@@ -465,21 +465,21 @@ const Refer = () => {
           <CardContent>
             <div className="grid gap-3">
               <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-4 h-4 text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">First Withdrawal Locked</p>
-                  <p className="text-xs text-muted-foreground">Your first withdrawal request is locked. Contact support to unlock.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
                 <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
                   <IndianRupee className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
                   <p className="font-medium text-sm">Minimum Withdrawal: ₹499</p>
                   <p className="text-xs text-muted-foreground">Each withdrawal request must be at least ₹499.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">First-Time Minimum: ₹499</p>
+                  <p className="text-xs text-muted-foreground">Your first withdrawal must be at least ₹499 to get started.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
