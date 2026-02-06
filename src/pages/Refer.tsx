@@ -474,15 +474,6 @@ const Refer = () => {
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-4 h-4 text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">First-Time Minimum: ₹499</p>
-                  <p className="text-xs text-muted-foreground">Your first withdrawal must be at least ₹499 to get started.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
                 <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
                   <AlertCircle className="w-4 h-4 text-red-600" />
                 </div>
