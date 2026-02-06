@@ -57,22 +57,26 @@ serve(async (req) => {
 
     const requesterUserId = claimsData.claims.sub;
 
-    // Service client for privileged ops
+    // Service client for privileged ops (bypasses RLS)
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
-    const { data: isAdmin, error: roleError } = await adminClient.rpc("has_role", {
-      _user_id: requesterUserId,
-      _role: "admin",
-    });
+    // Check admin role directly (has_role uses auth.uid() which is null in edge functions)
+    const { data: roleData, error: roleError } = await adminClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", requesterUserId)
+      .eq("role", "admin")
+      .maybeSingle();
 
     if (roleError) {
       console.error("admin-update-password: role check error", roleError.message);
       return json(500, { error: "Failed to verify admin role" });
     }
 
-    if (!isAdmin) {
+    if (!roleData) {
+      console.log("admin-update-password: user is not admin", { requesterUserId });
       return json(403, { error: "Admin access required" });
     }
 
