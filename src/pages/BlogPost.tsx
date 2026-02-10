@@ -3,19 +3,87 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Calendar, Clock, ArrowRight, ArrowLeft, GraduationCap, Tag, BookOpen, Share2 } from 'lucide-react';
-import { getPostBySlug, blogPosts } from '@/data/blogPosts';
-import { useEffect } from 'react';
+import { getPostBySlug, blogPosts, BlogPost as BlogPostType } from '@/data/blogPosts';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { supabase } from '@/integrations/supabase/client';
 
-const BlogPost = () => {
+const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const post = slug ? getPostBySlug(slug) : undefined;
+  const [post, setPost] = useState<BlogPostType | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPostType[]>([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    if (!slug) { setLoading(false); return; }
+
+    // Try static first
+    const staticPost = getPostBySlug(slug);
+    if (staticPost) {
+      setPost(staticPost);
+      setRelatedPosts(
+        blogPosts.filter(p => p.id !== staticPost.id && (p.domain === staticPost.domain || p.university === staticPost.university)).slice(0, 3)
+      );
+      setLoading(false);
+      return;
+    }
+
+    // Try DB
+    const fetchDbPost = async () => {
+      const { data } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_published', true)
+        .maybeSingle();
+
+      if (data) {
+        const mapped: BlogPostType = {
+          id: data.id,
+          slug: data.slug,
+          title: data.title,
+          excerpt: data.excerpt,
+          content: data.content,
+          category: data.category,
+          university: data.university,
+          domain: data.domain,
+          keywords: data.keywords || [],
+          publishedAt: data.published_at,
+          readTime: data.read_time,
+        };
+        setPost(mapped);
+
+        // Fetch related from DB
+        const { data: related } = await supabase
+          .from('blog_posts')
+          .select('*')
+          .neq('id', data.id)
+          .eq('is_published', true)
+          .or(`domain.eq.${data.domain},university.eq.${data.university}`)
+          .limit(3);
+
+        if (related) {
+          setRelatedPosts(related.map((p: any) => ({
+            id: p.id, slug: p.slug, title: p.title, excerpt: p.excerpt,
+            content: p.content, category: p.category, university: p.university,
+            domain: p.domain, keywords: p.keywords || [], publishedAt: p.published_at, readTime: p.read_time,
+          })));
+        }
+      }
+      setLoading(false);
+    };
+    fetchDbPost();
   }, [slug]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen hero-gradient flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
   if (!post) {
     return (
       <div className="min-h-screen hero-gradient flex items-center justify-center">
@@ -37,10 +105,7 @@ const BlogPost = () => {
     );
   }
 
-  // Get related posts (same domain or university)
-  const relatedPosts = blogPosts
-    .filter(p => p.id !== post.id && (p.domain === post.domain || p.university === post.university))
-    .slice(0, 3);
+  // relatedPosts already set via useEffect
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -361,4 +426,4 @@ const BlogPost = () => {
   );
 };
 
-export default BlogPost;
+export default BlogPostPage;

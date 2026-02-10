@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Search, Calendar, Clock, ArrowRight, BookOpen, GraduationCap, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import { blogPosts, getAllCategories, getAllUniversities, getAllDomains, searchPosts } from '@/data/blogPosts';
+import { blogPosts as staticPosts, BlogPost as BlogPostType, getAllCategories, getAllUniversities, getAllDomains } from '@/data/blogPosts';
 import { Helmet } from 'react-helmet-async';
+import { supabase } from '@/integrations/supabase/client';
 
 const POSTS_PER_PAGE = 12;
 
@@ -17,13 +18,57 @@ const Blog = () => {
   const [selectedUniversity, setSelectedUniversity] = useState<string>('all');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [dbPosts, setDbPosts] = useState<BlogPostType[]>([]);
 
-  const categories = getAllCategories();
-  const universities = getAllUniversities();
-  const domains = getAllDomains();
+  // Fetch AI-generated posts from DB
+  useEffect(() => {
+    const fetchDbPosts = async () => {
+      const { data } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('is_published', true)
+        .order('published_at', { ascending: false });
+      
+      if (data) {
+        const mapped: BlogPostType[] = data.map((p: any) => ({
+          id: p.id,
+          slug: p.slug,
+          title: p.title,
+          excerpt: p.excerpt,
+          content: p.content,
+          category: p.category,
+          university: p.university,
+          domain: p.domain,
+          keywords: p.keywords || [],
+          publishedAt: p.published_at,
+          readTime: p.read_time,
+        }));
+        setDbPosts(mapped);
+      }
+    };
+    fetchDbPosts();
+  }, []);
+
+  // Merge static + DB posts
+  const allPosts = useMemo(() => [...dbPosts, ...staticPosts], [dbPosts]);
+
+  const categories = useMemo(() => [...new Set(allPosts.map(p => p.category))], [allPosts]);
+  const universities = useMemo(() => [...new Set(allPosts.map(p => p.university))], [allPosts]);
+  const domains = useMemo(() => [...new Set(allPosts.map(p => p.domain))], [allPosts]);
 
   const filteredPosts = useMemo(() => {
-    let posts = searchQuery ? searchPosts(searchQuery) : blogPosts;
+    let posts = allPosts;
+    
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      posts = posts.filter(post =>
+        post.title.toLowerCase().includes(q) ||
+        post.excerpt.toLowerCase().includes(q) ||
+        post.domain.toLowerCase().includes(q) ||
+        post.university.toLowerCase().includes(q) ||
+        post.keywords.some(k => k.toLowerCase().includes(q))
+      );
+    }
     
     if (selectedCategory !== 'all') {
       posts = posts.filter(post => post.category === selectedCategory);
@@ -36,7 +81,7 @@ const Blog = () => {
     }
     
     return posts;
-  }, [searchQuery, selectedCategory, selectedUniversity, selectedDomain]);
+  }, [searchQuery, selectedCategory, selectedUniversity, selectedDomain, allPosts]);
 
   const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const paginatedPosts = filteredPosts.slice(
@@ -212,7 +257,7 @@ const Blog = () => {
             {(searchQuery || selectedCategory !== 'all' || selectedUniversity !== 'all' || selectedDomain !== 'all') && (
               <div className="mt-4 flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
-                  Showing {filteredPosts.length} of {blogPosts.length} articles
+                  Showing {filteredPosts.length} of {allPosts.length} articles
                 </p>
                 <Button variant="ghost" size="sm" onClick={resetFilters}>
                   Clear Filters
