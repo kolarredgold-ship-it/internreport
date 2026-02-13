@@ -13,7 +13,7 @@ import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, Ch
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun } from 'docx';
 import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
 
@@ -1059,9 +1059,53 @@ const CreateReport = () => {
       .trim();
   };
 
+  // Fetch a free image as buffer
+  const fetchImageAsBuffer = async (keyword: string, index: number): Promise<ArrayBuffer | null> => {
+    try {
+      const response = await fetch(
+        `https://loremflickr.com/640/400/${encodeURIComponent(keyword)}?lock=${index}`,
+        { redirect: 'follow' }
+      );
+      if (!response.ok) return null;
+      return await response.arrayBuffer();
+    } catch {
+      return null;
+    }
+  };
+
+  // Get topic-related image keywords
+  const getImageKeywords = (): string[] => {
+    const title = formData.internshipTitle.toLowerCase();
+    const specialization = title.split(' ').slice(0, 3).join(' ');
+    return [
+      specialization,
+      `${specialization} workplace`,
+      `${title.split(' ')[0]} technology`,
+      'internship student learning',
+      'business office professional',
+      'corporate team meeting',
+      'data analysis computer',
+      'project management workflow',
+      'presentation skills training',
+      'industry workplace modern',
+      'digital technology innovation',
+      'professional development career',
+    ].slice(0, 10);
+  };
+
   // Download full merged report
   const downloadFullReport = async () => {
     if (!hasAnyContent) return;
+
+    // Fetch 10 topic-related images
+    toast({
+      title: 'Preparing report...',
+      description: 'Fetching topic-related images for your report.',
+    });
+
+    const keywords = getImageKeywords();
+    const imagePromises = keywords.map((kw, i) => fetchImageAsBuffer(kw, i));
+    const imageBuffers = (await Promise.all(imagePromises)).filter(Boolean) as ArrayBuffer[];
 
     // Merge all chapters in order and clean up asterisks
     const orderedContent = getChapters(formData.internshipTitle)
@@ -1139,26 +1183,50 @@ const CreateReport = () => {
       })
     );
 
-    // Parse and add content
+    // Track image insertion points
+    let imageIndex = 0;
+    const imageInsertAfterHeadings = new Set([1, 2, 4, 5, 7, 8, 10, 11, 13, 15]);
+    let headingCount = 0;
+
+    // Parse and add content with images
     sections.forEach(section => {
       if (section.trim() && section.trim() !== '---') {
-        if (section.startsWith('# ')) {
+        const isH1 = section.startsWith('# ');
+        const isH2 = section.startsWith('## ');
+        const isH3 = section.startsWith('### ');
+
+        if (isH1 || isH2) {
+          headingCount++;
           children.push(
             new Paragraph({
-              text: section.replace('# ', ''),
-              heading: HeadingLevel.HEADING_1,
-              spacing: { before: 400, after: 200 },
+              text: section.replace(/^#{1,2}\s/, ''),
+              heading: isH1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2,
+              spacing: { before: isH1 ? 400 : 300, after: isH1 ? 200 : 150 },
             })
           );
-        } else if (section.startsWith('## ')) {
-          children.push(
-            new Paragraph({
-              text: section.replace('## ', ''),
-              heading: HeadingLevel.HEADING_2,
-              spacing: { before: 300, after: 150 },
-            })
-          );
-        } else if (section.startsWith('### ')) {
+          // Insert image after certain headings
+          if (imageInsertAfterHeadings.has(headingCount) && imageIndex < imageBuffers.length) {
+            children.push(
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: imageBuffers[imageIndex],
+                    transformation: { width: 500, height: 312 },
+                    type: 'jpg',
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 200, after: 200 },
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `Figure ${imageIndex + 1}`, italics: true, size: 20, color: '666666' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 300 },
+              })
+            );
+            imageIndex++;
+          }
+        } else if (isH3) {
           children.push(
             new Paragraph({
               text: section.replace('### ', ''),
@@ -1188,7 +1256,7 @@ const CreateReport = () => {
 
     toast({
       title: 'Downloaded!',
-      description: 'Your complete internship report has been downloaded.',
+      description: `Your report has been downloaded with ${imageIndex} topic-related images.`,
     });
   };
 

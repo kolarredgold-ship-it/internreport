@@ -35,20 +35,24 @@ const fetchImageAsBuffer = async (keyword: string, index: number): Promise<Array
 
 const getImageKeywords = (report: Report): string[] => {
   const title = report.internship_title.toLowerCase();
-  const topic = report.company_name.toLowerCase();
+  const topic = (report.company_name || '').toLowerCase();
+  const specialization = title.split(' ').slice(0, 3).join(' ');
   const keywords = [
-    title.split(' ').slice(0, 2).join(' '),
-    'office workplace',
-    'internship student',
-    'business meeting',
-    'computer technology',
-    'teamwork collaboration',
-    'professional work',
-    'data analysis',
-    'presentation corporate',
-    'learning education',
+    specialization,
+    `${specialization} workplace`,
+    `${title.split(' ')[0]} technology`,
+    'internship student learning',
+    'business office professional',
+    'corporate team meeting',
+    'data analysis computer',
+    'project management workflow',
+    'presentation skills training',
+    'industry workplace modern',
+    'digital technology innovation',
+    'professional development career',
   ];
-  return keywords.slice(0, 8);
+  // Return 10 unique keywords (for 7-12 images range)
+  return keywords.slice(0, 10);
 };
 
 interface Report {
@@ -211,7 +215,7 @@ const MyReports = () => {
 
     // Track image insertion points (after major headings)
     let imageIndex = 0;
-    const imageInsertAfterHeadings = new Set([1, 3, 5, 7, 9, 11, 13, 15]); // Insert images after these heading occurrences
+    const imageInsertAfterHeadings = new Set([1, 2, 4, 5, 7, 8, 10, 11, 13, 15]); // Insert images after these heading occurrences (supports 10 images)
     let headingCount = 0;
 
     // Parse and add content with images
