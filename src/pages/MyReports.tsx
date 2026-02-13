@@ -16,9 +16,40 @@ import {
   FileDown,
   FolderOpen
 } from 'lucide-react';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun } from 'docx';
 import { saveAs } from 'file-saver';
 import { format } from 'date-fns';
+
+const fetchImageAsBuffer = async (keyword: string, index: number): Promise<ArrayBuffer | null> => {
+  try {
+    const response = await fetch(
+      `https://loremflickr.com/640/400/${encodeURIComponent(keyword)}?lock=${index}`,
+      { redirect: 'follow' }
+    );
+    if (!response.ok) return null;
+    return await response.arrayBuffer();
+  } catch {
+    return null;
+  }
+};
+
+const getImageKeywords = (report: Report): string[] => {
+  const title = report.internship_title.toLowerCase();
+  const topic = report.company_name.toLowerCase();
+  const keywords = [
+    title.split(' ').slice(0, 2).join(' '),
+    'office workplace',
+    'internship student',
+    'business meeting',
+    'computer technology',
+    'teamwork collaboration',
+    'professional work',
+    'data analysis',
+    'presentation corporate',
+    'learning education',
+  ];
+  return keywords.slice(0, 8);
+};
 
 interface Report {
   id: string;
@@ -98,6 +129,16 @@ const MyReports = () => {
     cleanContent = cleanContent.replace(/\*/g, '');
     cleanContent = cleanContent.replace(/`/g, '');
 
+    // Fetch 8 free topic-related images
+    toast({
+      title: 'Preparing report...',
+      description: 'Fetching images for your report. This may take a moment.',
+    });
+
+    const keywords = getImageKeywords(report);
+    const imagePromises = keywords.map((kw, i) => fetchImageAsBuffer(kw, i));
+    const imageBuffers = (await Promise.all(imagePromises)).filter(Boolean) as ArrayBuffer[];
+
     const sections = cleanContent.split('\n\n');
     const children: Paragraph[] = [];
 
@@ -168,10 +209,16 @@ const MyReports = () => {
       })
     );
 
-    // Parse and add content
+    // Track image insertion points (after major headings)
+    let imageIndex = 0;
+    const imageInsertAfterHeadings = new Set([1, 3, 5, 7, 9, 11, 13, 15]); // Insert images after these heading occurrences
+    let headingCount = 0;
+
+    // Parse and add content with images
     sections.forEach(section => {
       if (section.trim()) {
         if (section.startsWith('# ')) {
+          headingCount++;
           children.push(
             new Paragraph({
               text: section.replace('# ', ''),
@@ -179,7 +226,30 @@ const MyReports = () => {
               spacing: { before: 400, after: 200 },
             })
           );
+          // Insert image after certain headings
+          if (imageInsertAfterHeadings.has(headingCount) && imageIndex < imageBuffers.length) {
+            children.push(
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: imageBuffers[imageIndex],
+                    transformation: { width: 500, height: 312 },
+                    type: 'jpg',
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 200, after: 200 },
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `Figure ${imageIndex + 1}`, italics: true, size: 20, color: '666666' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 300 },
+              })
+            );
+            imageIndex++;
+          }
         } else if (section.startsWith('## ')) {
+          headingCount++;
           children.push(
             new Paragraph({
               text: section.replace('## ', ''),
@@ -187,6 +257,27 @@ const MyReports = () => {
               spacing: { before: 300, after: 150 },
             })
           );
+          if (imageInsertAfterHeadings.has(headingCount) && imageIndex < imageBuffers.length) {
+            children.push(
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: imageBuffers[imageIndex],
+                    transformation: { width: 500, height: 312 },
+                    type: 'jpg',
+                  }),
+                ],
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 200, after: 200 },
+              }),
+              new Paragraph({
+                children: [new TextRun({ text: `Figure ${imageIndex + 1}`, italics: true, size: 20, color: '666666' })],
+                alignment: AlignmentType.CENTER,
+                spacing: { after: 300 },
+              })
+            );
+            imageIndex++;
+          }
         } else if (section.startsWith('### ')) {
           children.push(
             new Paragraph({
@@ -217,7 +308,7 @@ const MyReports = () => {
 
     toast({
       title: 'Downloaded!',
-      description: 'Your report has been downloaded.',
+      description: `Your report has been downloaded with ${imageIndex} images.`,
     });
   };
 
