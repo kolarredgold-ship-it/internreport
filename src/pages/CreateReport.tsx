@@ -1182,9 +1182,114 @@ const CreateReport = () => {
         alignment: AlignmentType.CENTER,
         spacing: { after: 400 },
       }),
+      new Paragraph({ children: [new PageBreak()] })
+    );
+
+    // Certificate page
+    children.push(
       new Paragraph({
-        children: [new PageBreak()],
-      })
+        children: [new TextRun({ text: 'CERTIFICATE', bold: true, size: 32 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `This is to certify that ${formData.studentName} (Register No: ${formData.registerNumber}) of ${formData.course}, ${formData.collegeName}, has successfully completed the Internship Project Report titled "${formData.internshipTitle}" at ${formData.companyName} during the academic year ${formData.academicYear}, under the guidance of ${formData.guideName}.`, size: 24 })],
+        spacing: { after: 600 },
+        alignment: AlignmentType.JUSTIFIED,
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Guide', bold: true, size: 24 })],
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: formData.guideName, size: 24 })],
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'Head of Department', bold: true, size: 24 })],
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: '________________________', size: 24 })],
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: 'External Examiner', bold: true, size: 24 })],
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: '________________________', size: 24 })],
+        spacing: { after: 400 },
+      }),
+      new Paragraph({ children: [new PageBreak()] })
+    );
+
+    // Declaration page
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: 'DECLARATION', bold: true, size: 32 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `I, ${formData.studentName}, hereby declare that the Internship Project Report titled "${formData.internshipTitle}" submitted to ${formData.university} is a record of original work done by me during my internship at ${formData.companyName}, under the guidance of ${formData.guideName}. This report has not been submitted to any other university or institution for the award of any degree or diploma.`, size: 24 })],
+        spacing: { after: 600 },
+        alignment: AlignmentType.JUSTIFIED,
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Place: ________________________`, size: 24 })],
+        spacing: { after: 200 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Date: ________________________`, size: 24 })],
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: formData.studentName, bold: true, size: 24 })],
+        alignment: AlignmentType.RIGHT,
+        spacing: { after: 100 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Register No: ${formData.registerNumber}`, size: 24 })],
+        alignment: AlignmentType.RIGHT,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({ children: [new PageBreak()] })
+    );
+
+    // Acknowledgement page
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: 'ACKNOWLEDGEMENT', bold: true, size: 32 })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 600 },
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `I would like to express my sincere gratitude to my guide ${formData.guideName} for the continuous support, guidance, and encouragement throughout the internship period.`, size: 24 })],
+        spacing: { after: 300 },
+        alignment: AlignmentType.JUSTIFIED,
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `I am grateful to ${formData.collegeName}, ${formData.university} for providing me with the opportunity to undertake this internship.`, size: 24 })],
+        spacing: { after: 300 },
+        alignment: AlignmentType.JUSTIFIED,
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `I also extend my thanks to ${formData.companyName} for allowing me to carry out my internship and for providing the necessary resources and environment to learn and grow.`, size: 24 })],
+        spacing: { after: 300 },
+        alignment: AlignmentType.JUSTIFIED,
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: `Finally, I would like to thank my family and friends for their constant support and motivation.`, size: 24 })],
+        spacing: { after: 600 },
+        alignment: AlignmentType.JUSTIFIED,
+      }),
+      new Paragraph({
+        children: [new TextRun({ text: formData.studentName, bold: true, size: 24 })],
+        alignment: AlignmentType.RIGHT,
+        spacing: { after: 400 },
+      }),
+      new Paragraph({ children: [new PageBreak()] })
     );
 
     // Track image insertion points
@@ -1195,15 +1300,22 @@ const CreateReport = () => {
     // Parse and add content with images
     sections.forEach(section => {
       if (section.trim() && section.trim() !== '---') {
-        const isH1 = section.startsWith('# ');
-        const isH2 = section.startsWith('## ');
-        const isH3 = section.startsWith('### ');
+        const trimmed = section.trim();
+        const isH1 = trimmed.startsWith('# ');
+        const isH2 = trimmed.startsWith('## ');
+        const isH3 = trimmed.startsWith('### ');
+        const isChapterHeading = (text: string) => /chapter\s/i.test(text);
 
         if (isH1 || isH2) {
+          const headingText = trimmed.replace(/^#{1,2}\s/, '');
           headingCount++;
+          // Add page break before each chapter
+          if (isH1 && isChapterHeading(headingText)) {
+            children.push(new Paragraph({ children: [new PageBreak()] }));
+          }
           children.push(
             new Paragraph({
-              text: section.replace(/^#{1,2}\s/, ''),
+              text: headingText,
               heading: isH1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2,
               spacing: { before: isH1 ? 400 : 300, after: isH1 ? 200 : 150 },
             })
@@ -1233,7 +1345,7 @@ const CreateReport = () => {
         } else if (isH3) {
           children.push(
             new Paragraph({
-              text: section.replace('### ', ''),
+              text: trimmed.replace('### ', ''),
               heading: HeadingLevel.HEADING_3,
               spacing: { before: 200, after: 100 },
             })
@@ -1241,7 +1353,7 @@ const CreateReport = () => {
         } else {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: section, size: 24 })],
+              children: [new TextRun({ text: trimmed, size: 24 })],
               spacing: { after: 200 },
               alignment: AlignmentType.JUSTIFIED,
             })
