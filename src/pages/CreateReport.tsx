@@ -1062,12 +1062,16 @@ const CreateReport = () => {
   // Fetch a free image as buffer
   const fetchImageAsBuffer = async (keyword: string, index: number): Promise<ArrayBuffer | null> => {
     try {
-      const response = await fetch(
-        `https://loremflickr.com/640/400/${encodeURIComponent(keyword)}?lock=${index}`,
-        { redirect: 'follow' }
-      );
-      if (!response.ok) return null;
-      return await response.arrayBuffer();
+      const { data, error } = await supabase.functions.invoke('fetch-image', {
+        body: { keyword, index },
+      });
+      if (error || !data?.image) return null;
+      const binaryStr = atob(data.image);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+      return bytes.buffer;
     } catch {
       return null;
     }
