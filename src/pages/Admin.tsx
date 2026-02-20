@@ -20,7 +20,8 @@ import {
   IndianRupee,
   Key,
   Loader2,
-  LayoutDashboard
+  LayoutDashboard,
+  Package
 } from 'lucide-react';
 import {
   Table,
@@ -45,6 +46,7 @@ import {
 import AdminStats from '@/components/admin/AdminStats';
 import UserDetailsTable from '@/components/admin/UserDetailsTable';
 import UserDetailsDialog from '@/components/admin/UserDetailsDialog';
+import AdminProducts from '@/components/admin/AdminProducts';
 
 interface Payment {
   id: string;
@@ -767,6 +769,10 @@ const Admin = () => {
               <Users className="w-4 h-4" />
               Users ({users.length})
             </TabsTrigger>
+            <TabsTrigger value="products" className="gap-2">
+              <Package className="w-4 h-4" />
+              Products
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab with User Details */}
@@ -1093,6 +1099,10 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="products" className="space-y-6">
+            <AdminProducts />
           </TabsContent>
         </Tabs>
       </main>

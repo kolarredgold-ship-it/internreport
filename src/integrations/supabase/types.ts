@@ -68,6 +68,51 @@ export type Database = {
         }
         Relationships: []
       }
+      digital_products: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          download_url: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          price: number
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          download_url: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          download_url?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
