@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award, Package, ArrowRight } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
 import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,7 +25,20 @@ const Index = () => {
   const [searchParams] = useSearchParams();
   const demoRef = useRef<HTMLDivElement>(null);
   const [showServerBusyDialog, setShowServerBusyDialog] = useState(false);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data } = await supabase
+        .from('digital_products')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(4);
+      if (data) setFeaturedProducts(data);
+    };
+    fetchProducts();
+  }, []);
   // Auto-scroll to demo when ?demo=true is in URL
   useEffect(() => {
     if (searchParams.get('demo') === 'true' && demoRef.current) {
@@ -589,6 +603,53 @@ const Index = () => {
 
 
 
+      {/* Digital Products Section */}
+      {featuredProducts.length > 0 && (
+        <section className="container mx-auto px-4 py-16">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
+              <Package className="w-4 h-4" />
+              <span className="text-sm font-medium">Digital Products</span>
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
+              Premium Digital Resources
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Templates, prompts, ebooks, and more — instant download
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {featuredProducts.map((product: any) => (
+              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-soft group">
+                <Link to={`/products/${product.slug}`}>
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-40 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                      <Package className="w-10 h-10 text-primary/30" />
+                    </div>
+                  )}
+                </Link>
+                <CardContent className="p-4">
+                  <Link to={`/products/${product.slug}`}>
+                    <h3 className="font-display font-semibold line-clamp-2 hover:text-primary transition-colors mb-1">{product.title}</h3>
+                  </Link>
+                  <p className="text-sm text-muted-foreground line-clamp-1 mb-2">{product.description}</p>
+                  <span className="font-bold">{product.price > 0 ? `₹${product.price}` : <span className="text-green-600">Free</span>}</span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="text-center">
+            <Link to="/products">
+              <Button variant="outline" size="lg">
+                View All Products <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* Coursera Recommended Courses - Affiliate */}
       <CourseraRecommendations />
 
@@ -612,6 +673,7 @@ const Index = () => {
               <h4 className="font-display font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#pricing" className="hover:text-primary transition-colors">Pricing</a></li>
+                <li><Link to="/products" className="hover:text-primary transition-colors">Digital Products</Link></li>
                 <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
                 <li><Link to="/auth" className="hover:text-primary transition-colors">Login</Link></li>
                 <li><Link to="/auth?signup=true" className="hover:text-primary transition-colors">Sign Up</Link></li>
