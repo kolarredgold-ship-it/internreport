@@ -70,42 +70,51 @@ export type Database = {
       }
       digital_products: {
         Row: {
+          actual_price: number | null
           category: string
           created_at: string
           created_by: string | null
           description: string
+          download_count: number | null
           download_url: string
           id: string
           image_url: string | null
           is_active: boolean
+          offer_price: number | null
           price: number
           slug: string
           title: string
           updated_at: string
         }
         Insert: {
+          actual_price?: number | null
           category?: string
           created_at?: string
           created_by?: string | null
           description: string
+          download_count?: number | null
           download_url: string
           id?: string
           image_url?: string | null
           is_active?: boolean
+          offer_price?: number | null
           price?: number
           slug: string
           title: string
           updated_at?: string
         }
         Update: {
+          actual_price?: number | null
           category?: string
           created_at?: string
           created_by?: string | null
           description?: string
+          download_count?: number | null
           download_url?: string
           id?: string
           image_url?: string | null
           is_active?: boolean
+          offer_price?: number | null
           price?: number
           slug?: string
           title?: string

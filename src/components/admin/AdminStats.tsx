@@ -27,6 +27,7 @@ interface StatsData {
   completedReferrals: number;
   totalWalletBalance: number;
   activeUsers: number;
+  totalProductDownloads?: number;
 }
 
 interface AdminStatsProps {
@@ -119,6 +120,13 @@ const AdminStats = ({ stats }: AdminStatsProps) => {
       label: 'Total Wallet Balance',
       bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
       iconColor: 'text-emerald-600',
+    },
+    {
+      icon: TrendingUp,
+      value: stats.totalProductDownloads || 0,
+      label: 'Product Downloads',
+      bgColor: 'bg-violet-100 dark:bg-violet-900/30',
+      iconColor: 'text-violet-600',
     },
   ];
 

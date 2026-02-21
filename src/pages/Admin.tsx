@@ -150,7 +150,7 @@ const Admin = () => {
   const [reportCounts, setReportCounts] = useState<ReportCount[]>([]);
   const [paymentCounts, setPaymentCounts] = useState<PaymentCount[]>([]);
   const [totalReports, setTotalReports] = useState(0);
-
+  const [totalProductDownloads, setTotalProductDownloads] = useState(0);
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
@@ -665,7 +665,17 @@ const Admin = () => {
     totalAmount: payments.filter(p => p.status === 'verified').reduce((sum, p) => sum + p.amount, 0),
   };
 
-  // Comprehensive stats for dashboard
+  // Fetch product downloads when admin access confirmed
+  useEffect(() => {
+    if (isAdmin) {
+      const fetchProductDownloads = async () => {
+        const { data } = await supabase.from('digital_products').select('download_count');
+        if (data) setTotalProductDownloads((data as any[]).reduce((sum, p) => sum + (p.download_count || 0), 0));
+      };
+      fetchProductDownloads();
+    }
+  }, [isAdmin]);
+
   const comprehensiveStats = {
     totalUsers: users.length,
     totalReports: totalReports,
@@ -681,7 +691,8 @@ const Admin = () => {
     pendingReferrals: referrals.filter(r => r.status === 'pending').length,
     completedReferrals: referrals.filter(r => r.status === 'completed').length,
     totalWalletBalance: wallets.reduce((sum, w) => sum + w.total_balance, 0),
-    activeUsers: paymentCounts.length, // Users with at least one verified payment
+    activeUsers: paymentCounts.length,
+    totalProductDownloads,
   };
 
   // Get wallet for viewing user
