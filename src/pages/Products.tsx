@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { FileText, Search, Package, ExternalLink, Share2, ArrowLeft } from 'lucide-react';
+import { FileText, Search, Package, Share2, ArrowLeft, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Product {
@@ -15,9 +15,12 @@ interface Product {
   slug: string;
   description: string;
   price: number;
+  offer_price: number;
+  actual_price: number;
   image_url: string | null;
   download_url: string;
   category: string;
+  download_count: number;
 }
 
 const Products = () => {
@@ -55,23 +58,34 @@ const Products = () => {
     }
   };
 
+  const handleDownload = async (product: Product, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Track download
+    await supabase
+      .from('digital_products')
+      .update({ download_count: (product.download_count || 0) + 1 } as any)
+      .eq('id', product.id);
+    window.open(product.download_url, '_blank', 'noopener,noreferrer');
+  };
+
   const categories = [...new Set(products.map(p => p.category))];
 
   return (
     <div className="min-h-screen hero-gradient">
       <Helmet>
-        <title>Digital Products | InternReport.in</title>
-        <meta name="description" content="Browse premium digital products - templates, prompts, ebooks, and more at best prices." />
+        <title>2000+ Digital Products | InternReport.in</title>
+        <meta name="description" content="Browse 2000+ premium digital products - templates, prompts, ebooks, courses and more. Offer price ₹299 (worth ₹14,999)." />
       </Helmet>
 
       {/* Nav */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl gradient-bg flex items-center justify-center">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">InternReport.in</span>
+            <span className="font-display font-bold text-lg sm:text-xl">InternReport.in</span>
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Home</Button>
@@ -79,18 +93,21 @@ const Products = () => {
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <h1 className="font-display text-3xl md:text-4xl font-bold mb-3">
-            Digital Products Store
+      <main className="container mx-auto px-3 sm:px-4 py-8 sm:py-12">
+        <div className="text-center mb-8 sm:mb-10">
+          <Badge className="mb-3 bg-green-500/10 text-green-600 border-green-500/20">
+            🔥 Worth ₹14,999 — Now Only ₹299
+          </Badge>
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-3">
+            2000+ Digital Products Store
           </h1>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Premium digital resources — templates, prompts, ebooks, bundles & more
+          <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base">
+            Premium digital resources — templates, prompts, ebooks, video courses, bundles & more
           </p>
         </div>
 
         {/* Search */}
-        <div className="max-w-md mx-auto mb-8 relative">
+        <div className="max-w-md mx-auto mb-6 sm:mb-8 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
@@ -102,10 +119,10 @@ const Products = () => {
 
         {/* Categories */}
         {categories.length > 1 && (
-          <div className="flex flex-wrap gap-2 justify-center mb-8">
+          <div className="flex flex-wrap gap-2 justify-center mb-6 sm:mb-8">
             <Badge
               variant={search === '' ? 'default' : 'secondary'}
-              className="cursor-pointer"
+              className="cursor-pointer text-xs"
               onClick={() => setSearch('')}
             >
               All
@@ -114,7 +131,7 @@ const Products = () => {
               <Badge
                 key={cat}
                 variant={search === cat ? 'default' : 'secondary'}
-                className="cursor-pointer"
+                className="cursor-pointer text-xs"
                 onClick={() => setSearch(cat)}
               >
                 {cat}
@@ -133,38 +150,40 @@ const Products = () => {
             <p className="text-muted-foreground">No products found.</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filtered.map((product) => (
               <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-soft group">
                 <Link to={`/products/${product.slug}`}>
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img src={product.image_url} alt={product.title} className="w-full h-28 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                      <Package className="w-12 h-12 text-primary/30" />
+                    <div className="w-full h-28 sm:h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                      <Package className="w-8 h-8 sm:w-12 sm:h-12 text-primary/30" />
                     </div>
                   )}
                 </Link>
-                <CardContent className="p-4">
-                  <Badge variant="secondary" className="mb-2 text-xs">{product.category}</Badge>
+                <CardContent className="p-3 sm:p-4">
+                  <Badge variant="secondary" className="mb-1.5 text-[10px] sm:text-xs">{product.category}</Badge>
                   <Link to={`/products/${product.slug}`}>
-                    <h3 className="font-display font-semibold text-lg mb-1 line-clamp-2 hover:text-primary transition-colors">
+                    <h3 className="font-display font-semibold text-xs sm:text-base mb-1 line-clamp-2 hover:text-primary transition-colors">
                       {product.title}
                     </h3>
                   </Link>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{product.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-lg">
-                      {product.price > 0 ? `₹${product.price}` : <span className="text-green-600">Free</span>}
-                    </span>
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" onClick={(e) => { e.preventDefault(); shareProduct(product.slug, product.title); }}>
-                        <Share2 className="w-4 h-4" />
-                      </Button>
-                      <Link to={`/products/${product.slug}`}>
-                        <Button size="sm" variant="gradient">View</Button>
-                      </Link>
-                    </div>
+                  <p className="text-[10px] sm:text-sm text-muted-foreground line-clamp-1 sm:line-clamp-2 mb-2">{product.description}</p>
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
+                    <span className="font-bold text-green-600 text-sm sm:text-lg">₹{product.offer_price || 299}</span>
+                    {(product.actual_price > 0) && (
+                      <span className="text-[10px] sm:text-sm text-muted-foreground line-through">₹{product.actual_price}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 sm:h-8 sm:w-8" onClick={(e) => { e.preventDefault(); shareProduct(product.slug, product.title); }}>
+                      <Share2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="gradient" className="h-7 text-[10px] sm:text-xs sm:h-8 flex-1 gap-1" onClick={(e) => handleDownload(product, e)}>
+                      <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <span className="hidden sm:inline">Download</span>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

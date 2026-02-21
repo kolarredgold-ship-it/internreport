@@ -17,7 +17,7 @@ import SharePopup from '@/components/SharePopup';
 import FloatingShareButton from '@/components/FloatingShareButton';
 import StatsCounter from '@/components/StatsCounter';
 import StickyBanner from '@/components/StickyBanner';
-import CourseraRecommendations from '@/components/CourseraRecommendations';
+
 const Index = () => {
   const {
     user
@@ -604,54 +604,57 @@ const Index = () => {
 
 
       {/* Digital Products Section */}
-      {featuredProducts.length > 0 && (
-        <section className="container mx-auto px-4 py-16">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
-              <Package className="w-4 h-4" />
-              <span className="text-sm font-medium">Digital Products</span>
-            </div>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
-              Premium Digital Resources
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Templates, prompts, ebooks, and more — instant download
-            </p>
+      <section className="container mx-auto px-4 py-16">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
+            <Package className="w-4 h-4" />
+            <span className="text-sm font-medium">Digital Products</span>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
+            Premium Digital Resources
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            2000+ templates, prompts, ebooks, bundles & more — instant download
+          </p>
+        </div>
+        {featuredProducts.length > 0 && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
             {featuredProducts.map((product: any) => (
               <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-soft group">
                 <Link to={`/products/${product.slug}`}>
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img src={product.image_url} alt={product.title} className="w-full h-28 sm:h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
-                    <div className="w-full h-40 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                      <Package className="w-10 h-10 text-primary/30" />
+                    <div className="w-full h-28 sm:h-40 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                      <Package className="w-8 h-8 sm:w-10 sm:h-10 text-primary/30" />
                     </div>
                   )}
                 </Link>
-                <CardContent className="p-4">
+                <CardContent className="p-3 sm:p-4">
                   <Link to={`/products/${product.slug}`}>
-                    <h3 className="font-display font-semibold line-clamp-2 hover:text-primary transition-colors mb-1">{product.title}</h3>
+                    <h3 className="font-display font-semibold text-sm sm:text-base line-clamp-2 hover:text-primary transition-colors mb-1">{product.title}</h3>
                   </Link>
-                  <p className="text-sm text-muted-foreground line-clamp-1 mb-2">{product.description}</p>
-                  <span className="font-bold">{product.price > 0 ? `₹${product.price}` : <span className="text-green-600">Free</span>}</span>
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-1 mb-2">{product.description}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-green-600 text-sm sm:text-base">₹{product.offer_price || 299}</span>
+                    {(product.actual_price > 0) && (
+                      <span className="text-xs text-muted-foreground line-through">₹{product.actual_price}</span>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-          <div className="text-center">
-            <Link to="/products">
-              <Button variant="outline" size="lg">
-                View All Products <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </section>
-      )}
+        )}
+        <div className="text-center">
+          <Link to="/products">
+            <Button variant="gradient" size="lg">
+              View All 2000+ Products <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
+      </section>
 
-      {/* Coursera Recommended Courses - Affiliate */}
-      <CourseraRecommendations />
 
       {/* Footer */}
       <footer className="border-t border-border/50 mt-20">

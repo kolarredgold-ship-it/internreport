@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, ArrowLeft, Download, Share2, ExternalLink, Package, Copy } from 'lucide-react';
+import { FileText, ArrowLeft, Download, Share2, Package, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Product {
@@ -14,9 +14,12 @@ interface Product {
   slug: string;
   description: string;
   price: number;
+  offer_price: number;
+  actual_price: number;
   image_url: string | null;
   download_url: string;
   category: string;
+  download_count: number;
   created_at: string;
 }
 
@@ -57,6 +60,15 @@ const ProductDetail = () => {
     toast({ title: 'Link Copied!' });
   };
 
+  const handleDownload = async () => {
+    if (!product) return;
+    await supabase
+      .from('digital_products')
+      .update({ download_count: (product.download_count || 0) + 1 } as any)
+      .eq('id', product.id);
+    window.open(product.download_url, '_blank', 'noopener,noreferrer');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen hero-gradient flex items-center justify-center">
@@ -67,13 +79,15 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen hero-gradient flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen hero-gradient flex flex-col items-center justify-center gap-4 px-4">
         <Package className="w-16 h-16 text-muted-foreground" />
         <h1 className="text-2xl font-bold">Product Not Found</h1>
         <Link to="/products"><Button><ArrowLeft className="w-4 h-4 mr-2" /> Browse Products</Button></Link>
       </div>
     );
   }
+
+  const discount = product.actual_price > 0 ? Math.round(((product.actual_price - (product.offer_price || 299)) / product.actual_price) * 100) : 0;
 
   return (
     <div className="min-h-screen hero-gradient">
@@ -88,12 +102,12 @@ const ProductDetail = () => {
 
       {/* Nav */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl gradient-bg flex items-center justify-center">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">InternReport.in</span>
+            <span className="font-display font-bold text-lg sm:text-xl">InternReport.in</span>
           </Link>
           <Link to="/products">
             <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> All Products</Button>
@@ -101,38 +115,42 @@ const ProductDetail = () => {
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <div className="grid md:grid-cols-2 gap-8">
+      <main className="container mx-auto px-3 sm:px-4 py-8 sm:py-12 max-w-4xl">
+        <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
           {/* Image */}
           <div>
             {product.image_url ? (
               <img src={product.image_url} alt={product.title} className="w-full rounded-2xl shadow-lg object-cover aspect-square" />
             ) : (
               <div className="w-full aspect-square rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                <Package className="w-24 h-24 text-primary/20" />
+                <Package className="w-20 h-20 sm:w-24 sm:h-24 text-primary/20" />
               </div>
             )}
           </div>
 
           {/* Details */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
               <Badge variant="secondary" className="mb-3">{product.category}</Badge>
-              <h1 className="font-display text-3xl font-bold mb-3">{product.title}</h1>
-              <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+              {discount > 0 && (
+                <Badge className="ml-2 bg-red-500 hover:bg-red-600">{discount}% OFF</Badge>
+              )}
+              <h1 className="font-display text-2xl sm:text-3xl font-bold mb-3">{product.title}</h1>
+              <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{product.description}</p>
             </div>
 
-            <div className="text-3xl font-bold">
-              {product.price > 0 ? `₹${product.price}` : <span className="text-green-600">Free</span>}
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl sm:text-4xl font-bold text-green-600">₹{product.offer_price || 299}</span>
+              {product.actual_price > 0 && (
+                <span className="text-lg text-muted-foreground line-through">₹{product.actual_price}</span>
+              )}
             </div>
 
             <div className="space-y-3">
-              <a href={product.download_url} target="_blank" rel="noopener noreferrer" className="block">
-                <Button variant="gradient" size="lg" className="w-full">
-                  <Download className="w-5 h-5 mr-2" />
-                  {product.price > 0 ? 'Buy & Download' : 'Download Now'}
-                </Button>
-              </a>
+              <Button variant="gradient" size="lg" className="w-full" onClick={handleDownload}>
+                <Download className="w-5 h-5 mr-2" />
+                Download Now
+              </Button>
 
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={shareProduct}>
@@ -146,10 +164,10 @@ const ProductDetail = () => {
 
             {/* Share URL display */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <p className="text-xs text-muted-foreground mb-1">Product Share Link</p>
                 <div className="flex items-center gap-2">
-                  <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
+                  <code className="text-[10px] sm:text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
                     {window.location.href}
                   </code>
                   <Button size="sm" variant="ghost" onClick={copyLink}>
