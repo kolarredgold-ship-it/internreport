@@ -14,7 +14,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Upload, Copy, Loader2, Package, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, Copy, Loader2, Package, Download, ImagePlus, Sparkles } from 'lucide-react';
 
 interface DigitalProduct {
   id: string;
@@ -41,6 +41,8 @@ const AdminProducts = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [generatingImages, setGeneratingImages] = useState(false);
+  const [imageProgress, setImageProgress] = useState({ current: 0, total: 0 });
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -159,6 +161,70 @@ const AdminProducts = () => {
     toast({ title: 'Link Copied!', description: url });
   };
 
+  const generateAllImages = async () => {
+    const productsWithoutImages = products.filter(p => !p.image_url);
+    if (productsWithoutImages.length === 0) {
+      toast({ title: 'All products already have images!' });
+      return;
+    }
+
+    setGeneratingImages(true);
+    setImageProgress({ current: 0, total: productsWithoutImages.length });
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < productsWithoutImages.length; i++) {
+      const product = productsWithoutImages[i];
+      setImageProgress({ current: i + 1, total: productsWithoutImages.length });
+
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-product-images', {
+          body: { productId: product.id, title: product.title },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        successCount++;
+      } catch (err: any) {
+        console.error(`Failed for ${product.title}:`, err);
+        failCount++;
+        // If rate limited, wait 10s then continue
+        if (err?.message?.includes('Rate limited') || err?.message?.includes('429')) {
+          toast({ title: 'Rate limited', description: 'Waiting 10s before continuing...', variant: 'destructive' });
+          await new Promise(r => setTimeout(r, 10000));
+        }
+      }
+
+      // Small delay between requests to avoid rate limiting
+      if (i < productsWithoutImages.length - 1) {
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    }
+
+    setGeneratingImages(false);
+    toast({
+      title: 'Image Generation Complete',
+      description: `${successCount} generated, ${failCount} failed`,
+    });
+    fetchProducts();
+  };
+
+  const generateSingleImage = async (product: DigitalProduct) => {
+    try {
+      toast({ title: 'Generating image...', description: product.title });
+      const { data, error } = await supabase.functions.invoke('generate-product-images', {
+        body: { productId: product.id, title: product.title },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: 'Image Generated!', description: product.title });
+      fetchProducts();
+    } catch (err: any) {
+      toast({ title: 'Failed', description: err.message, variant: 'destructive' });
+    }
+  };
+
   const totalDownloads = products.reduce((sum, p) => sum + (p.download_count || 0), 0);
 
   if (loading) return <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin" /></div>;
@@ -174,9 +240,22 @@ const AdminProducts = () => {
             <Download className="w-4 h-4" /> Total Downloads: {totalDownloads}
           </p>
         </div>
-        <Button onClick={() => { resetForm(); setShowForm(true); }}>
-          <Plus className="w-4 h-4 mr-2" /> Add Product
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={generateAllImages}
+            disabled={generatingImages}
+          >
+            {generatingImages ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating {imageProgress.current}/{imageProgress.total}</>
+            ) : (
+              <><Sparkles className="w-4 h-4 mr-2" /> Generate All Images</>
+            )}
+          </Button>
+          <Button onClick={() => { resetForm(); setShowForm(true); }}>
+            <Plus className="w-4 h-4 mr-2" /> Add Product
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -228,6 +307,11 @@ const AdminProducts = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
+                      {!product.image_url && (
+                        <Button size="sm" variant="ghost" onClick={() => generateSingleImage(product)} title="Generate AI Image">
+                          <ImagePlus className="w-3.5 h-3.5 text-primary" />
+                        </Button>
+                      )}
                       <Button size="sm" variant="ghost" onClick={() => copyShareLink(product.slug)}><Copy className="w-3.5 h-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => openEditForm(product)}><Pencil className="w-3.5 h-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => handleDelete(product.id)} disabled={deleting === product.id}>

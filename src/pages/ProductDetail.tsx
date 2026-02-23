@@ -5,8 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, ArrowLeft, Download, Share2, Package, Copy } from 'lucide-react';
+import { FileText, ArrowLeft, ShoppingCart, Share2, Package, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import PaymentModal from '@/components/PaymentModal';
 
 interface Product {
   id: string;
@@ -28,6 +30,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [showPayment, setShowPayment] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -60,13 +64,16 @@ const ProductDetail = () => {
     toast({ title: 'Link Copied!' });
   };
 
-  const handleDownload = async () => {
-    if (!product) return;
-    await supabase
-      .from('digital_products')
-      .update({ download_count: (product.download_count || 0) + 1 } as any)
-      .eq('id', product.id);
-    window.open(product.download_url, '_blank', 'noopener,noreferrer');
+  const handleBuy = () => {
+    if (!user) {
+      toast({ title: 'Login Required', description: 'Please login to purchase this product.', variant: 'destructive' });
+      return;
+    }
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    toast({ title: 'Payment Submitted!', description: 'You will receive the download link after verification.' });
   };
 
   if (loading) {
@@ -109,9 +116,16 @@ const ProductDetail = () => {
             </div>
             <span className="font-display font-bold text-lg sm:text-xl">InternReport.in</span>
           </Link>
-          <Link to="/products">
-            <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> All Products</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {!user && (
+              <Link to="/auth">
+                <Button variant="ghost" size="sm">Login</Button>
+              </Link>
+            )}
+            <Link to="/products">
+              <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> All Products</Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -147,9 +161,9 @@ const ProductDetail = () => {
             </div>
 
             <div className="space-y-3">
-              <Button variant="gradient" size="lg" className="w-full" onClick={handleDownload}>
-                <Download className="w-5 h-5 mr-2" />
-                Download Now
+              <Button variant="gradient" size="lg" className="w-full" onClick={handleBuy}>
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Buy Now — ₹{product.offer_price || 299}
               </Button>
 
               <div className="flex gap-2">
@@ -179,6 +193,19 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
+
+      {/* Payment Modal */}
+      {product && user && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={() => setShowPayment(false)}
+          amount={product.offer_price || 299}
+          reportId={product.id}
+          userId={user.id}
+          onSuccess={handlePaymentSuccess}
+          paymentType="topup"
+        />
+      )}
     </div>
   );
 };

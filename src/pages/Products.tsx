@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { FileText, Search, Package, Share2, ArrowLeft, Download } from 'lucide-react';
+import { FileText, Search, Package, Share2, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import PaymentModal from '@/components/PaymentModal';
 
 interface Product {
   id: string;
@@ -28,6 +30,9 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [paymentProduct, setPaymentProduct] = useState<Product | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -58,15 +63,19 @@ const Products = () => {
     }
   };
 
-  const handleDownload = async (product: Product, e: React.MouseEvent) => {
+  const handleBuy = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Track download
-    await supabase
-      .from('digital_products')
-      .update({ download_count: (product.download_count || 0) + 1 } as any)
-      .eq('id', product.id);
-    window.open(product.download_url, '_blank', 'noopener,noreferrer');
+    if (!user) {
+      toast({ title: 'Login Required', description: 'Please login to purchase products.', variant: 'destructive' });
+      return;
+    }
+    setPaymentProduct(product);
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    toast({ title: 'Payment Submitted!', description: 'You will receive the download link after verification.' });
   };
 
   const categories = [...new Set(products.map(p => p.category))];
@@ -87,9 +96,16 @@ const Products = () => {
             </div>
             <span className="font-display font-bold text-lg sm:text-xl">InternReport.in</span>
           </Link>
-          <Link to="/">
-            <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Home</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            {!user && (
+              <Link to="/auth">
+                <Button variant="ghost" size="sm">Login</Button>
+              </Link>
+            )}
+            <Link to="/">
+              <Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Home</Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -180,9 +196,9 @@ const Products = () => {
                     <Button size="sm" variant="ghost" className="h-7 w-7 p-0 sm:h-8 sm:w-8" onClick={(e) => { e.preventDefault(); shareProduct(product.slug, product.title); }}>
                       <Share2 className="w-3.5 h-3.5" />
                     </Button>
-                    <Button size="sm" variant="gradient" className="h-7 text-[10px] sm:text-xs sm:h-8 flex-1 gap-1" onClick={(e) => handleDownload(product, e)}>
-                      <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      <span className="hidden sm:inline">Download</span>
+                    <Button size="sm" variant="gradient" className="h-7 text-[10px] sm:text-xs sm:h-8 flex-1 gap-1" onClick={(e) => handleBuy(product, e)}>
+                      <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <span>Buy Now</span>
                     </Button>
                   </div>
                 </CardContent>
@@ -191,6 +207,19 @@ const Products = () => {
           </div>
         )}
       </main>
+
+      {/* Payment Modal */}
+      {paymentProduct && user && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={() => { setShowPayment(false); setPaymentProduct(null); }}
+          amount={paymentProduct.offer_price || 299}
+          reportId={paymentProduct.id}
+          userId={user.id}
+          onSuccess={handlePaymentSuccess}
+          paymentType="topup"
+        />
+      )}
     </div>
   );
 };
