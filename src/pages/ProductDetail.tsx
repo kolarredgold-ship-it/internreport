@@ -201,9 +201,10 @@ const ProductDetail = () => {
           onClose={() => setShowPayment(false)}
           amount={product.offer_price || 299}
           reportId={null}
+          productId={product.id}
           userId={user.id}
           onSuccess={handlePaymentSuccess}
-          paymentType="topup"
+          paymentType="product"
         />
       )}
     </div>

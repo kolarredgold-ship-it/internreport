@@ -13,12 +13,13 @@ interface PaymentModalProps {
   onClose: () => void;
   amount: number;
   reportId?: string | null;
+  productId?: string | null;
   userId: string;
   onSuccess: () => void;
-  paymentType?: 'report' | 'topup';
+  paymentType?: 'report' | 'topup' | 'product';
 }
 
-const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess, paymentType = 'report' }: PaymentModalProps) => {
+const PaymentModal = ({ isOpen, onClose, amount, reportId, productId, userId, onSuccess, paymentType = 'report' }: PaymentModalProps) => {
   const { toast } = useToast();
   const [step, setStep] = useState<'qr' | 'form' | 'submitted'>('qr');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
@@ -181,6 +182,7 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, userId, onSuccess, pa
         .insert({
           user_id: userId,
           report_id: reportId || null,
+          product_id: productId || null,
           amount: amount,
           currency: 'INR',
           payment_type: paymentType,

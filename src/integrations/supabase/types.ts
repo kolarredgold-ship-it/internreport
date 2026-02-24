@@ -132,6 +132,7 @@ export type Database = {
           payer_mobile: string | null
           payer_name: string | null
           payment_type: string
+          product_id: string | null
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
           report_id: string | null
@@ -152,6 +153,7 @@ export type Database = {
           payer_mobile?: string | null
           payer_name?: string | null
           payment_type?: string
+          product_id?: string | null
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           report_id?: string | null
@@ -172,6 +174,7 @@ export type Database = {
           payer_mobile?: string | null
           payer_name?: string | null
           payment_type?: string
+          product_id?: string | null
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
           report_id?: string | null
@@ -184,6 +187,13 @@ export type Database = {
           verified_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "payments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payments_report_id_fkey"
             columns: ["report_id"]

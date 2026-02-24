@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Shield,
   Wallet,
-  Gift
+  Gift,
+  ShoppingBag
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReferButton from '@/components/ReferButton';
@@ -276,7 +277,7 @@ const Dashboard = () => {
         )}
 
         {/* Action Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           <Card className="border-0 shadow-soft hover:shadow-lg transition-shadow cursor-pointer group">
             <Link to="/create-report">
               <CardHeader>
@@ -310,6 +311,25 @@ const Dashboard = () => {
               <CardContent>
                 <Button variant="outline" className="w-full">
                   View Reports
+                </Button>
+              </CardContent>
+            </Link>
+          </Card>
+
+          <Card className="border-0 shadow-soft hover:shadow-lg transition-shadow cursor-pointer group">
+            <Link to="/my-purchases">
+              <CardHeader>
+                <div className="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <ShoppingBag className="w-7 h-7 text-green-600" />
+                </div>
+                <CardTitle className="font-display">My Purchases</CardTitle>
+                <CardDescription>
+                  View and download your purchased digital products
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full">
+                  View Purchases
                 </Button>
               </CardContent>
             </Link>
