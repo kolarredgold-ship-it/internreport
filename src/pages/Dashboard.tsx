@@ -151,7 +151,7 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const remainingGenerations = 3 - (profile?.generations_used || 0);
+  const remainingGenerations = 1 - (profile?.generations_used || 0);
   const needsTopUp = remainingGenerations <= 0;
 
   if (authLoading || loading) {
@@ -264,7 +264,7 @@ const Dashboard = () => {
                 <div>
                   <h3 className="font-display font-semibold mb-1">Generation Limit Reached</h3>
                   <p className="text-muted-foreground text-sm mb-4">
-                    You've used all 3 free generations. Top up to continue creating reports.
+                    You've used your 1 free generation. Top up to continue creating reports.
                   </p>
                   <Button variant="gradient">
                     Top Up ₹499 for 5 Reports

@@ -173,9 +173,9 @@ const UserDetailsDialog = ({
             <div>
               <p className="text-xs text-muted-foreground">Generation Usage</p>
               <p className="font-medium">
-                {user.generations_used || 0} / 3 used 
+                {user.generations_used || 0} / 1 used 
                 <span className="text-muted-foreground ml-1">
-                  ({3 - (user.generations_used || 0)} remaining)
+                  ({1 - (user.generations_used || 0)} remaining)
                 </span>
               </p>
             </div>

@@ -420,7 +420,7 @@ const Index = () => {
         </div>
         <div className="text-center mt-8">
           <p className="text-muted-foreground text-sm">
-            Need more than 3 generations? Top up for ₹499 for 3 additional reports.
+            Need more generations? Top up for ₹499 for 5 additional reports.
           </p>
         </div>
       </section>
