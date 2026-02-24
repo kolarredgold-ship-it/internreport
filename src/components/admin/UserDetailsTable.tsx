@@ -165,7 +165,7 @@ const UserDetailsTable = ({
                           <FileText className="w-3 h-3 text-muted-foreground" />
                           <span className="font-medium">{reports}</span>
                           <span className="text-muted-foreground text-xs">
-                            ({user.generations_used || 0}/3)
+                            ({user.generations_used || 0}/1)
                           </span>
                         </div>
                       </TableCell>

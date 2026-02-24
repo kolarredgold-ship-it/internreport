@@ -1858,11 +1858,11 @@ const CreateReport = () => {
                         <CreditCard className="w-6 h-6 text-amber-600" />
                       </div>
                       <div className="bg-destructive/10 text-destructive rounded-lg px-4 py-2 mb-3 inline-block">
-                        <span className="font-bold text-lg">3/3 Generations Used</span>
+                        <span className="font-bold text-lg">1/1 Generations Used</span>
                       </div>
                       <h3 className="font-semibold text-lg mb-1">Generation Limit Reached</h3>
                       <p className="text-muted-foreground text-sm mb-3">
-                        You have reached your limit of 3 free report generations. Top up to continue generating reports.
+                        You have reached your limit of 1 free report generation. Top up to continue generating reports.
                       </p>
                       <div className="bg-primary/10 rounded-lg p-4 mb-4">
                         <p className="font-display text-2xl font-bold text-primary">₹499</p>
@@ -1897,7 +1897,7 @@ const CreateReport = () => {
                       <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                       <div>
                         <p className="font-semibold text-emerald-700 dark:text-emerald-300">Ready to Generate</p>
-                        <p className="text-xs text-muted-foreground">{generationsUsed}/3 generations used</p>
+                        <p className="text-xs text-muted-foreground">{generationsUsed}/1 generations used</p>
                       </div>
                     </div>
                     <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
