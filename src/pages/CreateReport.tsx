@@ -348,7 +348,12 @@ const CreateReport = () => {
       const hasVerifiedPayment = paymentData && paymentData.length > 0;
       setHasApprovedPayment(hasVerifiedPayment);
 
-      if (hasVerifiedPayment && usedCount < 3) {
+      // First generation is free - no payment needed
+      if (usedCount < 1) {
+        setCanGenerate(true);
+        setNeedsTopup(false);
+        setPaymentStatus('none');
+      } else if (hasVerifiedPayment && usedCount < 3) {
         setCanGenerate(true);
         setNeedsTopup(false);
         setPaymentStatus('verified');
@@ -385,7 +390,7 @@ const CreateReport = () => {
           setPaymentStatus('verified');
         }
       } else {
-        // No verified payment - check for pending
+        // No verified payment and free generation used - check for pending
         setCanGenerate(false);
         setNeedsTopup(false);
 
