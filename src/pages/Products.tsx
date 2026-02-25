@@ -83,9 +83,12 @@ const Products = () => {
   return (
     <div className="min-h-screen hero-gradient">
       <Helmet>
-        <title>2000+ Digital Products | InternReport.in</title>
-        <meta name="description" content="Browse 2000+ premium digital products - templates, prompts, ebooks, courses and more. Offer price ₹299 (worth ₹14,999)." />
+        <title>2000+ Digital Products | Work From Home & Earn | InternReport.in</title>
+        <meta name="description" content="Browse 2000+ premium digital products — resell and earn from home! Templates, prompts, ebooks, courses & more. Start your work from home business. Need a digital products website like this? Contact us!" />
+        <meta name="keywords" content="work from home, earn from home, resell digital products, digital products business, online earning, passive income, digital products website, buy and resell, home business ideas" />
         <link rel="canonical" href="https://internreport.in/products" />
+        <meta property="og:title" content="2000+ Digital Products | Work From Home & Earn Money | InternReport.in" />
+        <meta property="og:description" content="Buy & resell 2000+ digital products. Start earning from home! Need a website like this? Contact us." />
       </Helmet>
 
       {/* Nav */}
