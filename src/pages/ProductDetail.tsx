@@ -99,10 +99,11 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen hero-gradient">
       <Helmet>
-        <title>{product.title} | InternReport.in</title>
-        <meta name="description" content={product.description.slice(0, 160)} />
-        <meta property="og:title" content={product.title} />
-        <meta property="og:description" content={product.description.slice(0, 160)} />
+        <title>{product.title} | Resell & Earn From Home | InternReport.in</title>
+        <meta name="description" content={`${product.description.slice(0, 100)} — Buy & resell this digital product. Work from home & earn! Need a digital products website? Contact us.`} />
+        <meta name="keywords" content="work from home, earn from home, resell digital products, digital products business, online earning, passive income" />
+        <meta property="og:title" content={`${product.title} | Resell & Earn From Home`} />
+        <meta property="og:description" content={`${product.description.slice(0, 100)} — Resell and earn from home!`} />
         {product.image_url && <meta property="og:image" content={product.image_url} />}
         <link rel="canonical" href={`https://internreport.in/products/${product.slug}`} />
       </Helmet>
