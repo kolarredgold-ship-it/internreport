@@ -85,6 +85,7 @@ const Products = () => {
       <Helmet>
         <title>2000+ Digital Products | InternReport.in</title>
         <meta name="description" content="Browse 2000+ premium digital products - templates, prompts, ebooks, courses and more. Offer price ₹299 (worth ₹14,999)." />
+        <link rel="canonical" href="https://internreport.in/products" />
       </Helmet>
 
       {/* Nav */}
