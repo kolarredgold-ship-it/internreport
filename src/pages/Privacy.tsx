@@ -1,10 +1,16 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, ArrowLeft } from 'lucide-react';
 
 const Privacy = () => {
   return (
     <div className="min-h-screen hero-gradient">
+      <Helmet>
+        <title>Privacy Policy | InternReport.in</title>
+        <meta name="description" content="Learn how InternReport.in collects, uses, and protects your personal information." />
+        <link rel="canonical" href="https://internreport.in/privacy" />
+      </Helmet>
       <header className="sticky top-0 z-50 glass-effect border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
