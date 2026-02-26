@@ -51,7 +51,7 @@ const initialFormData: FormData = {
 
 // Chapters to generate (in order) - function to allow dynamic title for Chapter 1
 const getChapters = (internshipTitle?: string) => [
-  { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, TOC' },
+  { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, Executive Summary, TOC' },
   { key: '1', label: 'Chapter I', description: 'Introduction (5-8 pages)' },
   { key: '2', label: 'Chapter II', description: 'Description of the Organisation (8-12 pages)' },
   { key: '3', label: 'Chapter III', description: 'Experiential Learning (6-10 pages)' },
@@ -1310,12 +1310,13 @@ const CreateReport = () => {
         const isH2 = trimmed.startsWith('## ');
         const isH3 = trimmed.startsWith('### ');
         const isChapterHeading = (text: string) => /chapter\s/i.test(text);
+        const isFrontMatterHeading = (text: string) => /^(EXECUTIVE SUMMARY|ABSTRACT|TABLE OF CONTENTS|LIST OF|BIBLIOGRAPHY|ANNEXURES)/i.test(text);
 
         if (isH1 || isH2) {
           const headingText = trimmed.replace(/^#{1,2}\s/, '');
           headingCount++;
           // Add page break before each chapter
-          if (isH1 && isChapterHeading(headingText)) {
+          if (isH1 && (isChapterHeading(headingText) || isFrontMatterHeading(headingText))) {
             children.push(new Paragraph({ children: [new PageBreak()] }));
           }
           children.push(

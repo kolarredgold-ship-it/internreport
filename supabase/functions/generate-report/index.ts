@@ -189,16 +189,20 @@
  # ACKNOWLEDGEMENT
  (Write acknowledgement - 150-180 words thanking institution, guide, company supervisors, colleagues, family)
  
- # ABSTRACT
- (Write abstract - 200-250 words summarizing the internship experience, objectives, methodology, findings)
- 
- # TABLE OF CONTENTS
+# ABSTRACT
+(Write abstract - 200-250 words summarizing the internship experience, objectives, methodology, findings)
+
+# EXECUTIVE SUMMARY
+(Write executive summary - 300-400 words providing a comprehensive overview of the entire internship report. Include: purpose of the internship, company background briefly, key responsibilities handled, major skills acquired, significant findings, and overall conclusions. This should give readers a complete snapshot of the report without reading the full document. Write in third person, formal academic tone.)
+
+# TABLE OF CONTENTS
 (Create a simple, clean table of contents WITHOUT page numbers in this exact format:
 
 Certificate
 Declaration
 Acknowledgement
 Abstract
+Executive Summary
 
 CHAPTER I: INTRODUCTION
    Background of the Study
