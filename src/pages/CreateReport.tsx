@@ -1321,9 +1321,10 @@ const CreateReport = () => {
           }
           children.push(
             new Paragraph({
-              text: headingText,
+              children: [new TextRun({ text: headingText, bold: true, size: isH1 ? 32 : 28 })],
               heading: isH1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2,
               spacing: { before: isH1 ? 400 : 300, after: isH1 ? 200 : 150 },
+              alignment: isH1 ? AlignmentType.CENTER : AlignmentType.LEFT,
             })
           );
           // Insert image after certain headings
@@ -1351,15 +1352,63 @@ const CreateReport = () => {
         } else if (isH3) {
           children.push(
             new Paragraph({
-              text: trimmed.replace('### ', ''),
+              children: [new TextRun({ text: trimmed.replace('### ', ''), bold: true, size: 24 })],
               heading: HeadingLevel.HEADING_3,
               spacing: { before: 200, after: 100 },
             })
           );
+        } else if (trimmed.startsWith('• ') || trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+          // Bullet points - highlight with bold bullet marker
+          const bulletText = trimmed.replace(/^[•\-\*]\s/, '');
+          // Check if bullet has a colon (key: value pattern) - bold the key part
+          const colonIndex = bulletText.indexOf(':');
+          if (colonIndex > 0 && colonIndex < 60) {
+            const keyPart = bulletText.substring(0, colonIndex + 1);
+            const valuePart = bulletText.substring(colonIndex + 1);
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({ text: '• ', size: 24 }),
+                  new TextRun({ text: keyPart, bold: true, size: 24 }),
+                  new TextRun({ text: valuePart, size: 24 }),
+                ],
+                spacing: { after: 120 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { left: 720 },
+              })
+            );
+          } else {
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({ text: '• ', size: 24 }),
+                  new TextRun({ text: bulletText, size: 24 }),
+                ],
+                spacing: { after: 120 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { left: 720 },
+              })
+            );
+          }
         } else {
+          // Parse inline bold (**text**) and render with bold TextRuns
+          const boldPattern = /\*\*(.*?)\*\*/g;
+          const parts: { text: string; bold: boolean }[] = [];
+          let lastIndex = 0;
+          let match;
+          while ((match = boldPattern.exec(trimmed)) !== null) {
+            if (match.index > lastIndex) {
+              parts.push({ text: trimmed.slice(lastIndex, match.index), bold: false });
+            }
+            parts.push({ text: match[1], bold: true });
+            lastIndex = match.index + match[0].length;
+          }
+          if (lastIndex < trimmed.length) {
+            parts.push({ text: trimmed.slice(lastIndex), bold: false });
+          }
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: trimmed, size: 24 })],
+              children: parts.map(p => new TextRun({ text: p.text, bold: p.bold, size: 24 })),
               spacing: { after: 200 },
               alignment: AlignmentType.JUSTIFIED,
             })
