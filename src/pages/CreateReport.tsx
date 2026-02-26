@@ -1321,7 +1321,7 @@ const CreateReport = () => {
           }
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: headingText, bold: true, size: isH1 ? 32 : 28 })],
+              children: [new TextRun({ text: headingText, bold: true, underline: { type: 'single' }, size: isH1 ? 32 : 28 })],
               heading: isH1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2,
               spacing: { before: isH1 ? 400 : 300, after: isH1 ? 200 : 150 },
               alignment: isH1 ? AlignmentType.CENTER : AlignmentType.LEFT,
@@ -1352,11 +1352,45 @@ const CreateReport = () => {
         } else if (isH3) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: trimmed.replace('### ', ''), bold: true, size: 24 })],
+              children: [new TextRun({ text: trimmed.replace('### ', ''), bold: true, underline: { type: 'single' }, size: 24 })],
               heading: HeadingLevel.HEADING_3,
               spacing: { before: 200, after: 100 },
             })
           );
+        } else if (/^\d+[\.\)]\s/.test(trimmed)) {
+          // Numbered lists
+          const numberMatch = trimmed.match(/^(\d+[\.\)])\s(.*)/)!;
+          const numberLabel = numberMatch[1];
+          const itemText = numberMatch[2];
+          const colonIdx = itemText.indexOf(':');
+          if (colonIdx > 0 && colonIdx < 60) {
+            const keyPart = itemText.substring(0, colonIdx + 1);
+            const valuePart = itemText.substring(colonIdx + 1);
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({ text: `${numberLabel} `, size: 24 }),
+                  new TextRun({ text: keyPart, bold: true, size: 24 }),
+                  new TextRun({ text: valuePart, size: 24 }),
+                ],
+                spacing: { after: 120 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { left: 720 },
+              })
+            );
+          } else {
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({ text: `${numberLabel} `, size: 24 }),
+                  new TextRun({ text: itemText, size: 24 }),
+                ],
+                spacing: { after: 120 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { left: 720 },
+              })
+            );
+          }
         } else if (trimmed.startsWith('• ') || trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           // Bullet points - highlight with bold bullet marker
           const bulletText = trimmed.replace(/^[•\-\*]\s/, '');
