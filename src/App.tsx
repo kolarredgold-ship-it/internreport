@@ -21,6 +21,9 @@ import NotFound from "./pages/NotFound";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import MyPurchases from "./pages/MyPurchases";
+import AIModule from "./pages/AIModule";
+import AIReportGenerator from "./pages/AIReportGenerator";
+import AIMockInterview from "./pages/AIMockInterview";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +51,9 @@ const App = () => (
               <Route path="/products" element={<Products />} />
               <Route path="/products/:slug" element={<ProductDetail />} />
               <Route path="/my-purchases" element={<MyPurchases />} />
+              <Route path="/ai" element={<AIModule />} />
+              <Route path="/ai/report-generator" element={<AIReportGenerator />} />
+              <Route path="/ai/mock-interview" element={<AIMockInterview />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

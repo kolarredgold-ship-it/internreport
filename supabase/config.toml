@@ -42,3 +42,9 @@ verify_jwt = false
 
 [functions.generate-product-images]
 verify_jwt = false
+
+[functions.ai-report-content]
+verify_jwt = false
+
+[functions.ai-mock-interview]
+verify_jwt = false

@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_usage_log: {
+        Row: {
+          created_at: string
+          feature: string
+          id: string
+          model: string
+          tokens_used: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature: string
+          id?: string
+          model?: string
+          tokens_used?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feature?: string
+          id?: string
+          model?: string
+          tokens_used?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           category: string
@@ -119,6 +146,42 @@ export type Database = {
           slug?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      mock_interview_results: {
+        Row: {
+          ai_feedback: string | null
+          ai_score: number
+          ai_suggestions: string | null
+          created_at: string
+          id: string
+          question: string
+          role_or_topic: string
+          user_answer: string
+          user_id: string
+        }
+        Insert: {
+          ai_feedback?: string | null
+          ai_score?: number
+          ai_suggestions?: string | null
+          created_at?: string
+          id?: string
+          question: string
+          role_or_topic: string
+          user_answer: string
+          user_id: string
+        }
+        Update: {
+          ai_feedback?: string | null
+          ai_score?: number
+          ai_suggestions?: string | null
+          created_at?: string
+          id?: string
+          question?: string
+          role_or_topic?: string
+          user_answer?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -254,6 +317,45 @@ export type Database = {
         }
         Relationships: []
       }
+      question_bank: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          created_by: string | null
+          difficulty: string
+          id: string
+          question: string
+          subcategory: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          difficulty?: string
+          id?: string
+          question: string
+          subcategory?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          difficulty?: string
+          id?: string
+          question?: string
+          subcategory?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       referrals: {
         Row: {
           bonus_amount: number | null
@@ -354,6 +456,45 @@ export type Database = {
           student_name?: string
           topic_specialization?: string
           university?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          last_accessed: string
+          module: string
+          questions_attempted: number
+          questions_correct: number
+          subcategory: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          last_accessed?: string
+          module: string
+          questions_attempted?: number
+          questions_correct?: number
+          subcategory?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          last_accessed?: string
+          module?: string
+          questions_attempted?: number
+          questions_correct?: number
+          subcategory?: string
           updated_at?: string
           user_id?: string
         }
