@@ -21,7 +21,8 @@ import {
   Key,
   Loader2,
   LayoutDashboard,
-  Package
+  Package,
+  Brain
 } from 'lucide-react';
 import {
   Table,
@@ -47,6 +48,7 @@ import AdminStats from '@/components/admin/AdminStats';
 import UserDetailsTable from '@/components/admin/UserDetailsTable';
 import UserDetailsDialog from '@/components/admin/UserDetailsDialog';
 import AdminProducts from '@/components/admin/AdminProducts';
+import AdminQuestions from '@/components/admin/AdminQuestions';
 
 interface Payment {
   id: string;
@@ -784,6 +786,10 @@ const Admin = () => {
               <Package className="w-4 h-4" />
               Products
             </TabsTrigger>
+            <TabsTrigger value="ai-questions" className="gap-2">
+              <Brain className="w-4 h-4" />
+              AI Questions
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab with User Details */}
@@ -1114,6 +1120,10 @@ const Admin = () => {
 
           <TabsContent value="products" className="space-y-6">
             <AdminProducts />
+          </TabsContent>
+
+          <TabsContent value="ai-questions" className="space-y-6">
+            <AdminQuestions />
           </TabsContent>
         </Tabs>
       </main>
