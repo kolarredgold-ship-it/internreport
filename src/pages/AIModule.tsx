@@ -217,10 +217,10 @@ const AIModule = () => {
           </Card>
 
           {/* Card 2 - Mock Interview */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-soft overflow-hidden animate-scale-in" style={{ animationDelay: '100ms' }}>
+          <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-soft overflow-hidden animate-scale-in border-l-4 border-l-emerald-500" style={{ animationDelay: '100ms' }}>
             <CardContent className="p-8 flex flex-col h-full">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-primary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Brain className="w-8 h-8 text-primary-foreground" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Brain className="w-8 h-8 text-white" />
               </div>
               <h3 className="font-display text-2xl font-bold mb-4">AI Mock Interview Training</h3>
               <ul className="space-y-3 mb-8 flex-1">
@@ -231,13 +231,13 @@ const AIModule = () => {
                   { icon: Brain, text: 'AI feedback & scoring' },
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                    <item.icon className="w-4 h-4 text-accent flex-shrink-0" />
+                    <item.icon className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     <span>{item.text}</span>
                   </li>
                 ))}
               </ul>
               <Link to={user ? "/ai/mock-interview" : "/auth?redirect=/ai/mock-interview"}>
-                <Button size="lg" className="w-full bg-gradient-to-r from-accent to-primary text-primary-foreground hover:opacity-90">
+                <Button size="lg" className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700">
                   Start Mock Interview Training
                 </Button>
               </Link>
