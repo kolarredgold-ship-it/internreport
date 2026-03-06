@@ -74,7 +74,7 @@ const AIModule = () => {
                   </li>
                 ))}
               </ul>
-              <Link to={user ? "/ai/report-generator" : "/auth?redirect=/ai/report-generator"}>
+              <Link to={user ? "/create-report" : "/auth?redirect=/create-report"}>
                 <Button variant="gradient" size="lg" className="w-full">
                   Start Report Generator
                 </Button>
