@@ -152,7 +152,7 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const remainingGenerations = 1 - (profile?.generations_used || 0);
+  const remainingGenerations = Math.max(0, 1 - (profile?.generations_used || 0));
   const needsTopUp = remainingGenerations <= 0;
 
   if (authLoading || loading) {

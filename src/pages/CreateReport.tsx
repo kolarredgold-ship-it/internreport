@@ -348,51 +348,20 @@ const CreateReport = () => {
       const hasVerifiedPayment = paymentData && paymentData.length > 0;
       setHasApprovedPayment(hasVerifiedPayment);
 
-      // First generation is free - no payment needed
+      // Simple logic: generations_used < 1 means can generate
+      // After top-up, admin subtracts 3 from generations_used, so it goes below 1 again
       if (usedCount < 1) {
         setCanGenerate(true);
         setNeedsTopup(false);
-        setPaymentStatus('none');
-      } else if (hasVerifiedPayment && usedCount < 3) {
-        setCanGenerate(true);
-        setNeedsTopup(false);
-        setPaymentStatus('verified');
-      } else if (hasVerifiedPayment && usedCount >= 3) {
-        const { data: topupPayments } = await supabase
-          .from('payments')
-          .select('id, created_at')
-          .eq('user_id', user?.id)
-          .eq('status', 'verified')
-          .eq('payment_type', 'topup')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (topupPayments && topupPayments.length > 0) {
-          const { count: reportsAfterTopup } = await supabase
-            .from('reports')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user?.id)
-            .eq('status', 'completed')
-            .gt('created_at', topupPayments[0].created_at);
-
-          if ((reportsAfterTopup || 0) < 3) {
-            setCanGenerate(true);
-            setNeedsTopup(false);
-            setPaymentStatus('verified');
-          } else {
-            setCanGenerate(false);
-            setNeedsTopup(true);
-            setPaymentStatus('verified');
-          }
-        } else {
-          setCanGenerate(false);
-          setNeedsTopup(true);
+        if (hasVerifiedPayment) {
           setPaymentStatus('verified');
+        } else {
+          setPaymentStatus('none');
         }
       } else {
-        // No verified payment and free generation used - check for pending
+        // Generation limit reached - check for pending payment
         setCanGenerate(false);
-        setNeedsTopup(false);
+        setNeedsTopup(true);
 
         const { data: pendingPayment } = await supabase
           .from('payments')
@@ -407,7 +376,7 @@ const CreateReport = () => {
             setPendingReportId(pendingPayment[0].report_id);
           }
         } else {
-          setPaymentStatus('none');
+          setPaymentStatus(hasVerifiedPayment ? 'verified' : 'none');
         }
       }
     } catch (error) {
