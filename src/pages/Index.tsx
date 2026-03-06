@@ -248,11 +248,6 @@ const Index = () => {
             <span className="font-display font-bold text-xl">InternReport.in</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/ai">
-              <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
-                <Sparkles className="w-4 h-4" /> AI Platform
-              </Button>
-            </Link>
             <WalletHeader />
             {user ? <Link to="/dashboard">
                 <Button variant="gradient">Dashboard</Button>
