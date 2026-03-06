@@ -25,7 +25,7 @@ const AIModule = () => {
             <span className="font-display font-bold text-xl">InternReport.in</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link to="/">
+            <Link to="/home">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-1" /> Home
               </Button>
