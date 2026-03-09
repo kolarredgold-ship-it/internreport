@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award, Package, ArrowRight } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award, Package, ArrowRight, Brain, MessageSquare, Code, Briefcase } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
 import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
@@ -390,8 +390,80 @@ const Index = () => {
         </div>
       </section>
 
+      {/* AI Mock Interview Training */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="text-center mb-12 animate-slide-up">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-medium">AI-Powered Platform</span>
+          </div>
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
+            AI Mock Interview Training
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Prepare for interviews with 700+ questions, AI-powered feedback, and real-time scoring
+          </p>
+        </div>
 
-      {/* Pricing */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Card 1 - Report Generator */}
+          <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-soft overflow-hidden animate-scale-in">
+            <CardContent className="p-8 flex flex-col h-full">
+              <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <FileText className="w-8 h-8 text-primary-foreground" />
+              </div>
+              <h3 className="font-display text-2xl font-bold mb-4">AI Report Generator</h3>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  { icon: BookOpen, text: 'Generate internship reports' },
+                  { icon: Sparkles, text: 'Improve report content' },
+                  { icon: FileText, text: 'Create project documentation' },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-muted-foreground">
+                    <item.icon className="w-4 h-4 text-primary flex-shrink-0" />
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to={user ? "/create-report" : "/auth?redirect=/create-report"}>
+                <Button variant="gradient" size="lg" className="w-full">
+                  Start Report Generator
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Card 2 - Mock Interview */}
+          <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-soft overflow-hidden animate-scale-in border-l-4 border-l-accent" style={{ animationDelay: '100ms' }}>
+            <CardContent className="p-8 flex flex-col h-full">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Brain className="w-8 h-8 text-accent-foreground" />
+              </div>
+              <h3 className="font-display text-2xl font-bold mb-4">AI Mock Interview Training</h3>
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  { icon: MessageSquare, text: 'Interview preparation' },
+                  { icon: Code, text: 'Programming interview questions' },
+                  { icon: Briefcase, text: 'Job readiness training' },
+                  { icon: Brain, text: 'AI feedback & scoring' },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-muted-foreground">
+                    <item.icon className="w-4 h-4 text-accent flex-shrink-0" />
+                    <span>{item.text}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link to={user ? "/ai/mock-interview" : "/auth?redirect=/ai/mock-interview"}>
+                <Button variant="gradient" size="lg" className="w-full">
+                  Start Mock Interview Training
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+
       <section id="pricing" className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
