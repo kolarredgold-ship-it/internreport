@@ -264,8 +264,13 @@ const Index = () => {
         </div>
       </nav>
 
+      {/* Sliding Banner */}
+      <section className="container mx-auto px-4 pt-6">
+        <HeroBanner />
+      </section>
+
       {/* Hero Section - SEO Optimized */}
-      <section className="container mx-auto px-4 py-20 lg:py-32">
+      <section className="container mx-auto px-4 py-16 lg:py-24">
         <div className="max-w-4xl mx-auto text-center animate-slide-up">
           {/* Trust Badge */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
