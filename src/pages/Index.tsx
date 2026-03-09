@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award, Package, ArrowRight } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award, Package, ArrowRight, Brain, MessageSquare, Code, Briefcase } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
 import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
