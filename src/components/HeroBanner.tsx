@@ -55,7 +55,7 @@ const HeroBanner = () => {
   }, [next]);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl mx-auto" style={{ aspectRatio: '21/8' }}>
+    <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl mx-auto aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/8]">
       {/* Slides */}
       {slides.map((slide, i) => (
         <div
@@ -72,15 +72,15 @@ const HeroBanner = () => {
             className="w-full h-full object-cover"
             loading={i === 0 ? 'eager' : 'lazy'}
           />
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/40 to-transparent" />
+          {/* Overlay - stronger on mobile for readability */}
+          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-foreground/80 via-foreground/50 to-foreground/20 sm:from-foreground/70 sm:via-foreground/40 sm:to-transparent" />
           
           {/* Content */}
-          <div className="absolute inset-0 flex items-center">
-            <div className="container mx-auto px-6 md:px-12">
-              <div className="max-w-lg space-y-3 md:space-y-4">
+          <div className="absolute inset-0 flex items-end sm:items-center pb-10 sm:pb-0">
+            <div className="w-full px-4 sm:px-6 md:px-12">
+              <div className="max-w-lg space-y-2 sm:space-y-3 md:space-y-4">
                 <h2
-                  className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-white leading-tight transition-all duration-700"
+                  className="font-display text-lg sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white leading-tight transition-all duration-700"
                   style={{
                     opacity: current === i ? 1 : 0,
                     transform: current === i ? 'translateY(0)' : 'translateY(20px)',
@@ -90,7 +90,7 @@ const HeroBanner = () => {
                   {slide.title}
                 </h2>
                 <p
-                  className="text-sm md:text-base lg:text-lg text-white/85 leading-relaxed transition-all duration-700"
+                  className="text-xs sm:text-sm md:text-base lg:text-lg text-white/85 leading-relaxed transition-all duration-700 line-clamp-2 sm:line-clamp-none"
                   style={{
                     opacity: current === i ? 1 : 0,
                     transform: current === i ? 'translateY(0)' : 'translateY(20px)',
@@ -108,7 +108,7 @@ const HeroBanner = () => {
                   }}
                 >
                   <Link to={user ? slide.ctaLoggedIn : slide.ctaLink}>
-                    <Button variant="hero" size="lg">
+                    <Button variant="hero" size="sm" className="sm:!px-6 sm:!py-3 sm:!text-base">
                       {slide.cta}
                     </Button>
                   </Link>
@@ -119,30 +119,30 @@ const HeroBanner = () => {
         </div>
       ))}
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - hidden on very small screens */}
       <button
         onClick={prev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+        className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
       <button
         onClick={next}
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+        className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+      <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => goTo(i)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              current === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/70'
+            className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+              current === i ? 'w-5 sm:w-6 bg-white' : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/70'
             }`}
             aria-label={`Go to slide ${i + 1}`}
           />
