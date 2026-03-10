@@ -335,8 +335,8 @@ const Index = () => {
       </section>
 
       {/* Stats Counter Section */}
-      <section className="container mx-auto px-4 py-8 bg-secondary/30 rounded-3xl my-8">
-        <div className="text-center mb-6">
+      <section className="container mx-auto px-4 py-12 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+        <div className="text-center mb-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
             Trusted by Students Across India
           </h2>
