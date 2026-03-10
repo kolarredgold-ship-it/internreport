@@ -265,7 +265,7 @@ const Index = () => {
       </nav>
 
       {/* Sliding Banner */}
-      <section className="container mx-auto px-4 pt-6">
+      <section className="w-full">
         <HeroBanner />
       </section>
 
