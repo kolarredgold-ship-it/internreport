@@ -371,22 +371,22 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="container mx-auto px-4 py-20 bg-secondary/30 rounded-3xl my-8">
-        <div className="text-center mb-12">
+      <section className="container mx-auto px-4 py-20 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+        <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             How It Works
           </h2>
           <p className="text-muted-foreground">Simple 4-step process to get your report</p>
         </div>
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-4 gap-8 lg:gap-12">
           {steps.map((step, index) => <div key={index} className="text-center relative animate-fade-in" style={{
           animationDelay: `${index * 150}ms`
         }}>
-              <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 shadow-glow">
-                <span className="font-display font-bold text-2xl text-primary-foreground">{step.step}</span>
+              <div className="w-18 h-18 lg:w-20 lg:h-20 rounded-full gradient-bg flex items-center justify-center mx-auto mb-5 shadow-glow">
+                <span className="font-display font-bold text-2xl lg:text-3xl text-primary-foreground">{step.step}</span>
               </div>
-              {index < steps.length - 1 && <div className="hidden md:block absolute top-8 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />}
-              <h3 className="font-display font-semibold mb-2">{step.title}</h3>
+              {index < steps.length - 1 && <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/40 to-transparent" />}
+              <h3 className="font-display font-semibold text-lg mb-2">{step.title}</h3>
               <p className="text-muted-foreground text-sm">{step.description}</p>
             </div>)}
         </div>
