@@ -622,7 +622,7 @@ const Index = () => {
       </section>
 
       {/* Student Reviews Section - Auto Slider */}
-      <section className="container mx-auto px-4 py-16 bg-secondary/30 rounded-3xl my-8">
+      <section className="container mx-auto px-4 py-16 bg-secondary/20 rounded-3xl my-8 border border-border/30">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600 mb-4">
             <Star className="w-4 h-4 fill-yellow-500" />
