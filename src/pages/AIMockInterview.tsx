@@ -8,9 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Brain, BookOpen, Code, Briefcase, ChevronRight, RotateCcw, Loader2, ArrowRight, Star, Sparkles, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Brain, BookOpen, Code, Briefcase, ChevronRight, RotateCcw, Loader2, ArrowRight, Star, Sparkles, GraduationCap, Info, MousePointerClick, ChevronsLeftRight, AlertCircle } from 'lucide-react';
 
-// Data definitions
 const courseOptions = ['BCom', 'BBA', 'BCA', 'MCA', 'BE/BTech', 'MBA', 'ME/MTech'];
 const languageOptions = ['C', 'C++', 'Java', 'Python', 'JavaScript', 'SQL', 'React', 'Node.js'];
 const roleOptions = ['Software Developer', 'Full Stack Developer', 'Data Analyst', 'AI Engineer', 'Accountant', 'HR Executive', 'Digital Marketing'];
@@ -44,7 +43,6 @@ const AIMockInterview = () => {
   const [flipped, setFlipped] = useState(false);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
 
-  // Mock interview state
   const [interviewQuestion, setInterviewQuestion] = useState('');
   const [userAnswer, setUserAnswer] = useState('');
   const [evaluating, setEvaluating] = useState(false);
@@ -73,7 +71,6 @@ const AIMockInterview = () => {
       if (data && data.length > 0) {
         setQuestions(data);
       } else {
-        // If no preloaded questions, generate with AI
         const { data: aiData, error: aiError } = await supabase.functions.invoke('ai-mock-interview', {
           body: { action: 'generate-questions', category, subcategory, userId: user?.id },
         });
@@ -154,7 +151,6 @@ const AIMockInterview = () => {
         suggestions: data?.suggestions || '',
       });
 
-      // Save result
       await supabase.from('mock_interview_results').insert({
         user_id: user!.id,
         role_or_topic: selectedOption || 'general',
@@ -186,50 +182,84 @@ const AIMockInterview = () => {
   };
 
   const currentQ = questions[currentIndex];
-  const difficultyColor = (d: string) => d === 'easy' ? 'bg-green-100 text-green-700' : d === 'hard' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700';
+  const difficultyColor = (d: string) => d === 'easy' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : d === 'hard' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
 
   return (
-    <div className="min-h-screen hero-gradient">
+    <div className="min-h-screen hero-gradient overflow-hidden">
       <Helmet>
         <title>AI Mock Interview Training - InternReport.in</title>
         <meta name="description" content="Practice interview questions with AI feedback. Course-based, programming, and job role training." />
       </Helmet>
 
+      {/* Nav */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {view !== 'select-mode' ? (
               <Button variant="ghost" size="sm" onClick={goBack}><ArrowLeft className="w-4 h-4 mr-1" /> Back</Button>
             ) : (
-              <Link to="/ai"><Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> AI Platform</Button></Link>
+              <Link to="/"><Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Home</Button></Link>
             )}
           </div>
-          <span className="font-display font-bold">Mock Interview Training</span>
+          <div className="flex items-center gap-2">
+            <Brain className="w-5 h-5 text-primary" />
+            <span className="font-display font-bold text-lg">Mock Interview</span>
+          </div>
           <Link to="/ai/report-generator">
-            <Button variant="outline" size="sm">← Report Generator</Button>
+            <Button variant="outline" size="sm">Report Gen</Button>
           </Link>
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Mode Selection */}
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+
+        {/* ===== MODE SELECTION ===== */}
         {view === 'select-mode' && (
           <div className="animate-slide-up">
-            <h1 className="font-display text-3xl font-bold text-center mb-2">Choose Training Type</h1>
-            <p className="text-center text-muted-foreground mb-10">Select how you want to prepare</p>
-            <div className="grid md:grid-cols-3 gap-6">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
+                <Brain className="w-4 h-4" />
+                <span className="text-sm font-medium">AI-Powered Training</span>
+              </div>
+              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-3">
+                Choose Your <span className="gradient-text">Training Path</span>
+              </h1>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                700+ questions across courses, programming languages & job roles with AI-powered feedback
+              </p>
+            </div>
+
+            {/* Info Notice */}
+            <div className="max-w-2xl mx-auto mb-10">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-1">Note: Limited Question Bank</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-500">Not all questions and answers are available for every topic. We're continuously expanding our database. If a topic has limited flashcards, try the AI Mock Interview for unlimited AI-generated questions.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
               {[
-                { mode: 'course' as TrainingMode, icon: GraduationCap, title: 'Course Based', desc: 'Questions by academic course', color: 'from-blue-500 to-indigo-600' },
-                { mode: 'language' as TrainingMode, icon: Code, title: 'Programming Languages', desc: 'Concepts, syntax & interview Qs', color: 'from-emerald-500 to-teal-600' },
-                { mode: 'role' as TrainingMode, icon: Briefcase, title: 'Job Role Based', desc: 'Role-specific interview prep', color: 'from-purple-500 to-pink-600' },
+                { mode: 'course' as TrainingMode, icon: GraduationCap, title: 'Course Based', desc: 'BCom, BBA, BCA, MBA & more academic course questions', color: 'from-blue-500 to-indigo-600', badge: '7 Courses' },
+                { mode: 'language' as TrainingMode, icon: Code, title: 'Programming', desc: 'C, Java, Python, JS, SQL & more coding interview questions', color: 'from-emerald-500 to-teal-600', badge: '8 Languages' },
+                { mode: 'role' as TrainingMode, icon: Briefcase, title: 'Job Roles', desc: 'Software Dev, Data Analyst, HR, Marketing & more', color: 'from-purple-500 to-pink-600', badge: '7 Roles' },
               ].map((item, i) => (
-                <Card key={i} className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-0 shadow-soft" onClick={() => handleSelectMode(item.mode)}>
-                  <CardContent className="p-8 text-center">
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
-                      <item.icon className="w-8 h-8 text-white" />
+                <Card key={i} className="group cursor-pointer hover-lift border-0 shadow-soft relative overflow-hidden" onClick={() => handleSelectMode(item.mode)}>
+                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${item.color}`} />
+                  <CardContent className="p-8 lg:p-10 text-center">
+                    <div className={`w-18 h-18 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform shadow-lg`}>
+                      <item.icon className="w-9 h-9 lg:w-10 lg:h-10 text-white" />
                     </div>
-                    <h3 className="font-display text-xl font-bold mb-2">{item.title}</h3>
-                    <p className="text-muted-foreground text-sm">{item.desc}</p>
+                    <Badge variant="secondary" className="mb-3">{item.badge}</Badge>
+                    <h3 className="font-display text-xl lg:text-2xl font-bold mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                    <div className="mt-5 flex items-center justify-center gap-1 text-primary text-sm font-medium">
+                      <span>Start Training</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -237,17 +267,21 @@ const AIMockInterview = () => {
           </div>
         )}
 
-        {/* Option Selection */}
+        {/* ===== OPTION SELECTION ===== */}
         {view === 'select-option' && (
           <div className="animate-slide-up">
-            <h2 className="font-display text-2xl font-bold text-center mb-8">
-              Select {mode === 'course' ? 'Course' : mode === 'language' ? 'Language' : 'Job Role'}
-            </h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="text-center mb-10">
+              <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
+                Select {mode === 'course' ? 'Your Course' : mode === 'language' ? 'Programming Language' : 'Job Role'}
+              </h2>
+              <p className="text-muted-foreground text-sm">Pick a topic to start practicing</p>
+            </div>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
               {getOptions().map((opt) => (
-                <Card key={opt} className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all border-0 shadow-soft" onClick={() => handleSelectOption(opt)}>
+                <Card key={opt} className="cursor-pointer hover-lift border border-border/50 shadow-soft group" onClick={() => handleSelectOption(opt)}>
                   <CardContent className="p-6 text-center">
-                    <h3 className="font-display font-semibold">{opt}</h3>
+                    <h3 className="font-display font-semibold text-lg group-hover:text-primary transition-colors">{opt}</h3>
+                    <ChevronRight className="w-4 h-4 mx-auto mt-2 text-muted-foreground group-hover:text-primary transition-colors" />
                   </CardContent>
                 </Card>
               ))}
@@ -255,82 +289,127 @@ const AIMockInterview = () => {
           </div>
         )}
 
-        {/* Flash Cards */}
+        {/* ===== FLASH CARDS ===== */}
         {view === 'flashcards' && (
           <div className="animate-slide-up">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-2xl font-bold">{selectedOption} - Flash Cards</h2>
-              <Button onClick={startMockInterview} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold">{selectedOption}</h2>
+                <p className="text-muted-foreground text-sm mt-1">Flashcard Training</p>
+              </div>
+              <Button onClick={startMockInterview} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg hover:shadow-xl transition-shadow">
                 <Brain className="w-4 h-4 mr-2" /> Start AI Mock Interview
               </Button>
             </div>
 
+            {/* Instruction Hints */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-6">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border border-border/50">
+                <MousePointerClick className="w-3.5 h-3.5 text-primary" />
+                <span>Tap card to see answer</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border border-border/50">
+                <ChevronsLeftRight className="w-3.5 h-3.5 text-primary" />
+                <span>Use buttons to navigate questions</span>
+              </div>
+            </div>
+
+            {/* Limited Q&A Notice */}
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-6 max-w-2xl mx-auto">
+              <Info className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <p className="text-xs text-amber-600 dark:text-amber-500">
+                Not all questions & answers are available for this topic. For unlimited questions, try the <strong>AI Mock Interview</strong>.
+              </p>
+            </div>
+
             {loadingQuestions ? (
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-12 text-center">
-                  <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
+              <Card className="border-0 shadow-soft max-w-2xl mx-auto">
+                <CardContent className="p-16 text-center">
+                  <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
                   <p className="text-muted-foreground">Loading questions...</p>
                 </CardContent>
               </Card>
             ) : questions.length === 0 ? (
-              <Card className="border-0 shadow-soft">
-                <CardContent className="p-12 text-center">
-                  <p className="text-muted-foreground">No questions available. Try the AI Mock Interview instead!</p>
+              <Card className="border-0 shadow-soft max-w-2xl mx-auto">
+                <CardContent className="p-16 text-center">
+                  <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="font-display font-semibold text-lg mb-2">No Flashcards Available</p>
+                  <p className="text-muted-foreground mb-6">This topic doesn't have preloaded questions yet. Try the AI Mock Interview for unlimited AI-generated questions!</p>
+                  <Button onClick={startMockInterview} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
+                    <Brain className="w-4 h-4 mr-2" /> Start AI Mock Interview Instead
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
               <>
-                <div className="text-center text-sm text-muted-foreground mb-4">
-                  {currentIndex + 1} / {questions.length}
+                {/* Progress */}
+                <div className="max-w-2xl mx-auto mb-4">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className="font-semibold text-primary">{currentIndex + 1} / {questions.length}</span>
+                  </div>
+                  <div className="h-2 bg-secondary/30 rounded-full overflow-hidden">
+                    <div
+                      className="h-full gradient-bg rounded-full transition-all duration-500"
+                      style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+                    />
+                  </div>
                 </div>
 
                 {/* Flash Card */}
                 <div
-                  className="cursor-pointer perspective-1000 mx-auto max-w-2xl"
+                  className="cursor-pointer mx-auto max-w-2xl"
                   onClick={() => setFlipped(!flipped)}
                   style={{ perspective: '1000px' }}
                 >
                   <div
-                    className="relative transition-transform duration-500"
+                    className="relative transition-transform duration-600"
                     style={{
                       transformStyle: 'preserve-3d',
                       transform: flipped ? 'rotateY(180deg)' : 'rotateY(0)',
-                      minHeight: '300px',
+                      minHeight: '320px',
                     }}
                   >
                     {/* Front */}
                     <Card className="absolute inset-0 border-0 shadow-lg" style={{ backfaceVisibility: 'hidden' }}>
-                      <CardContent className="p-8 flex flex-col items-center justify-center h-full min-h-[300px]">
-                        <Badge className={`mb-4 ${difficultyColor(currentQ?.difficulty || 'medium')}`}>
+                      <CardContent className="p-8 lg:p-10 flex flex-col items-center justify-center h-full min-h-[320px]">
+                        <Badge className={`mb-5 ${difficultyColor(currentQ?.difficulty || 'medium')}`}>
                           {currentQ?.difficulty || 'medium'}
                         </Badge>
-                        <p className="text-sm text-muted-foreground mb-2">QUESTION</p>
-                        <p className="font-display text-xl text-center font-semibold">{currentQ?.question}</p>
-                        <p className="text-xs text-muted-foreground mt-6">Click to flip</p>
+                        <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-medium">Question</p>
+                        <p className="font-display text-xl lg:text-2xl text-center font-semibold leading-relaxed">{currentQ?.question}</p>
+                        <div className="mt-8 flex items-center gap-2 text-primary text-sm animate-pulse-slow">
+                          <MousePointerClick className="w-4 h-4" />
+                          <span>Click to reveal answer</span>
+                        </div>
                       </CardContent>
                     </Card>
 
                     {/* Back */}
-                    <Card className="absolute inset-0 border-0 shadow-lg bg-primary/5" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-                      <CardContent className="p-8 flex flex-col items-center justify-center h-full min-h-[300px]">
-                        <p className="text-sm text-primary mb-2 font-semibold">ANSWER</p>
-                        <p className="text-center text-muted-foreground whitespace-pre-wrap">{currentQ?.answer}</p>
-                        <p className="text-xs text-muted-foreground mt-6">Click to flip back</p>
+                    <Card className="absolute inset-0 border-0 shadow-lg border-t-4 border-t-primary" style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+                      <CardContent className="p-8 lg:p-10 flex flex-col items-center justify-center h-full min-h-[320px]">
+                        <p className="text-xs uppercase tracking-wider text-primary mb-4 font-bold">Answer</p>
+                        <p className="text-center text-muted-foreground whitespace-pre-wrap leading-relaxed text-base lg:text-lg">{currentQ?.answer}</p>
+                        <div className="mt-8 flex items-center gap-2 text-muted-foreground text-sm">
+                          <MousePointerClick className="w-4 h-4" />
+                          <span>Click to see question</span>
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
                 </div>
 
                 {/* Navigation */}
-                <div className="flex justify-center gap-4 mt-6">
-                  <Button variant="outline" disabled={currentIndex === 0} onClick={() => { setCurrentIndex(prev => prev - 1); setFlipped(false); }}>
-                    ← Previous
+                <div className="flex justify-center gap-3 mt-8">
+                  <Button variant="outline" size="lg" disabled={currentIndex === 0} onClick={() => { setCurrentIndex(prev => prev - 1); setFlipped(false); }}>
+                    <ArrowLeft className="w-4 h-4 mr-1" /> Previous
                   </Button>
-                  <Button variant="outline" onClick={() => { setFlipped(false); setCurrentIndex(0); }}>
-                    <RotateCcw className="w-4 h-4 mr-1" /> Reset
+                  <Button variant="outline" size="lg" onClick={() => { setFlipped(false); setCurrentIndex(0); }}>
+                    <RotateCcw className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" disabled={currentIndex === questions.length - 1} onClick={() => { setCurrentIndex(prev => prev + 1); setFlipped(false); }}>
-                    Next →
+                  <Button variant="outline" size="lg" disabled={currentIndex === questions.length - 1} onClick={() => { setCurrentIndex(prev => prev + 1); setFlipped(false); }}>
+                    Next <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
               </>
@@ -338,32 +417,41 @@ const AIMockInterview = () => {
           </div>
         )}
 
-        {/* Mock Interview */}
+        {/* ===== MOCK INTERVIEW ===== */}
         {view === 'mock-interview' && (
           <div className="animate-slide-up max-w-3xl mx-auto">
-            <h2 className="font-display text-2xl font-bold text-center mb-6">
-              AI Mock Interview — {selectedOption || 'General'}
-            </h2>
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 mb-3">
+                <Brain className="w-4 h-4" />
+                <span className="text-sm font-medium">Live AI Interview</span>
+              </div>
+              <h2 className="font-display text-2xl md:text-3xl font-bold">
+                {selectedOption || 'General'} Interview
+              </h2>
+            </div>
 
             {loadingQuestion ? (
               <Card className="border-0 shadow-soft">
-                <CardContent className="p-12 text-center">
-                  <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
+                <CardContent className="p-16 text-center">
+                  <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
                   <p className="text-muted-foreground">AI is preparing your question...</p>
                 </CardContent>
               </Card>
             ) : (
-              <Card className="border-0 shadow-soft">
-                <CardHeader>
-                  <CardTitle className="font-display text-lg flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-primary" />
+              <Card className="border-0 shadow-soft overflow-hidden">
+                <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-teal-600" />
+                <CardHeader className="pb-2">
+                  <CardTitle className="font-display text-base flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                      <span className="text-sm font-bold text-emerald-600">{interviewRound}</span>
+                    </div>
                     Round {interviewRound}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-secondary/30 rounded-xl p-6">
-                    <p className="text-sm text-muted-foreground mb-1">Interview Question:</p>
-                    <p className="font-display font-semibold text-lg">{interviewQuestion}</p>
+                <CardContent className="space-y-6 pb-8">
+                  <div className="bg-secondary/20 rounded-xl p-6 border border-border/30">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2 font-medium">Interview Question</p>
+                    <p className="font-display font-semibold text-lg lg:text-xl leading-relaxed">{interviewQuestion}</p>
                   </div>
 
                   {!result ? (
@@ -371,34 +459,31 @@ const AIMockInterview = () => {
                       <Textarea
                         value={userAnswer}
                         onChange={e => setUserAnswer(e.target.value)}
-                        placeholder="Type your answer here..."
+                        placeholder="Type your answer here... Be detailed and professional."
                         rows={6}
-                        className="text-base"
+                        className="text-base border-border/50 focus:border-primary"
                       />
                       <Button onClick={submitAnswer} disabled={evaluating} variant="gradient" className="w-full" size="lg">
                         {evaluating ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Evaluating...</> : <><Sparkles className="w-4 h-4 mr-2" /> Submit Answer</>}
                       </Button>
                     </>
                   ) : (
-                    <div className="space-y-4">
-                      {/* Score */}
+                    <div className="space-y-5">
                       <div className="text-center">
-                        <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-lg font-bold ${result.score >= 7 ? 'bg-green-100 text-green-700' : result.score >= 4 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                          <Star className="w-5 h-5" />
+                        <div className={`inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-xl font-bold ${result.score >= 7 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : result.score >= 4 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                          <Star className="w-6 h-6" />
                           Score: {result.score}/10
                         </div>
                       </div>
 
-                      {/* Feedback */}
-                      <div className="bg-blue-50 rounded-xl p-4">
-                        <p className="font-semibold mb-1 text-blue-700">Feedback</p>
-                        <p className="text-sm text-blue-900">{result.feedback}</p>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-5 border border-blue-200/30">
+                        <p className="font-semibold mb-2 text-blue-700 dark:text-blue-400 text-sm">💬 Feedback</p>
+                        <p className="text-sm text-blue-900 dark:text-blue-300 leading-relaxed">{result.feedback}</p>
                       </div>
 
-                      {/* Suggestions */}
-                      <div className="bg-green-50 rounded-xl p-4">
-                        <p className="font-semibold mb-1 text-green-700">Improvement Suggestions</p>
-                        <p className="text-sm text-green-900">{result.suggestions}</p>
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-5 border border-green-200/30">
+                        <p className="font-semibold mb-2 text-green-700 dark:text-green-400 text-sm">✨ Suggestions</p>
+                        <p className="text-sm text-green-900 dark:text-green-300 leading-relaxed">{result.suggestions}</p>
                       </div>
 
                       <Button onClick={fetchNextQuestion} variant="gradient" className="w-full" size="lg">
