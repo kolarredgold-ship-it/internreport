@@ -197,7 +197,7 @@ const Index = () => {
     review: "Worth every rupee! The digital marketing internship report was comprehensive and well-researched. Thank you!",
     avatar: "MR"
   }];
-  return <div className="min-h-screen hero-gradient">
+  return <div className="min-h-screen hero-gradient overflow-hidden">
       {/* SEO Meta Tags */}
       <Helmet>
         <title>Internship Report Generator | Free Reports for BCA, BTech, MBA Students – InternReport.in</title>
@@ -265,20 +265,25 @@ const Index = () => {
       </nav>
 
       {/* Sliding Banner */}
-      <section className="container mx-auto px-4 pt-6">
+      <section className="w-full">
         <HeroBanner />
       </section>
 
       {/* Hero Section - SEO Optimized */}
-      <section className="container mx-auto px-4 py-16 lg:py-24">
-        <div className="max-w-4xl mx-auto text-center animate-slide-up">
+      <section className="relative container mx-auto px-4 py-16 lg:py-24">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 bg-dot-pattern opacity-40 pointer-events-none" />
+        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-info/5 blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-4xl mx-auto text-center animate-slide-up">
           {/* Trust Badge */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600 backdrop-blur-sm border border-green-500/10">
               <Users className="w-4 h-4" />
               <span className="text-sm font-medium">10,000+ Students Served</span>
             </div>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600 backdrop-blur-sm border border-yellow-500/10">
               <Star className="w-4 h-4 fill-yellow-500" />
               <span className="text-sm font-medium">4.8/5 Rating</span>
             </div>
@@ -290,13 +295,11 @@ const Index = () => {
             <br />& Student Career Resources
           </h1>
           
-          {/* Sub-heading for trust */}
           <p className="text-lg md:text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
             AI-powered report generator that creates university-compliant internship project reports. 
             Perfect formatting, academic writing style, exam-ready content.
           </p>
           
-          {/* Keywords for SEO */}
           <p className="text-sm text-muted-foreground mb-8 max-w-xl mx-auto">
             Free samples for BCA, BTech, MBA, BCom, BBA • Plagiarism-free • Instant Download
           </p>
@@ -304,12 +307,12 @@ const Index = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Link to={user ? "/dashboard" : "/auth?signup=true"}>
-              <Button variant="hero" size="xl" className="w-full sm:w-auto">
+              <Button variant="hero" size="xl" className="w-full sm:w-auto shadow-glow">
                 <Download className="w-5 h-5" />
                 Download Free Internship Reports
               </Button>
             </Link>
-            <Button variant="outline" size="xl" className="w-full sm:w-auto" asChild>
+            <Button variant="outline" size="xl" className="w-full sm:w-auto hover-lift" asChild>
               <a href="#share-section">
                 <Sparkles className="w-5 h-5" />
                 Share with Friends
@@ -317,7 +320,6 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Quick share buttons */}
           <div className="flex items-center justify-center gap-2 mb-4">
             <span className="text-sm text-muted-foreground">Share:</span>
             <ShareButtons variant="inline" />
@@ -327,14 +329,14 @@ const Index = () => {
         </div>
 
         {/* Demo Report Generator */}
-        <div ref={demoRef} className="max-w-3xl mx-auto mt-16">
+        <div ref={demoRef} className="relative max-w-3xl mx-auto mt-16">
           <DemoReportGenerator />
         </div>
       </section>
 
       {/* Stats Counter Section */}
-      <section className="container mx-auto px-4 py-8 bg-secondary/30 rounded-3xl my-8">
-        <div className="text-center mb-6">
+      <section className="container mx-auto px-4 py-12 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+        <div className="text-center mb-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
             Trusted by Students Across India
           </h2>
@@ -345,7 +347,7 @@ const Index = () => {
 
       {/* Features */}
       <section className="container mx-auto px-4 py-20">
-        <div className="text-center mb-12">
+        <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             Why Choose InternReport.in?
           </h2>
@@ -354,37 +356,37 @@ const Index = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-soft animate-scale-in" style={{
+          {features.map((feature, index) => <Card key={index} className="group hover-lift border-0 shadow-soft animate-scale-in" style={{
           animationDelay: `${index * 100}ms`
         }}>
-              <CardContent className="p-6">
-                <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-primary-foreground" />
+              <CardContent className="p-6 lg:p-8">
+                <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-glow">
+                  <feature.icon className="w-7 h-7 text-primary-foreground" />
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm">{feature.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
               </CardContent>
             </Card>)}
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="container mx-auto px-4 py-20 bg-secondary/30 rounded-3xl my-8">
-        <div className="text-center mb-12">
+      <section className="container mx-auto px-4 py-20 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+        <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             How It Works
           </h2>
           <p className="text-muted-foreground">Simple 4-step process to get your report</p>
         </div>
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-4 gap-8 lg:gap-12">
           {steps.map((step, index) => <div key={index} className="text-center relative animate-fade-in" style={{
           animationDelay: `${index * 150}ms`
         }}>
-              <div className="w-16 h-16 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4 shadow-glow">
-                <span className="font-display font-bold text-2xl text-primary-foreground">{step.step}</span>
+              <div className="w-18 h-18 lg:w-20 lg:h-20 rounded-full gradient-bg flex items-center justify-center mx-auto mb-5 shadow-glow">
+                <span className="font-display font-bold text-2xl lg:text-3xl text-primary-foreground">{step.step}</span>
               </div>
-              {index < steps.length - 1 && <div className="hidden md:block absolute top-8 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />}
-              <h3 className="font-display font-semibold mb-2">{step.title}</h3>
+              {index < steps.length - 1 && <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-primary/40 to-transparent" />}
+              <h3 className="font-display font-semibold text-lg mb-2">{step.title}</h3>
               <p className="text-muted-foreground text-sm">{step.description}</p>
             </div>)}
         </div>
@@ -407,8 +409,8 @@ const Index = () => {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Card 1 - Report Generator */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-soft overflow-hidden animate-scale-in">
-            <CardContent className="p-8 flex flex-col h-full">
+          <Card className="group hover-lift border-0 shadow-soft overflow-hidden animate-scale-in">
+            <CardContent className="p-8 lg:p-10 flex flex-col h-full">
               <div className="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <FileText className="w-8 h-8 text-primary-foreground" />
               </div>
@@ -434,8 +436,8 @@ const Index = () => {
           </Card>
 
           {/* Card 2 - Mock Interview */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-soft overflow-hidden animate-scale-in border-l-4 border-l-accent" style={{ animationDelay: '100ms' }}>
-            <CardContent className="p-8 flex flex-col h-full">
+          <Card className="group hover-lift border-0 shadow-soft overflow-hidden animate-scale-in border-l-4 border-l-accent" style={{ animationDelay: '100ms' }}>
+            <CardContent className="p-8 lg:p-10 flex flex-col h-full">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Brain className="w-8 h-8 text-accent-foreground" />
               </div>
@@ -505,20 +507,26 @@ const Index = () => {
 
       {/* Trust Badges */}
       <section className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-8 text-center">
-          <div className="flex flex-col items-center gap-3">
-            <CheckCircle2 className="w-10 h-10 text-success" />
-            <h3 className="font-display font-semibold">100% Secure Payments</h3>
+        <div className="grid md:grid-cols-3 gap-8 lg:gap-12 text-center">
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl hover-lift">
+            <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center mb-1">
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
+            </div>
+            <h3 className="font-display font-semibold text-lg">100% Secure Payments</h3>
             <p className="text-muted-foreground text-sm">Powered by Razorpay</p>
           </div>
-          <div className="flex flex-col items-center gap-3">
-            <BookOpen className="w-10 h-10 text-primary" />
-            <h3 className="font-display font-semibold">Academic Quality</h3>
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl hover-lift">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-1">
+              <BookOpen className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="font-display font-semibold text-lg">Academic Quality</h3>
             <p className="text-muted-foreground text-sm">University-approved format</p>
           </div>
-          <div className="flex flex-col items-center gap-3">
-            <Clock className="w-10 h-10 text-accent" />
-            <h3 className="font-display font-semibold">Instant Delivery</h3>
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl hover-lift">
+            <div className="w-16 h-16 rounded-2xl bg-accent/50 flex items-center justify-center mb-1">
+              <Clock className="w-8 h-8 text-accent-foreground" />
+            </div>
+            <h3 className="font-display font-semibold text-lg">Instant Delivery</h3>
             <p className="text-muted-foreground text-sm">Download within minutes</p>
           </div>
         </div>
@@ -614,7 +622,7 @@ const Index = () => {
       </section>
 
       {/* Student Reviews Section - Auto Slider */}
-      <section className="container mx-auto px-4 py-16 bg-secondary/30 rounded-3xl my-8">
+      <section className="container mx-auto px-4 py-16 bg-secondary/20 rounded-3xl my-8 border border-border/30">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600 mb-4">
             <Star className="w-4 h-4 fill-yellow-500" />
@@ -645,7 +653,7 @@ const Index = () => {
           <CarouselContent className="-ml-4">
             {studentReviews.map((review, index) => (
               <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                <Card className="border-0 shadow-soft hover:shadow-lg transition-all duration-300 h-full">
+                <Card className="border-0 shadow-soft hover-lift h-full">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-1 mb-3">
                       {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
