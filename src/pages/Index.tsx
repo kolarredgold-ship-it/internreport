@@ -507,20 +507,26 @@ const Index = () => {
 
       {/* Trust Badges */}
       <section className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-8 text-center">
-          <div className="flex flex-col items-center gap-3">
-            <CheckCircle2 className="w-10 h-10 text-success" />
-            <h3 className="font-display font-semibold">100% Secure Payments</h3>
+        <div className="grid md:grid-cols-3 gap-8 lg:gap-12 text-center">
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl hover-lift">
+            <div className="w-16 h-16 rounded-2xl bg-green-500/10 flex items-center justify-center mb-1">
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
+            </div>
+            <h3 className="font-display font-semibold text-lg">100% Secure Payments</h3>
             <p className="text-muted-foreground text-sm">Powered by Razorpay</p>
           </div>
-          <div className="flex flex-col items-center gap-3">
-            <BookOpen className="w-10 h-10 text-primary" />
-            <h3 className="font-display font-semibold">Academic Quality</h3>
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl hover-lift">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-1">
+              <BookOpen className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="font-display font-semibold text-lg">Academic Quality</h3>
             <p className="text-muted-foreground text-sm">University-approved format</p>
           </div>
-          <div className="flex flex-col items-center gap-3">
-            <Clock className="w-10 h-10 text-accent" />
-            <h3 className="font-display font-semibold">Instant Delivery</h3>
+          <div className="flex flex-col items-center gap-3 p-6 rounded-2xl hover-lift">
+            <div className="w-16 h-16 rounded-2xl bg-accent/50 flex items-center justify-center mb-1">
+              <Clock className="w-8 h-8 text-accent-foreground" />
+            </div>
+            <h3 className="font-display font-semibold text-lg">Instant Delivery</h3>
             <p className="text-muted-foreground text-sm">Download within minutes</p>
           </div>
         </div>
