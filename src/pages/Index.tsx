@@ -436,8 +436,8 @@ const Index = () => {
           </Card>
 
           {/* Card 2 - Mock Interview */}
-          <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-soft overflow-hidden animate-scale-in border-l-4 border-l-accent" style={{ animationDelay: '100ms' }}>
-            <CardContent className="p-8 flex flex-col h-full">
+          <Card className="group hover-lift border-0 shadow-soft overflow-hidden animate-scale-in border-l-4 border-l-accent" style={{ animationDelay: '100ms' }}>
+            <CardContent className="p-8 lg:p-10 flex flex-col h-full">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Brain className="w-8 h-8 text-accent-foreground" />
               </div>
