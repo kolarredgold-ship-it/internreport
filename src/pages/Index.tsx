@@ -197,7 +197,7 @@ const Index = () => {
     review: "Worth every rupee! The digital marketing internship report was comprehensive and well-researched. Thank you!",
     avatar: "MR"
   }];
-  return <div className="min-h-screen hero-gradient">
+  return <div className="min-h-screen hero-gradient overflow-hidden">
       {/* SEO Meta Tags */}
       <Helmet>
         <title>Internship Report Generator | Free Reports for BCA, BTech, MBA Students – InternReport.in</title>
