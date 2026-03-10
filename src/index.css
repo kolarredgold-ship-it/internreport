@@ -176,8 +176,32 @@
     box-shadow: var(--shadow-glow);
   }
 
+  .shadow-soft {
+    box-shadow: 0 2px 16px -4px hsl(0 0% 0% / 0.08), 0 1px 4px -1px hsl(0 0% 0% / 0.05);
+  }
+
   .glass-effect {
     @apply backdrop-blur-xl bg-white/80 border border-white/20;
+  }
+
+  .section-divider {
+    @apply relative overflow-hidden;
+  }
+
+  .section-divider::before {
+    content: '';
+    @apply absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full;
+    background-image: var(--gradient-primary);
+    opacity: 0.5;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px -8px hsl(0 0% 0% / 0.15);
   }
 
   .animate-float {
@@ -198,6 +222,11 @@
 
   .animate-scale-in {
     animation: scaleIn 0.4s ease-out forwards;
+  }
+
+  .bg-dot-pattern {
+    background-image: radial-gradient(circle, hsl(0 0% 0% / 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 }
 

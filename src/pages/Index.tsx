@@ -653,7 +653,7 @@ const Index = () => {
           <CarouselContent className="-ml-4">
             {studentReviews.map((review, index) => (
               <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                <Card className="border-0 shadow-soft hover:shadow-lg transition-all duration-300 h-full">
+                <Card className="border-0 shadow-soft hover-lift h-full">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-1 mb-3">
                       {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
