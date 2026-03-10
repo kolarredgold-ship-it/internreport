@@ -55,7 +55,7 @@ const HeroBanner = () => {
   }, [next]);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl mx-auto aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/8]">
+    <div className="relative w-full overflow-hidden aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/8]">
       {/* Slides */}
       {slides.map((slide, i) => (
         <div
@@ -119,21 +119,6 @@ const HeroBanner = () => {
         </div>
       ))}
 
-      {/* Navigation Arrows - hidden on very small screens */}
-      <button
-        onClick={prev}
-        className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-      </button>
 
       {/* Dots */}
       <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2">
