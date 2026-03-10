@@ -55,7 +55,7 @@ const HeroBanner = () => {
   }, [next]);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl mx-auto aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/8]">
+    <div className="relative w-full overflow-hidden aspect-[4/3] sm:aspect-[16/7] lg:aspect-[21/8]">
       {/* Slides */}
       {slides.map((slide, i) => (
         <div
