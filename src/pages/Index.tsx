@@ -347,7 +347,7 @@ const Index = () => {
 
       {/* Features */}
       <section className="container mx-auto px-4 py-20">
-        <div className="text-center mb-12">
+        <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             Why Choose InternReport.in?
           </h2>
@@ -356,15 +356,15 @@ const Index = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => <Card key={index} className="group hover:shadow-lg transition-all duration-300 border-0 shadow-soft animate-scale-in" style={{
+          {features.map((feature, index) => <Card key={index} className="group hover-lift border-0 shadow-soft animate-scale-in" style={{
           animationDelay: `${index * 100}ms`
         }}>
-              <CardContent className="p-6">
-                <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-primary-foreground" />
+              <CardContent className="p-6 lg:p-8">
+                <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-glow">
+                  <feature.icon className="w-7 h-7 text-primary-foreground" />
                 </div>
                 <h3 className="font-display font-semibold text-lg mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm">{feature.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
               </CardContent>
             </Card>)}
         </div>
