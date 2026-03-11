@@ -1975,24 +1975,33 @@ const CreateReport = () => {
                       This usually takes less than 24 hours.
                     </p>
                   </div>
-                ) : hasApprovedPayment && canGenerate ? (
+                ) : canGenerate ? (
                   <div className="space-y-4">
-                    <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <div className={`rounded-xl p-4 flex items-center gap-3 ${hasApprovedPayment ? 'bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800' : 'bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800'}`}>
+                      <CheckCircle2 className={`w-5 h-5 ${hasApprovedPayment ? 'text-emerald-600' : 'text-blue-600'}`} />
                       <div>
-                        <p className="font-semibold text-emerald-700 dark:text-emerald-300">Ready to Generate</p>
-                        <p className="text-xs text-muted-foreground">{generationsUsed}/1 generations used</p>
+                        <p className={`font-semibold ${hasApprovedPayment ? 'text-emerald-700 dark:text-emerald-300' : 'text-blue-700 dark:text-blue-300'}`}>
+                          {hasApprovedPayment ? 'Ready to Generate' : 'Free Trial - 1 Report (Till Chapter 4)'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {hasApprovedPayment ? `${generationsUsed} generations used` : 'No payment needed for your first report'}
+                        </p>
                       </div>
                     </div>
                     <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                       <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-2">
-                        📋 Your report will include 10 sections:
+                        📋 Your report will include:
                       </p>
                       <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
-                        {getChapters(formData.internshipTitle).map(ch => (
+                        {(hasApprovedPayment ? getChapters(formData.internshipTitle) : getChapters(formData.internshipTitle).filter(ch => ch.key !== '5')).map(ch => (
                           <div key={ch.key}>• {ch.label}</div>
                         ))}
                       </div>
+                      {!hasApprovedPayment && (
+                        <p className="text-xs text-amber-600 mt-2 font-medium">
+                          ⚠️ Bibliography excluded in free trial. Top up ₹499 for full reports.
+                        </p>
+                      )}
                       <p className="text-xs text-muted-foreground mt-2">
                         ⏱️ Generation takes 5-10 minutes. Please keep this page open.
                       </p>
