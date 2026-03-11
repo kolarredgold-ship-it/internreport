@@ -152,8 +152,8 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const remainingGenerations = Math.max(0, 1 - (profile?.generations_used || 0));
-  const needsTopUp = remainingGenerations <= 0;
+  const remainingGenerations = isAdmin ? Infinity : Math.max(0, 1 - (profile?.generations_used || 0));
+  const needsTopUp = !isAdmin && remainingGenerations <= 0;
 
   if (authLoading || loading) {
     return (
