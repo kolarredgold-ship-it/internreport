@@ -115,7 +115,16 @@ const Dashboard = () => {
 
   const checkAccountStatus = async () => {
     try {
-      // Check if user has any verified payment (admin sets status to 'verified')
+      // Admins are always active
+      const { data: isAdminData } = await supabase
+        .rpc('has_role', { _user_id: user?.id, _role: 'admin' });
+      
+      if (isAdminData) {
+        setAccountStatus({ isActive: true, label: 'Active' });
+        return;
+      }
+
+      // Check if user has any verified top-up payment (not just free generation)
       const { data, error } = await supabase
         .from('payments')
         .select('id, status')
@@ -139,7 +148,7 @@ const Dashboard = () => {
         if (pendingData && pendingData.length > 0) {
           setAccountStatus({ isActive: false, label: 'Payment Under Review' });
         } else {
-          setAccountStatus({ isActive: false, label: 'Inactive - Payment Pending' });
+          setAccountStatus({ isActive: false, label: 'Inactive - Free Trial (Till Chapter 4)' });
         }
       }
     } catch (error) {
