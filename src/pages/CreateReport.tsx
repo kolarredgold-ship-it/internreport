@@ -329,6 +329,19 @@ const CreateReport = () => {
   const checkUserStatus = async () => {
     setCheckingStatus(true);
     try {
+      // Check if user is admin - admins get unlimited generations
+      const { data: isAdminData } = await supabase
+        .rpc('has_role', { _user_id: user?.id, _role: 'admin' });
+      
+      if (isAdminData) {
+        setCanGenerate(true);
+        setNeedsTopup(false);
+        setPaymentStatus('verified');
+        setHasApprovedPayment(true);
+        setCheckingStatus(false);
+        return;
+      }
+
       const { data: profileData } = await supabase
         .from('profiles')
         .select('generations_used')
