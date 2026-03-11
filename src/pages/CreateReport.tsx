@@ -312,7 +312,9 @@ const CreateReport = () => {
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
-  const hasAllContent = completedChapters.length === getChapters(formData.internshipTitle).length;
+  const allChapters = getChapters(formData.internshipTitle);
+  const requiredChapters = hasApprovedPayment ? allChapters : allChapters.filter(ch => ch.key !== '5');
+  const hasAllContent = requiredChapters.every(ch => chapterContent[ch.key]);
 
   useEffect(() => {
     if (!authLoading && !user) {
