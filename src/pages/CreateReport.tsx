@@ -1975,7 +1975,7 @@ const CreateReport = () => {
                       This usually takes less than 24 hours.
                     </p>
                   </div>
-                ) : hasApprovedPayment && canGenerate ? (
+                ) : canGenerate ? (
                   <div className="space-y-4">
                     <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 flex items-center gap-3">
                       <CheckCircle2 className="w-5 h-5 text-emerald-600" />
