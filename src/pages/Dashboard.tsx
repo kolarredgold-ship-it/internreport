@@ -218,8 +218,8 @@ const Dashboard = () => {
                   <Zap className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-display font-bold">{remainingGenerations}</p>
-                  <p className="text-sm text-muted-foreground">Generations Left</p>
+                  <p className="text-2xl font-display font-bold">{isAdmin ? '∞' : remainingGenerations}</p>
+                  <p className="text-sm text-muted-foreground">{isAdmin ? 'Unlimited' : 'Generations Left'}</p>
                 </div>
               </div>
             </CardContent>
