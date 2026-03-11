@@ -312,7 +312,9 @@ const CreateReport = () => {
 
   const completedChapters = Object.keys(chapterContent).filter(k => chapterContent[k]);
   const hasAnyContent = completedChapters.length > 0;
-  const hasAllContent = completedChapters.length === getChapters(formData.internshipTitle).length;
+  const allChapters = getChapters(formData.internshipTitle);
+  const requiredChapters = hasApprovedPayment ? allChapters : allChapters.filter(ch => ch.key !== '5');
+  const hasAllContent = requiredChapters.every(ch => chapterContent[ch.key]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -777,9 +779,20 @@ const CreateReport = () => {
 
     // Find chapters to generate (skip already completed ones if resuming)
     const CHAPTERS = getChapters(formData.internshipTitle);
-    const chaptersToGenerate = resumingReport 
-      ? CHAPTERS.filter(ch => !chapterContent[ch.key])
+    
+    // Free users (no verified payment) only get up to Chapter 4 (no Bibliography)
+    const isFreeGeneration = !hasApprovedPayment;
+    const availableChapters = isFreeGeneration 
+      ? CHAPTERS.filter(ch => ch.key !== '5') // Exclude Bibliography for free users
       : CHAPTERS;
+    
+    const chaptersToGenerate = resumingReport 
+      ? availableChapters.filter(ch => !chapterContent[ch.key])
+      : availableChapters;
+    
+    if (isFreeGeneration) {
+      setAllGeneratedLines(prev => [...prev, { chapter: 'system', line: `\n📋 Free trial: Generating up to Chapter 4. Top up ₹499 for full reports with Bibliography.\n` }]);
+    }
     
     if (resumingReport) {
       setAllGeneratedLines(prev => [...prev, { chapter: 'system', line: `\n🔄 Resuming generation... (${CHAPTERS.length - chaptersToGenerate.length}/${CHAPTERS.length} already done)\n` }]);
