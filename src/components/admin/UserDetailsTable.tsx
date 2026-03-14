@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { RefreshCw, Key, Search, Eye, FileText, Wallet, Gift } from 'lucide-react';
+import { RefreshCw, Key, Search, Eye, FileText, Wallet, Gift, MessageCircle } from 'lucide-react';
 
 interface UserProfile {
   id: string;
