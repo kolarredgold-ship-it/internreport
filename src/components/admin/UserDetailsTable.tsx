@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { RefreshCw, Key, Search, Eye, FileText, Wallet, Gift } from 'lucide-react';
+import { RefreshCw, Key, Search, Eye, FileText, Wallet, Gift, MessageCircle } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -196,6 +196,22 @@ const UserDetailsTable = ({
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            onClick={() => {
+                              const phone = user.mobile_number?.replace(/\D/g, '') || '';
+                              const msg = encodeURIComponent(
+                                `I have successfully earned ₹20,000 through the InternReport referral program.\n\nIf you're interested in earning through referrals, you can register using the link below:\n\nhttps://internreport.in/`
+                              );
+                              window.open(`https://wa.me/91${phone}?text=${msg}`, '_blank');
+                            }}
+                            disabled={!user.mobile_number}
+                            title="Send WhatsApp message"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
