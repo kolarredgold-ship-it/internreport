@@ -624,10 +624,10 @@ Write clear, professional content with formal academic English. No markers like 
         console.log(`API call completed successfully for ${chapterLabel}, content length: ${generatedContent.length}`);
      } catch (fetchError: unknown) {
        clearTimeout(timeoutId);
-       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-         console.error(`DeepSeek API call timed out after 120 seconds`);
-         throw new Error('AI generation timed out. Please try again.');
-       }
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error(`AI API call timed out after 120 seconds`);
+          throw new Error('AI generation timed out. Please try again.');
+        }
        throw fetchError;
      }
  
