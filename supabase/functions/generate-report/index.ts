@@ -565,14 +565,14 @@ Write clear, professional content with formal academic English. No markers like 
      let generatedContent = "";
      
      try {
-        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+            "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
+            model: "deepseek-chat",
             messages: [
               {
                 role: "system",
@@ -597,8 +597,8 @@ Write clear, professional content with formal academic English. No markers like 
             max_tokens: 8000,
             temperature: 0.7,
           }),
-         signal: controller.signal,
-       });
+          signal: controller.signal,
+        });
  
        clearTimeout(timeoutId);
  
