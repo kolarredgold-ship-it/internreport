@@ -1104,7 +1104,7 @@ const CreateReport = () => {
     // Fetch 10 topic-related images
     toast({
       title: 'Preparing report...',
-      description: 'Fetching topic-related images for your report.',
+      description: 'Generating AI images for your report. This may take a moment.',
     });
 
     const keywords = getImageKeywords();
