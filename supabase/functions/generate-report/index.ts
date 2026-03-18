@@ -158,10 +158,10 @@
        console.log(`Generating Chapter ${chapter} - no generation slot claimed`);
      }
  
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
       
-      if (!LOVABLE_API_KEY) {
-        throw new Error("Lovable AI API key not configured");
+      if (!DEEPSEEK_API_KEY) {
+        throw new Error("DeepSeek API key not configured");
       }
  
      // Base context for all prompts
@@ -565,14 +565,14 @@ Write clear, professional content with formal academic English. No markers like 
      let generatedContent = "";
      
      try {
-        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+            "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
           },
           body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
+            model: "deepseek-chat",
             messages: [
               {
                 role: "system",
@@ -597,18 +597,16 @@ Write clear, professional content with formal academic English. No markers like 
             max_tokens: 8000,
             temperature: 0.7,
           }),
-         signal: controller.signal,
-       });
+          signal: controller.signal,
+        });
  
        clearTimeout(timeoutId);
  
-       if (!response.ok) {
-        const errorText = await response.text();
-          console.error("AI API error:", response.status, errorText);
-          if (response.status === 429) throw new Error('AI rate limit exceeded. Please try again in a moment.');
-          if (response.status === 402) throw new Error('AI credits exhausted. Please contact support.');
-          throw new Error(`AI API error: ${response.status}`);
-       }
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("DeepSeek API error:", response.status, errorText);
+          throw new Error(`DeepSeek API error: ${response.status}`);
+        }
  
        const data = await response.json();
        generatedContent = data.choices[0]?.message?.content || "";
