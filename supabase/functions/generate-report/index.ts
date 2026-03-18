@@ -565,35 +565,38 @@ Write clear, professional content with formal academic English. No markers like 
      let generatedContent = "";
      
      try {
-       const response = await fetch("https://api.deepseek.com/chat/completions", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-           "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
-         },
-         body: JSON.stringify({
-           model: "deepseek-chat",
-           messages: [
-             {
-               role: "system",
-                content: `You are an expert academic writer creating an internship project report for an Indian university student. Write clear, professional content with formal academic language.
-
-CRITICAL FORMATTING RULES:
-1. Each section MUST be comprehensive and deeply elaborated with multiple paragraphs
-2. Use ## for section headers only - NO asterisks, bold, or italic formatting
-3. DO NOT include "(In-Depth)", "(In Deep)", "In-Depth:", or any similar markers in the output
-4. For "Objectives of the Study" section, format as: brief intro sentence followed by bullet points starting with "To study...", "To analyse...", "To experience...", etc.
-5. Table of contents should be simple - just section names without page numbers
-6. Write naturally flowing academic prose without any instruction markers`
-             },
-             {
-               role: "user",
-               content: chapterPrompt
-             }
-           ],
-           max_tokens: 6000,
-           temperature: 0.7,
-         }),
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [
+              {
+                role: "system",
+                 content: `You are an expert academic writer creating an internship project report for an Indian university student. Write clear, professional content with formal academic language.
+ 
+ CRITICAL FORMATTING RULES:
+ 1. Each section MUST be comprehensive and deeply elaborated with multiple paragraphs. Write MORE content than requested - aim for the upper end of word counts.
+ 2. Use ## for section headers only - NO asterisks, bold, or italic formatting
+ 3. DO NOT include "(In-Depth)", "(In Deep)", "In-Depth:", or any similar markers in the output
+ 4. For "Objectives of the Study" section, format as: brief intro sentence followed by bullet points starting with "To study...", "To analyse...", "To experience...", etc.
+ 5. Table of contents should be simple - just section names without page numbers
+ 6. Write naturally flowing academic prose without any instruction markers
+ 7. Include real-world examples, statistics, and industry references to make content richer
+ 8. Each paragraph should be at least 4-5 sentences long for depth and substance
+ 9. Use transitional phrases between paragraphs for smooth flow`
+              },
+              {
+                role: "user",
+                content: chapterPrompt
+              }
+            ],
+            max_tokens: 8000,
+            temperature: 0.7,
+          }),
          signal: controller.signal,
        });
  
