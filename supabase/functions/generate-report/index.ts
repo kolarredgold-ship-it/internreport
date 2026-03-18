@@ -603,9 +603,11 @@ Write clear, professional content with formal academic English. No markers like 
        clearTimeout(timeoutId);
  
        if (!response.ok) {
-         const errorText = await response.text();
-         console.error("DeepSeek API error:", response.status, errorText);
-         throw new Error(`DeepSeek API error: ${response.status}`);
+        const errorText = await response.text();
+          console.error("AI API error:", response.status, errorText);
+          if (response.status === 429) throw new Error('AI rate limit exceeded. Please try again in a moment.');
+          if (response.status === 402) throw new Error('AI credits exhausted. Please contact support.');
+          throw new Error(`AI API error: ${response.status}`);
        }
  
        const data = await response.json();
