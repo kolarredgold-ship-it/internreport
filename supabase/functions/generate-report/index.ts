@@ -158,11 +158,11 @@
        console.log(`Generating Chapter ${chapter} - no generation slot claimed`);
      }
  
-     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
-     
-     if (!DEEPSEEK_API_KEY) {
-       throw new Error("DeepSeek API key not configured");
-     }
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      
+      if (!LOVABLE_API_KEY) {
+        throw new Error("Lovable AI API key not configured");
+      }
  
      // Base context for all prompts
      const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
