@@ -1059,10 +1059,10 @@ const CreateReport = () => {
       .trim();
   };
 
-  // Fetch a free image as buffer
+  // Fetch an AI-generated image as buffer
   const fetchImageAsBuffer = async (keyword: string, index: number): Promise<ArrayBuffer | null> => {
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-image', {
+      const { data, error } = await supabase.functions.invoke('generate-report-image', {
         body: { keyword, index },
       });
       if (error || !data?.image) return null;
@@ -1104,7 +1104,7 @@ const CreateReport = () => {
     // Fetch 10 topic-related images
     toast({
       title: 'Preparing report...',
-      description: 'Fetching topic-related images for your report.',
+      description: 'Generating AI images for your report. This may take a moment.',
     });
 
     const keywords = getImageKeywords();

@@ -48,3 +48,6 @@ verify_jwt = false
 
 [functions.ai-mock-interview]
 verify_jwt = false
+
+[functions.generate-report-image]
+verify_jwt = false

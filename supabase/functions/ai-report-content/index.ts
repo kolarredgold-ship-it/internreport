@@ -12,8 +12,8 @@ serve(async (req) => {
   try {
     const { course, topic, description, userId } = await req.json();
 
-    const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
-    if (!DEEPSEEK_API_KEY) throw new Error("DEEPSEEK_API_KEY not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const prompt = `Generate a professional internship/project report content for:
 Course: ${course}
@@ -21,29 +21,32 @@ Topic: ${topic}
 ${description ? `Description: ${description}` : ''}
 
 Generate the following 5 sections in JSON format with keys: abstract, introduction, methodology, results, conclusion.
-Each section should be 200-400 words, professional and academic in tone.
+Each section should be 300-500 words, professional and academic in tone. Include real-world examples, statistics, and industry references.
+Make each section comprehensive with multiple well-developed paragraphs.
 Return ONLY valid JSON like: {"abstract":"...","introduction":"...","methodology":"...","results":"...","conclusion":"..."}`;
 
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You are an academic report writing assistant. Return ONLY valid JSON." },
+          { role: "system", content: "You are an academic report writing assistant. Return ONLY valid JSON. Write comprehensive, elaborate content with real examples and data." },
           { role: "user", content: prompt },
         ],
         temperature: 0.7,
-        max_tokens: 4000,
+        max_tokens: 6000,
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("DeepSeek error:", response.status, errText);
+      console.error("AI API error:", response.status, errText);
+      if (response.status === 429) throw new Error("Rate limit exceeded. Please try again later.");
+      if (response.status === 402) throw new Error("AI credits exhausted. Please contact support.");
       throw new Error(`AI API error: ${response.status}`);
     }
 
@@ -69,7 +72,7 @@ Return ONLY valid JSON like: {"abstract":"...","introduction":"...","methodology
         user_id: userId,
         feature: "report-content",
         tokens_used: data.usage?.total_tokens || 0,
-        model: "deepseek-chat",
+        model: "gemini-3-flash-preview",
       });
     }
 

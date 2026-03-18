@@ -22,7 +22,7 @@ import { format } from 'date-fns';
 
 const fetchImageAsBuffer = async (keyword: string, index: number): Promise<ArrayBuffer | null> => {
   try {
-    const { data, error } = await supabase.functions.invoke('fetch-image', {
+    const { data, error } = await supabase.functions.invoke('generate-report-image', {
       body: { keyword, index },
     });
     if (error || !data?.image) return null;

@@ -158,11 +158,11 @@
        console.log(`Generating Chapter ${chapter} - no generation slot claimed`);
      }
  
-     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
-     
-     if (!DEEPSEEK_API_KEY) {
-       throw new Error("DeepSeek API key not configured");
-     }
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      
+      if (!LOVABLE_API_KEY) {
+        throw new Error("Lovable AI API key not configured");
+      }
  
      // Base context for all prompts
      const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
@@ -565,44 +565,49 @@ Write clear, professional content with formal academic English. No markers like 
      let generatedContent = "";
      
      try {
-       const response = await fetch("https://api.deepseek.com/chat/completions", {
-         method: "POST",
-         headers: {
-           "Content-Type": "application/json",
-           "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
-         },
-         body: JSON.stringify({
-           model: "deepseek-chat",
-           messages: [
-             {
-               role: "system",
-                content: `You are an expert academic writer creating an internship project report for an Indian university student. Write clear, professional content with formal academic language.
-
-CRITICAL FORMATTING RULES:
-1. Each section MUST be comprehensive and deeply elaborated with multiple paragraphs
-2. Use ## for section headers only - NO asterisks, bold, or italic formatting
-3. DO NOT include "(In-Depth)", "(In Deep)", "In-Depth:", or any similar markers in the output
-4. For "Objectives of the Study" section, format as: brief intro sentence followed by bullet points starting with "To study...", "To analyse...", "To experience...", etc.
-5. Table of contents should be simple - just section names without page numbers
-6. Write naturally flowing academic prose without any instruction markers`
-             },
-             {
-               role: "user",
-               content: chapterPrompt
-             }
-           ],
-           max_tokens: 6000,
-           temperature: 0.7,
-         }),
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "google/gemini-3-flash-preview",
+            messages: [
+              {
+                role: "system",
+                 content: `You are an expert academic writer creating an internship project report for an Indian university student. Write clear, professional content with formal academic language.
+ 
+ CRITICAL FORMATTING RULES:
+ 1. Each section MUST be comprehensive and deeply elaborated with multiple paragraphs. Write MORE content than requested - aim for the upper end of word counts.
+ 2. Use ## for section headers only - NO asterisks, bold, or italic formatting
+ 3. DO NOT include "(In-Depth)", "(In Deep)", "In-Depth:", or any similar markers in the output
+ 4. For "Objectives of the Study" section, format as: brief intro sentence followed by bullet points starting with "To study...", "To analyse...", "To experience...", etc.
+ 5. Table of contents should be simple - just section names without page numbers
+ 6. Write naturally flowing academic prose without any instruction markers
+ 7. Include real-world examples, statistics, and industry references to make content richer
+ 8. Each paragraph should be at least 4-5 sentences long for depth and substance
+ 9. Use transitional phrases between paragraphs for smooth flow`
+              },
+              {
+                role: "user",
+                content: chapterPrompt
+              }
+            ],
+            max_tokens: 8000,
+            temperature: 0.7,
+          }),
          signal: controller.signal,
        });
  
        clearTimeout(timeoutId);
  
        if (!response.ok) {
-         const errorText = await response.text();
-         console.error("DeepSeek API error:", response.status, errorText);
-         throw new Error(`DeepSeek API error: ${response.status}`);
+        const errorText = await response.text();
+          console.error("AI API error:", response.status, errorText);
+          if (response.status === 429) throw new Error('AI rate limit exceeded. Please try again in a moment.');
+          if (response.status === 402) throw new Error('AI credits exhausted. Please contact support.');
+          throw new Error(`AI API error: ${response.status}`);
        }
  
        const data = await response.json();
@@ -619,10 +624,10 @@ CRITICAL FORMATTING RULES:
         console.log(`API call completed successfully for ${chapterLabel}, content length: ${generatedContent.length}`);
      } catch (fetchError: unknown) {
        clearTimeout(timeoutId);
-       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-         console.error(`DeepSeek API call timed out after 120 seconds`);
-         throw new Error('AI generation timed out. Please try again.');
-       }
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error(`AI API call timed out after 120 seconds`);
+          throw new Error('AI generation timed out. Please try again.');
+        }
        throw fetchError;
      }
  
