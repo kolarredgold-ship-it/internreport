@@ -13,7 +13,7 @@ import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, Ch
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun, Header, Footer, PageNumber } from 'docx';
 import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
 
@@ -121,7 +121,7 @@ const CreateReport = () => {
   const [lineCount, setLineCount] = useState(0);
   const [generateInParts, setGenerateInParts] = useState(false);
   const [currentPart, setCurrentPart] = useState<string | null>(null);
-  const [parallelGeneration, setParallelGeneration] = useState(true); // Enable parallel by default
+  const [parallelGeneration, setParallelGeneration] = useState(false); // Fast mode off by default
   const [activeChapters, setActiveChapters] = useState<string[]>([]); // Track chapters being generated in parallel
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [resumingReport, setResumingReport] = useState(false);
@@ -1060,7 +1060,7 @@ const CreateReport = () => {
   };
 
   // Fetch an AI-generated image as buffer
-  const fetchImageAsBuffer = async (keyword: string, index: number): Promise<ArrayBuffer | null> => {
+  const fetchImageAsBuffer = async (keyword: string, index: number): Promise<{ buffer: ArrayBuffer; type: 'png' | 'jpg' } | null> => {
     try {
       const { data, error } = await supabase.functions.invoke('generate-report-image', {
         body: { keyword, index },
@@ -1071,7 +1071,9 @@ const CreateReport = () => {
       for (let i = 0; i < binaryStr.length; i++) {
         bytes[i] = binaryStr.charCodeAt(i);
       }
-      return bytes.buffer;
+      // Detect image type from first bytes
+      const isPng = bytes[0] === 0x89 && bytes[1] === 0x50;
+      return { buffer: bytes.buffer, type: isPng ? 'png' : 'jpg' };
     } catch {
       return null;
     }
@@ -1109,7 +1111,7 @@ const CreateReport = () => {
 
     const keywords = getImageKeywords();
     const imagePromises = keywords.map((kw, i) => fetchImageAsBuffer(kw, i));
-    const imageBuffers = (await Promise.all(imagePromises)).filter(Boolean) as ArrayBuffer[];
+    const imageResults = (await Promise.all(imagePromises)).filter(Boolean) as { buffer: ArrayBuffer; type: 'png' | 'jpg' }[];
 
     // Merge all chapters in order and clean up asterisks
     const orderedContent = getChapters(formData.internshipTitle)
@@ -1323,14 +1325,15 @@ const CreateReport = () => {
             })
           );
           // Insert image after certain headings
-          if (imageInsertAfterHeadings.has(headingCount) && imageIndex < imageBuffers.length) {
+          if (imageInsertAfterHeadings.has(headingCount) && imageIndex < imageResults.length) {
+            const img = imageResults[imageIndex];
             children.push(
               new Paragraph({
                 children: [
                   new ImageRun({
-                    data: imageBuffers[imageIndex],
+                    data: img.buffer,
                     transformation: { width: 500, height: 312 },
-                    type: 'jpg',
+                    type: img.type,
                   }),
                 ],
                 alignment: AlignmentType.CENTER,
@@ -1446,8 +1449,53 @@ const CreateReport = () => {
       }
     });
 
+    // Line spacing 1.5 is set via default document style below
+
     const doc = new Document({
-      sections: [{ properties: {}, children }],
+      styles: {
+        default: {
+          document: {
+            paragraph: {
+              spacing: { line: 360 }, // 1.5 line spacing
+            },
+          },
+        },
+      },
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
+          },
+        },
+        headers: {
+          default: new Header({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: formData.internshipTitle, bold: true, size: 20 })],
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+          }),
+        },
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({ text: formData.studentName, size: 18 }),
+                  new TextRun({ text: '\t\t' }),
+                  new TextRun({ text: 'Page ' }),
+                  new TextRun({ children: [PageNumber.CURRENT] }),
+                ],
+                tabStops: [
+                  { type: 'right' as any, position: 9360 },
+                ],
+              }),
+            ],
+          }),
+        },
+        children,
+      }],
     });
 
     const blob = await Packer.toBlob(doc);
@@ -2008,9 +2056,9 @@ const CreateReport = () => {
                     </div>
                     
                     {/* Fast Parallel Generation Toggle */}
-                    <div className="flex items-center justify-between bg-primary/5 rounded-lg p-3 border border-primary/20">
+                    <div className={`flex items-center justify-between rounded-lg p-3 border transition-all ${parallelGeneration ? 'bg-primary/10 border-primary/30' : 'bg-muted/50 border-border/50'}`}>
                       <div className="flex items-center gap-2 flex-1">
-                        <Sparkles className="w-4 h-4 text-primary" />
+                        <Sparkles className={`w-4 h-4 ${parallelGeneration ? 'text-primary' : 'text-muted-foreground'}`} />
                         <div>
                           <p className="text-sm font-medium">⚡ Fast Mode (3x Speed)</p>
                           <p className="text-xs text-muted-foreground">
@@ -2018,10 +2066,17 @@ const CreateReport = () => {
                           </p>
                         </div>
                       </div>
-                      <Switch
-                        checked={parallelGeneration}
-                        onCheckedChange={setParallelGeneration}
-                      />
+                      <div className="flex items-center gap-2">
+                        {!parallelGeneration && (
+                          <span className="text-xs text-primary font-medium animate-pulse flex items-center gap-1">
+                            Turn on →
+                          </span>
+                        )}
+                        <Switch
+                          checked={parallelGeneration}
+                          onCheckedChange={setParallelGeneration}
+                        />
+                      </div>
                     </div>
 
                     {/* Slow Connection Mode Toggle */}
