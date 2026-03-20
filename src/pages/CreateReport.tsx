@@ -1449,17 +1449,7 @@ const CreateReport = () => {
       }
     });
 
-    // Add 1.5 line spacing (360 = 1.5 × 240 twips per line)
-    const lineSpacing = 360;
-
-    // Apply line spacing to all paragraphs
-    children.forEach(p => {
-      if (p instanceof Paragraph) {
-        const existing = (p as any).properties?.spacing || {};
-        (p as any).properties = (p as any).properties || {};
-        (p as any).properties.spacing = { ...existing, line: lineSpacing };
-      }
-    });
+    // Line spacing 1.5 is set via default document style below
 
     const doc = new Document({
       sections: [{
