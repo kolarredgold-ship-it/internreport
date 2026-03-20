@@ -121,7 +121,7 @@ const CreateReport = () => {
   const [lineCount, setLineCount] = useState(0);
   const [generateInParts, setGenerateInParts] = useState(false);
   const [currentPart, setCurrentPart] = useState<string | null>(null);
-  const [parallelGeneration, setParallelGeneration] = useState(true); // Enable parallel by default
+  const [parallelGeneration, setParallelGeneration] = useState(false); // Fast mode off by default
   const [activeChapters, setActiveChapters] = useState<string[]>([]); // Track chapters being generated in parallel
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [resumingReport, setResumingReport] = useState(false);
