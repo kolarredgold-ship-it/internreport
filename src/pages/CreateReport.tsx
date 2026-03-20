@@ -2056,9 +2056,9 @@ const CreateReport = () => {
                     </div>
                     
                     {/* Fast Parallel Generation Toggle */}
-                    <div className="flex items-center justify-between bg-primary/5 rounded-lg p-3 border border-primary/20">
+                    <div className={`flex items-center justify-between rounded-lg p-3 border transition-all ${parallelGeneration ? 'bg-primary/10 border-primary/30' : 'bg-muted/50 border-border/50'}`}>
                       <div className="flex items-center gap-2 flex-1">
-                        <Sparkles className="w-4 h-4 text-primary" />
+                        <Sparkles className={`w-4 h-4 ${parallelGeneration ? 'text-primary' : 'text-muted-foreground'}`} />
                         <div>
                           <p className="text-sm font-medium">⚡ Fast Mode (3x Speed)</p>
                           <p className="text-xs text-muted-foreground">
@@ -2066,10 +2066,17 @@ const CreateReport = () => {
                           </p>
                         </div>
                       </div>
-                      <Switch
-                        checked={parallelGeneration}
-                        onCheckedChange={setParallelGeneration}
-                      />
+                      <div className="flex items-center gap-2">
+                        {!parallelGeneration && (
+                          <span className="text-xs text-primary font-medium animate-pulse flex items-center gap-1">
+                            Turn on →
+                          </span>
+                        )}
+                        <Switch
+                          checked={parallelGeneration}
+                          onCheckedChange={setParallelGeneration}
+                        />
+                      </div>
                     </div>
 
                     {/* Slow Connection Mode Toggle */}
