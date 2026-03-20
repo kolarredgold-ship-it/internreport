@@ -1060,7 +1060,7 @@ const CreateReport = () => {
   };
 
   // Fetch an AI-generated image as buffer
-  const fetchImageAsBuffer = async (keyword: string, index: number): Promise<ArrayBuffer | null> => {
+  const fetchImageAsBuffer = async (keyword: string, index: number): Promise<{ buffer: ArrayBuffer; type: 'png' | 'jpg' } | null> => {
     try {
       const { data, error } = await supabase.functions.invoke('generate-report-image', {
         body: { keyword, index },
@@ -1071,7 +1071,9 @@ const CreateReport = () => {
       for (let i = 0; i < binaryStr.length; i++) {
         bytes[i] = binaryStr.charCodeAt(i);
       }
-      return bytes.buffer;
+      // Detect image type from first bytes
+      const isPng = bytes[0] === 0x89 && bytes[1] === 0x50;
+      return { buffer: bytes.buffer, type: isPng ? 'png' : 'jpg' };
     } catch {
       return null;
     }
