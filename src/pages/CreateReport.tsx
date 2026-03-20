@@ -1452,6 +1452,15 @@ const CreateReport = () => {
     // Line spacing 1.5 is set via default document style below
 
     const doc = new Document({
+      styles: {
+        default: {
+          document: {
+            paragraph: {
+              spacing: { line: 360 }, // 1.5 line spacing
+            },
+          },
+        },
+      },
       sections: [{
         properties: {
           page: {
