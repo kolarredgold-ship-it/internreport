@@ -1325,14 +1325,15 @@ const CreateReport = () => {
             })
           );
           // Insert image after certain headings
-          if (imageInsertAfterHeadings.has(headingCount) && imageIndex < imageBuffers.length) {
+          if (imageInsertAfterHeadings.has(headingCount) && imageIndex < imageResults.length) {
+            const img = imageResults[imageIndex];
             children.push(
               new Paragraph({
                 children: [
                   new ImageRun({
-                    data: imageBuffers[imageIndex],
+                    data: img.buffer,
                     transformation: { width: 500, height: 312 },
-                    type: 'jpg',
+                    type: img.type,
                   }),
                 ],
                 alignment: AlignmentType.CENTER,
