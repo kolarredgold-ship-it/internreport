@@ -1449,8 +1449,54 @@ const CreateReport = () => {
       }
     });
 
+    // Add 1.5 line spacing (360 = 1.5 × 240 twips per line)
+    const lineSpacing = 360;
+
+    // Apply line spacing to all paragraphs
+    children.forEach(p => {
+      if (p instanceof Paragraph) {
+        const existing = (p as any).properties?.spacing || {};
+        (p as any).properties = (p as any).properties || {};
+        (p as any).properties.spacing = { ...existing, line: lineSpacing };
+      }
+    });
+
     const doc = new Document({
-      sections: [{ properties: {}, children }],
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 },
+          },
+        },
+        headers: {
+          default: new Header({
+            children: [
+              new Paragraph({
+                children: [new TextRun({ text: formData.internshipTitle, bold: true, size: 20 })],
+                alignment: AlignmentType.CENTER,
+              }),
+            ],
+          }),
+        },
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({ text: formData.studentName, size: 18 }),
+                  new TextRun({ text: '\t\t' }),
+                  new TextRun({ text: 'Page ' }),
+                  new TextRun({ children: [PageNumber.CURRENT] }),
+                ],
+                tabStops: [
+                  { type: 'right' as any, position: 9360 },
+                ],
+              }),
+            ],
+          }),
+        },
+        children,
+      }],
     });
 
     const blob = await Packer.toBlob(doc);
