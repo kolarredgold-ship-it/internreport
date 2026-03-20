@@ -1111,7 +1111,7 @@ const CreateReport = () => {
 
     const keywords = getImageKeywords();
     const imagePromises = keywords.map((kw, i) => fetchImageAsBuffer(kw, i));
-    const imageBuffers = (await Promise.all(imagePromises)).filter(Boolean) as ArrayBuffer[];
+    const imageResults = (await Promise.all(imagePromises)).filter(Boolean) as { buffer: ArrayBuffer; type: 'png' | 'jpg' }[];
 
     // Merge all chapters in order and clean up asterisks
     const orderedContent = getChapters(formData.internshipTitle)
