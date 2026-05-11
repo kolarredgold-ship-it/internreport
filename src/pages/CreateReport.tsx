@@ -49,6 +49,13 @@ const initialFormData: FormData = {
   pagesCount: 25,
 };
 
+const MAX_TOPIC_PAYLOAD_LENGTH = 9000;
+
+const getGenerationPayload = (data: FormData): FormData => ({
+  ...data,
+  topicSpecialization: data.topicSpecialization.trim().slice(0, MAX_TOPIC_PAYLOAD_LENGTH),
+});
+
 // Chapters to generate (in order) - function to allow dynamic title for Chapter 1
 const getChapters = (internshipTitle?: string) => [
   { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, Executive Summary, TOC' },
@@ -495,7 +502,7 @@ const CreateReport = () => {
         
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
-            ...formData,
+            ...getGenerationPayload(formData),
             userId: user?.id,
             chapter: chapterKey,
           },
@@ -604,7 +611,7 @@ const CreateReport = () => {
         
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
-            ...formData,
+            ...getGenerationPayload(formData),
             userId: user?.id,
             chapter: chapterKey,
             part: part,
