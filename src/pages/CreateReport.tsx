@@ -502,7 +502,7 @@ const CreateReport = () => {
         
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
-            ...formData,
+            ...getGenerationPayload(formData),
             userId: user?.id,
             chapter: chapterKey,
           },
@@ -611,7 +611,7 @@ const CreateReport = () => {
         
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
-            ...formData,
+            ...getGenerationPayload(formData),
             userId: user?.id,
             chapter: chapterKey,
             part: part,
