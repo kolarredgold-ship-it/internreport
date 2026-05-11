@@ -93,7 +93,7 @@
      }
  
       const fieldMaxLength: Record<string, number> = {
-        topicSpecialization: 10000,
+        topicSpecialization: 12000,
       };
       const defaultMaxLength = 500;
       for (const field of requiredFields) {
@@ -107,7 +107,7 @@
         }
 
         const limit = fieldMaxLength[field] ?? defaultMaxLength;
-        if (body[field].length > limit) {
+        if (field !== 'topicSpecialization' && body[field].length > limit) {
           return new Response(
             JSON.stringify({ error: `${field} exceeds maximum length of ${limit} characters` }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -115,7 +115,15 @@
         }
       }
 
-      const sanitize = (str: string, max = defaultMaxLength) => str.trim().substring(0, max);
+      const sanitize = (str: string, max = defaultMaxLength) => str.trim().replace(/\s+/g, ' ').substring(0, max);
+      const createTopicFocus = (str: string) => {
+        const firstUsefulLine = str
+          .split(/[\n.]/)
+          .map((line) => line.trim())
+          .find((line) => line.length > 0) || str;
+
+        return sanitize(firstUsefulLine.replace(/https?:\/\/\S+/gi, ''), 160) || 'the internship specialization';
+      };
 
       const studentName = sanitize(body.studentName);
       const registerNumber = sanitize(body.registerNumber);
@@ -128,7 +136,8 @@
       const companyLocation = sanitize(body.companyLocation);
       const internshipDuration = sanitize(body.internshipDuration);
       const academicYear = sanitize(body.academicYear);
-      const topicSpecialization = sanitize(body.topicSpecialization, fieldMaxLength.topicSpecialization);
+      const topicDetails = sanitize(body.topicSpecialization, fieldMaxLength.topicSpecialization);
+      const topicSpecialization = createTopicFocus(body.topicSpecialization);
      const pagesCount = body.pagesCount;
      const chapter = body.chapter || null;
      const part = body.part || null;
@@ -173,7 +182,8 @@
  College: ${collegeName}, University: ${university}, Guide: ${guideName}
  Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
  Duration: ${internshipDuration}, Year: ${academicYear}
- Topic/Specialization: ${topicSpecialization}
+  Topic/Specialization: ${topicSpecialization}
+  Student-provided internship/company details: ${topicDetails}
  Target: ${pagesCount} pages total`;
  
      // NEW DETAILED 4-CHAPTER STRUCTURE (as per user requirements)
