@@ -37,7 +37,7 @@ const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       const { data, error } = await supabase
-        .from('digital_products')
+        .from('digital_products_public' as any)
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });

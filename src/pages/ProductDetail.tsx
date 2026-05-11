@@ -37,7 +37,7 @@ const ProductDetail = () => {
     const fetchProduct = async () => {
       if (!slug) return;
       const { data, error } = await supabase
-        .from('digital_products')
+        .from('digital_products_public' as any)
         .select('*')
         .eq('slug', slug)
         .eq('is_active', true)
