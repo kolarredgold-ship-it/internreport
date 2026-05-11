@@ -286,13 +286,16 @@ const BlogPostPage = () => {
             <div 
               className="blog-content text-sm"
               dangerouslySetInnerHTML={{ 
-                __html: post.content
-                  .replace(/## /g, '<h2 class="font-display text-lg font-bold mt-5 mb-2">')
-                  .replace(/### /g, '<h3 class="font-display text-base font-semibold mt-3 mb-2">')
-                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                  .replace(/\n\n/g, '</p><p class="mb-2 text-muted-foreground leading-relaxed text-sm">')
-                  .replace(/^- (.*?)$/gm, '<li class="ml-4 mb-1 text-xs">$1</li>')
-                  .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>')
+                __html: DOMPurify.sanitize(
+                  post.content
+                    .replace(/## /g, '<h2 class="font-display text-lg font-bold mt-5 mb-2">')
+                    .replace(/### /g, '<h3 class="font-display text-base font-semibold mt-3 mb-2">')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\n\n/g, '</p><p class="mb-2 text-muted-foreground leading-relaxed text-sm">')
+                    .replace(/^- (.*?)$/gm, '<li class="ml-4 mb-1 text-xs">$1</li>')
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline">$1</a>'),
+                  { ALLOWED_TAGS: ['h2','h3','p','strong','em','ul','ol','li','a','br','span','div'], ALLOWED_ATTR: ['href','class','target','rel'] }
+                )
               }}
             />
           </div>
