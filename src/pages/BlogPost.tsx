@@ -7,6 +7,7 @@ import { getPostBySlug, blogPosts, BlogPost as BlogPostType } from '@/data/blogP
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
+import DOMPurify from 'dompurify';
 
 const BlogPostPage = () => {
   const { slug } = useParams<{ slug: string }>();
