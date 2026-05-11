@@ -258,6 +258,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "digital_products_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payments_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
@@ -601,7 +608,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      digital_products_public: {
+        Row: {
+          actual_price: number | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          download_count: number | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          offer_price: number | null
+          price: number | null
+          slug: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_price?: number | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          download_count?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          offer_price?: number | null
+          price?: number | null
+          slug?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_price?: number | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          download_count?: number | null
+          id?: string | null
+          image_url?: string | null
+          is_active?: boolean | null
+          offer_price?: number | null
+          price?: number | null
+          slug?: string | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_withdraw: { Args: { p_user_id: string }; Returns: Json }
