@@ -5,6 +5,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function picsumFallback(keyword: string, index: number) {
+  const seed = `${keyword}-${index}`;
+  const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(seed)}/640/400`;
+  const fallbackResp = await fetch(fallbackUrl, { redirect: "follow" });
+  if (!fallbackResp.ok) return null;
+  const arrayBuffer = await fallbackResp.arrayBuffer();
+  return btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -13,42 +22,32 @@ serve(async (req) => {
   try {
     const { keyword, index } = await req.json();
 
-    const GROK_API_KEY = Deno.env.get("GROK_API_KEY");
-    if (!GROK_API_KEY) throw new Error("GROK_API_KEY not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
 
     const prompt = `Generate a professional, realistic photograph suitable for an academic internship report. The image should depict: ${keyword}. Style: Clean, corporate, professional photography. No text or watermarks. High quality, well-lit, modern setting.`;
 
-    const response = await fetch("https://api.x.ai/v1/images/generations", {
+    const model = "gemini-2.5-flash-image";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${GROK_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "grok-2-image",
-        prompt: prompt,
-        n: 1,
-        response_format: "b64_json",
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ["IMAGE"] },
       }),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error("Grok image generation error:", response.status, errText);
-
-      // Fallback to picsum if Grok fails
-      const seed = `${keyword}-${index}`;
-      const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(seed)}/640/400`;
-      const fallbackResp = await fetch(fallbackUrl, { redirect: "follow" });
-
-      if (fallbackResp.ok) {
-        const arrayBuffer = await fallbackResp.arrayBuffer();
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-        return new Response(JSON.stringify({ image: base64, source: "fallback" }), {
+      console.error("Gemini image error:", response.status, errText);
+      const fallback = await picsumFallback(keyword, index);
+      if (fallback) {
+        return new Response(JSON.stringify({ image: fallback, source: "fallback" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
       return new Response(JSON.stringify({ error: "Failed to generate image" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -56,36 +55,19 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const b64Image = data.data?.[0]?.b64_json;
+    const parts = data?.candidates?.[0]?.content?.parts ?? [];
+    const imgPart = parts.find((p: any) => p?.inlineData?.data || p?.inline_data?.data);
+    const b64Image = imgPart?.inlineData?.data || imgPart?.inline_data?.data;
 
     if (b64Image) {
-      return new Response(JSON.stringify({ image: b64Image, source: "grok" }), {
+      return new Response(JSON.stringify({ image: b64Image, source: "gemini" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // If no b64 image, check for URL format
-    const imageUrl = data.data?.[0]?.url;
-    if (imageUrl) {
-      const imgResp = await fetch(imageUrl);
-      if (imgResp.ok) {
-        const arrayBuffer = await imgResp.arrayBuffer();
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-        return new Response(JSON.stringify({ image: base64, source: "grok" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    }
-
-    // Fallback to picsum
-    const seed = `${keyword}-${index}`;
-    const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(seed)}/640/400`;
-    const fallbackResp = await fetch(fallbackUrl, { redirect: "follow" });
-
-    if (fallbackResp.ok) {
-      const arrayBuffer = await fallbackResp.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-      return new Response(JSON.stringify({ image: base64, source: "fallback" }), {
+    const fallback = await picsumFallback(keyword, index);
+    if (fallback) {
+      return new Response(JSON.stringify({ image: fallback, source: "fallback" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -96,7 +78,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Image generation error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
