@@ -93,7 +93,7 @@
      }
  
       const fieldMaxLength: Record<string, number> = {
-        topicSpecialization: 2000,
+        topicSpecialization: 10000,
       };
       const defaultMaxLength = 500;
       for (const field of requiredFields) {
