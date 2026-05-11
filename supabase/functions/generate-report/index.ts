@@ -92,39 +92,43 @@
        );
      }
  
-     const maxLength = 500;
-     for (const field of requiredFields) {
-       if (field === 'pagesCount') continue;
-       
-       if (typeof body[field] !== 'string') {
-         return new Response(
-           JSON.stringify({ error: `${field} must be a string` }),
-           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-         );
-       }
-       
-       if (body[field].length > maxLength) {
-         return new Response(
-           JSON.stringify({ error: `${field} exceeds maximum length of ${maxLength} characters` }),
-           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-         );
-       }
-     }
- 
-     const sanitize = (str: string) => str.trim().substring(0, maxLength);
- 
-     const studentName = sanitize(body.studentName);
-     const registerNumber = sanitize(body.registerNumber);
-     const course = sanitize(body.course);
-     const collegeName = sanitize(body.collegeName);
-     const university = sanitize(body.university);
-     const guideName = sanitize(body.guideName);
-     const internshipTitle = sanitize(body.internshipTitle);
-     const companyName = sanitize(body.companyName);
-     const companyLocation = sanitize(body.companyLocation);
-     const internshipDuration = sanitize(body.internshipDuration);
-     const academicYear = sanitize(body.academicYear);
-     const topicSpecialization = sanitize(body.topicSpecialization);
+      const fieldMaxLength: Record<string, number> = {
+        topicSpecialization: 2000,
+      };
+      const defaultMaxLength = 500;
+      for (const field of requiredFields) {
+        if (field === 'pagesCount') continue;
+
+        if (typeof body[field] !== 'string') {
+          return new Response(
+            JSON.stringify({ error: `${field} must be a string` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const limit = fieldMaxLength[field] ?? defaultMaxLength;
+        if (body[field].length > limit) {
+          return new Response(
+            JSON.stringify({ error: `${field} exceeds maximum length of ${limit} characters` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      const sanitize = (str: string, max = defaultMaxLength) => str.trim().substring(0, max);
+
+      const studentName = sanitize(body.studentName);
+      const registerNumber = sanitize(body.registerNumber);
+      const course = sanitize(body.course);
+      const collegeName = sanitize(body.collegeName);
+      const university = sanitize(body.university);
+      const guideName = sanitize(body.guideName);
+      const internshipTitle = sanitize(body.internshipTitle);
+      const companyName = sanitize(body.companyName);
+      const companyLocation = sanitize(body.companyLocation);
+      const internshipDuration = sanitize(body.internshipDuration);
+      const academicYear = sanitize(body.academicYear);
+      const topicSpecialization = sanitize(body.topicSpecialization, fieldMaxLength.topicSpecialization);
      const pagesCount = body.pagesCount;
      const chapter = body.chapter || null;
      const part = body.part || null;
