@@ -1123,7 +1123,7 @@ const CreateReport = () => {
       .join('\n\n---\n\n');
 
     const sections = orderedContent.split('\n\n');
-    const children: Paragraph[] = [];
+    const children: (Paragraph | Table)[] = [];
 
     // Title page
     children.push(
