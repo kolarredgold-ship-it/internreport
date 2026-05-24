@@ -15,10 +15,12 @@ import {
   Shield,
   Wallet,
   Gift,
-  ShoppingBag
+  ShoppingBag,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReferButton from '@/components/ReferButton';
+import PaymentModal from '@/components/PaymentModal';
 
 interface Profile {
   generations_used: number;
@@ -44,6 +46,10 @@ const Dashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountStatus, setAccountStatus] = useState<AccountStatus>({ isActive: false, label: 'Inactive - Payment Pending' });
   const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [verifiedTopups, setVerifiedTopups] = useState(0);
+  const [hasPendingTopup, setHasPendingTopup] = useState(false);
+  const [showTopupModal, setShowTopupModal] = useState(false);
+
 
   useEffect(() => {
     if (!authLoading && !user) {
