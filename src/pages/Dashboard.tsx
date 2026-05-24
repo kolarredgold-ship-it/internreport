@@ -274,25 +274,43 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Top Up Alert */}
-        {needsTopUp && (
-          <Card className="border-warning/50 bg-warning/5 mb-8">
+        {/* Top Up Section - always visible for non-admins */}
+        {!isAdmin && (
+          <Card className={`mb-8 ${needsTopUp ? 'border-warning/50 bg-warning/5' : 'border-primary/30 bg-primary/5'}`}>
             <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <AlertCircle className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-display font-semibold mb-1">Generation Limit Reached</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    You've used your 1 free generation. Top up to continue creating reports.
-                  </p>
-                  <Button variant="gradient">
-                    Top Up ₹499 for 5 Reports
-                  </Button>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  {needsTopUp ? (
+                    <AlertCircle className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <Sparkles className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <h3 className="font-display font-semibold mb-1">
+                      {needsTopUp ? 'Generation Limit Reached' : 'Need More Reports?'}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      {hasPendingTopup
+                        ? 'Your top-up payment is under review. Once approved, you can generate 3 more reports.'
+                        : needsTopUp
+                        ? "You've used all your generations. Top up ₹499 to get 3 more reports."
+                        : `You have ${remainingGenerations} generation${remainingGenerations === 1 ? '' : 's'} left. Top up ₹499 anytime to get 3 more.`}
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  variant="gradient"
+                  onClick={() => setShowTopupModal(true)}
+                  disabled={hasPendingTopup}
+                  className="w-full sm:w-auto whitespace-nowrap"
+                >
+                  {hasPendingTopup ? 'Awaiting Approval' : 'Top Up ₹499'}
+                </Button>
               </div>
             </CardContent>
           </Card>
         )}
+
 
         {/* Action Cards */}
         <div className="grid md:grid-cols-3 gap-6">
