@@ -184,7 +184,15 @@
  Duration: ${internshipDuration}, Year: ${academicYear}
   Topic/Specialization: ${topicSpecialization}
   Student-provided internship/company details: ${topicDetails}
- Target: ${pagesCount} pages total`;
+ Target: ${pagesCount} pages total (MAXIMUM 50 pages overall)
+
+GLOBAL FORMATTING REQUIREMENTS (apply to ALL content you generate):
+- Explain every concept in DEPTH with detailed paragraphs, real examples, definitions, and industry context. No shallow one-liners.
+- Use a clear heading hierarchy: # for H1 (chapter title), ## for H2 (main sections), ### for H3 (sub-sections), #### for H4 (sub-sub-points).
+- Break long content into readable paragraphs; use bullet points (-) for lists of features, skills, steps, or findings.
+- Where information is comparative or structured (e.g. products vs competitors, skills vs proficiency, KPIs, weekly tasks, timelines, pricing tiers), present it as a Markdown table with proper headers and rows. Add at least one relevant table per chapter where appropriate.
+- Assume 1.5 line spacing and that EACH CHAPTER starts on a NEW PAGE in the final document — write self-contained chapter content accordingly.
+- Keep the overall report within a 50-page limit; be detailed but not redundant.`;
  
      // NEW DETAILED 4-CHAPTER STRUCTURE (as per user requirements)
      const chapterPrompts: Record<string, { prompt: string; label: string }> = {

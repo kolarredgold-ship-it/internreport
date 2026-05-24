@@ -13,7 +13,7 @@ import { FileText, ArrowLeft, Loader2, Download, Sparkles, CreditCard, Clock, Ch
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun, Header, Footer, PageNumber } from 'docx';
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun, Header, Footer, PageNumber, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType } from 'docx';
 import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
 
@@ -1123,7 +1123,7 @@ const CreateReport = () => {
       .join('\n\n---\n\n');
 
     const sections = orderedContent.split('\n\n');
-    const children: Paragraph[] = [];
+    const children: (Paragraph | Table)[] = [];
 
     // Title page
     children.push(
@@ -1309,8 +1309,50 @@ const CreateReport = () => {
         const isH1 = trimmed.startsWith('# ');
         const isH2 = trimmed.startsWith('## ');
         const isH3 = trimmed.startsWith('### ');
+        const isH4 = trimmed.startsWith('#### ');
         const isChapterHeading = (text: string) => /chapter\s/i.test(text);
         const isFrontMatterHeading = (text: string) => /^(EXECUTIVE SUMMARY|ABSTRACT|TABLE OF CONTENTS|LIST OF|BIBLIOGRAPHY|ANNEXURES)/i.test(text);
+
+        // Markdown table detection: lines starting with | and a separator row containing ---
+        const sectionLines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
+        const looksLikeTable =
+          sectionLines.length >= 2 &&
+          sectionLines[0].startsWith('|') &&
+          /^\|?\s*:?-{2,}/.test(sectionLines[1].replace(/\|/g, '|'));
+
+        if (looksLikeTable) {
+          const parseRow = (line: string) =>
+            line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+          const headerCells = parseRow(sectionLines[0]);
+          const bodyRows = sectionLines.slice(2).filter(l => l.startsWith('|')).map(parseRow);
+          const colCount = headerCells.length;
+          const tableWidth = 9360;
+          const colWidth = Math.floor(tableWidth / colCount);
+          const columnWidths = Array(colCount).fill(colWidth);
+          const cellBorder = { style: BorderStyle.SINGLE, size: 4, color: '999999' };
+          const cellBorders = { top: cellBorder, bottom: cellBorder, left: cellBorder, right: cellBorder };
+          const makeCell = (text: string, header: boolean) => new TableCell({
+            borders: cellBorders,
+            width: { size: colWidth, type: WidthType.DXA },
+            shading: header ? { fill: 'E8EEF7', type: ShadingType.CLEAR, color: 'auto' } : undefined,
+            margins: { top: 80, bottom: 80, left: 120, right: 120 },
+            children: [new Paragraph({ children: [new TextRun({ text, bold: header, size: 22 })] })],
+          });
+          const rows = [
+            new TableRow({ children: headerCells.map(c => makeCell(c, true)) }),
+            ...bodyRows.map(r => new TableRow({
+              children: Array.from({ length: colCount }, (_, i) => makeCell(r[i] ?? '', false)),
+            })),
+          ];
+          children.push(new Table({
+            width: { size: tableWidth, type: WidthType.DXA },
+            columnWidths,
+            rows,
+          }));
+          children.push(new Paragraph({ children: [new TextRun({ text: '', size: 20 })], spacing: { after: 200 } }));
+          return;
+        }
+
 
         if (isH1 || isH2) {
           const headingText = trimmed.replace(/^#{1,2}\s/, '');
@@ -1356,6 +1398,14 @@ const CreateReport = () => {
               children: [new TextRun({ text: trimmed.replace('### ', ''), bold: true, underline: { type: 'single' }, size: 24 })],
               heading: HeadingLevel.HEADING_3,
               spacing: { before: 200, after: 100 },
+            })
+          );
+        } else if (isH4) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: trimmed.replace('#### ', ''), bold: true, italics: true, size: 22 })],
+              heading: HeadingLevel.HEADING_4,
+              spacing: { before: 160, after: 80 },
             })
           );
         } else if (/^\d+[\.\)]\s/.test(trimmed)) {
