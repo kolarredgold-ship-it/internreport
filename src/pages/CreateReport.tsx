@@ -1400,6 +1400,14 @@ const CreateReport = () => {
               spacing: { before: 200, after: 100 },
             })
           );
+        } else if (isH4) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: trimmed.replace('#### ', ''), bold: true, italics: true, size: 22 })],
+              heading: HeadingLevel.HEADING_4,
+              spacing: { before: 160, after: 80 },
+            })
+          );
         } else if (/^\d+[\.\)]\s/.test(trimmed)) {
           // Numbered lists
           const numberMatch = trimmed.match(/^(\d+[\.\)])\s(.*)/)!;
