@@ -121,7 +121,6 @@ const Dashboard = () => {
 
   const checkAccountStatus = async () => {
     try {
-      // Admins are always active
       const { data: isAdminData } = await supabase
         .rpc('has_role', { _user_id: user?.id, _role: 'admin' });
       
@@ -130,26 +129,28 @@ const Dashboard = () => {
         return;
       }
 
-      // Check if user has any verified top-up payment (not just free generation)
       const { data, error } = await supabase
         .from('payments')
-        .select('id, status')
+        .select('id, status, payment_type')
         .eq('user_id', user?.id)
-        .eq('status', 'verified')
-        .limit(1);
+        .eq('status', 'verified');
 
       if (error) throw error;
-      
+
+      const topupCount = (data || []).filter((p: any) => p.payment_type === 'topup').length;
+      setVerifiedTopups(topupCount);
+
       if (data && data.length > 0) {
         setAccountStatus({ isActive: true, label: 'Active' });
       } else {
-        // Check if there's a pending payment
         const { data: pendingData } = await supabase
           .from('payments')
-          .select('id, status')
+          .select('id, status, payment_type')
           .eq('user_id', user?.id)
-          .eq('status', 'pending')
-          .limit(1);
+          .eq('status', 'pending');
+
+        const pendingTopup = (pendingData || []).some((p: any) => p.payment_type === 'topup');
+        setHasPendingTopup(pendingTopup);
 
         if (pendingData && pendingData.length > 0) {
           setAccountStatus({ isActive: false, label: 'Payment Under Review' });
@@ -167,8 +168,10 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const remainingGenerations = isAdmin ? Infinity : Math.max(0, 1 - (profile?.generations_used || 0));
+  const allowance = 1 + verifiedTopups * 3;
+  const remainingGenerations = isAdmin ? Infinity : Math.max(0, allowance - (profile?.generations_used || 0));
   const needsTopUp = !isAdmin && remainingGenerations <= 0;
+
 
   if (authLoading || loading) {
     return (
