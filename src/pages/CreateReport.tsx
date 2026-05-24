@@ -362,26 +362,22 @@ const CreateReport = () => {
 
       const { data: paymentData } = await supabase
         .from('payments')
-        .select('id, status')
+        .select('id, status, payment_type')
         .eq('user_id', user?.id)
-        .eq('status', 'verified')
-        .limit(1);
+        .eq('status', 'verified');
 
-      const hasVerifiedPayment = paymentData && paymentData.length > 0;
+      const hasVerifiedPayment = !!(paymentData && paymentData.length > 0);
+      const verifiedTopups = (paymentData || []).filter((p: any) => p.payment_type === 'topup').length;
       setHasApprovedPayment(hasVerifiedPayment);
 
-      // Simple logic: generations_used < 1 means can generate
-      // After top-up, admin subtracts 3 from generations_used, so it goes below 1 again
-      if (usedCount < 1) {
+      // Allowance: 1 free generation + 3 per verified topup payment
+      const allowance = 1 + verifiedTopups * 3;
+
+      if (usedCount < allowance) {
         setCanGenerate(true);
         setNeedsTopup(false);
-        if (hasVerifiedPayment) {
-          setPaymentStatus('verified');
-        } else {
-          setPaymentStatus('none');
-        }
+        setPaymentStatus(hasVerifiedPayment ? 'verified' : 'none');
       } else {
-        // Generation limit reached - check for pending payment
         setCanGenerate(false);
         setNeedsTopup(true);
 
