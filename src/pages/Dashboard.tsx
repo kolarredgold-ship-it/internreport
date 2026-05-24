@@ -376,7 +376,25 @@ const Dashboard = () => {
         <div className="mt-8">
           <ReferButton />
         </div>
+        {/* Refer & Earn Button */}
+        <div className="mt-8">
+          <ReferButton />
+        </div>
       </main>
+
+      {user && (
+        <PaymentModal
+          isOpen={showTopupModal}
+          onClose={() => setShowTopupModal(false)}
+          amount={499}
+          userId={user.id}
+          paymentType="topup"
+          onSuccess={() => {
+            checkAccountStatus();
+            fetchProfile();
+          }}
+        />
+      )}
     </div>
   );
 };
