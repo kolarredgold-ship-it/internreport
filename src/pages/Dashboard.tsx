@@ -15,10 +15,12 @@ import {
   Shield,
   Wallet,
   Gift,
-  ShoppingBag
+  ShoppingBag,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReferButton from '@/components/ReferButton';
+import PaymentModal from '@/components/PaymentModal';
 
 interface Profile {
   generations_used: number;
@@ -44,6 +46,10 @@ const Dashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [accountStatus, setAccountStatus] = useState<AccountStatus>({ isActive: false, label: 'Inactive - Payment Pending' });
   const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [verifiedTopups, setVerifiedTopups] = useState(0);
+  const [hasPendingTopup, setHasPendingTopup] = useState(false);
+  const [showTopupModal, setShowTopupModal] = useState(false);
+
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -115,7 +121,6 @@ const Dashboard = () => {
 
   const checkAccountStatus = async () => {
     try {
-      // Admins are always active
       const { data: isAdminData } = await supabase
         .rpc('has_role', { _user_id: user?.id, _role: 'admin' });
       
@@ -124,26 +129,28 @@ const Dashboard = () => {
         return;
       }
 
-      // Check if user has any verified top-up payment (not just free generation)
       const { data, error } = await supabase
         .from('payments')
-        .select('id, status')
+        .select('id, status, payment_type')
         .eq('user_id', user?.id)
-        .eq('status', 'verified')
-        .limit(1);
+        .eq('status', 'verified');
 
       if (error) throw error;
-      
+
+      const topupCount = (data || []).filter((p: any) => p.payment_type === 'topup').length;
+      setVerifiedTopups(topupCount);
+
       if (data && data.length > 0) {
         setAccountStatus({ isActive: true, label: 'Active' });
       } else {
-        // Check if there's a pending payment
         const { data: pendingData } = await supabase
           .from('payments')
-          .select('id, status')
+          .select('id, status, payment_type')
           .eq('user_id', user?.id)
-          .eq('status', 'pending')
-          .limit(1);
+          .eq('status', 'pending');
+
+        const pendingTopup = (pendingData || []).some((p: any) => p.payment_type === 'topup');
+        setHasPendingTopup(pendingTopup);
 
         if (pendingData && pendingData.length > 0) {
           setAccountStatus({ isActive: false, label: 'Payment Under Review' });
@@ -161,8 +168,10 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const remainingGenerations = isAdmin ? Infinity : Math.max(0, 1 - (profile?.generations_used || 0));
+  const allowance = 1 + verifiedTopups * 3;
+  const remainingGenerations = isAdmin ? Infinity : Math.max(0, allowance - (profile?.generations_used || 0));
   const needsTopUp = !isAdmin && remainingGenerations <= 0;
+
 
   if (authLoading || loading) {
     return (
@@ -265,25 +274,43 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Top Up Alert */}
-        {needsTopUp && (
-          <Card className="border-warning/50 bg-warning/5 mb-8">
+        {/* Top Up Section - always visible for non-admins */}
+        {!isAdmin && (
+          <Card className={`mb-8 ${needsTopUp ? 'border-warning/50 bg-warning/5' : 'border-primary/30 bg-primary/5'}`}>
             <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <AlertCircle className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="font-display font-semibold mb-1">Generation Limit Reached</h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    You've used your 1 free generation. Top up to continue creating reports.
-                  </p>
-                  <Button variant="gradient">
-                    Top Up ₹499 for 5 Reports
-                  </Button>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  {needsTopUp ? (
+                    <AlertCircle className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <Sparkles className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <h3 className="font-display font-semibold mb-1">
+                      {needsTopUp ? 'Generation Limit Reached' : 'Need More Reports?'}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      {hasPendingTopup
+                        ? 'Your top-up payment is under review. Once approved, you can generate 3 more reports.'
+                        : needsTopUp
+                        ? "You've used all your generations. Top up ₹499 to get 3 more reports."
+                        : `You have ${remainingGenerations} generation${remainingGenerations === 1 ? '' : 's'} left. Top up ₹499 anytime to get 3 more.`}
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  variant="gradient"
+                  onClick={() => setShowTopupModal(true)}
+                  disabled={hasPendingTopup}
+                  className="w-full sm:w-auto whitespace-nowrap"
+                >
+                  {hasPendingTopup ? 'Awaiting Approval' : 'Top Up ₹499'}
+                </Button>
               </div>
             </CardContent>
           </Card>
         )}
+
 
         {/* Action Cards */}
         <div className="grid md:grid-cols-3 gap-6">
@@ -349,7 +376,25 @@ const Dashboard = () => {
         <div className="mt-8">
           <ReferButton />
         </div>
+        {/* Refer & Earn Button */}
+        <div className="mt-8">
+          <ReferButton />
+        </div>
       </main>
+
+      {user && (
+        <PaymentModal
+          isOpen={showTopupModal}
+          onClose={() => setShowTopupModal(false)}
+          amount={499}
+          userId={user.id}
+          paymentType="topup"
+          onSuccess={() => {
+            checkAccountStatus();
+            fetchProfile();
+          }}
+        />
+      )}
     </div>
   );
 };
