@@ -1840,15 +1840,26 @@ const CreateReport = () => {
 
               {/* Download Button - Only show when ALL chapters are complete */}
               {hasAllContent && !generating && (
-                <Button 
-                  variant="hero" 
-                  onClick={downloadFullReport} 
-                  className="w-full" 
-                  size="lg"
-                >
-                  <Download className="w-5 h-5" />
-                  Download Complete Report
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    variant="hero"
+                    onClick={() => downloadFullReport(false)}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download Complete Report
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => downloadFullReport(true)}
+                    className="w-full"
+                    size="sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download BNU Format (B.Com / BBA)
+                  </Button>
+                </div>
               )}
               
               {/* Progress message if not all chapters are done */}
