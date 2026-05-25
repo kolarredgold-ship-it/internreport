@@ -1138,7 +1138,7 @@ const CreateReport = () => {
         spacing: { after: 600 },
       }),
       new Paragraph({
-        children: [new TextRun({ text: 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
+        children: [new TextRun({ text: bnuFormat ? 'INTERNSHIP REPORT' : 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
         alignment: AlignmentType.CENTER,
         spacing: { after: 400 },
       }),
