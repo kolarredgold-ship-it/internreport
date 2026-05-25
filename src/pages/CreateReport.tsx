@@ -1103,7 +1103,7 @@ const CreateReport = () => {
   };
 
   // Download full merged report
-  const downloadFullReport = async () => {
+  const downloadFullReport = async (bnuFormat: boolean = false) => {
     if (!hasAnyContent) return;
 
     // Fetch 10 topic-related images
