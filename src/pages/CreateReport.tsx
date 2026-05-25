@@ -1363,7 +1363,7 @@ const CreateReport = () => {
           }
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: headingText, bold: true, underline: { type: 'single' }, size: isH1 ? 32 : 28 })],
+              children: [new TextRun({ text: headingText, bold: true, underline: { type: 'single' }, size: 28 })],
               heading: isH1 ? HeadingLevel.HEADING_1 : HeadingLevel.HEADING_2,
               spacing: { before: isH1 ? 400 : 300, after: isH1 ? 200 : 150 },
               alignment: isH1 ? AlignmentType.CENTER : AlignmentType.LEFT,
