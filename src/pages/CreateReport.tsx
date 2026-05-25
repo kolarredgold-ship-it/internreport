@@ -1395,7 +1395,7 @@ const CreateReport = () => {
         } else if (isH3) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: trimmed.replace('### ', ''), bold: true, underline: { type: 'single' }, size: 24 })],
+              children: [new TextRun({ text: trimmed.replace('### ', ''), bold: true, underline: { type: 'single' }, size: 28 })],
               heading: HeadingLevel.HEADING_3,
               spacing: { before: 200, after: 100 },
             })
