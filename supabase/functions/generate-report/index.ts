@@ -187,10 +187,10 @@
  Target: ${pagesCount} pages total (MAXIMUM 50 pages overall)
 
 GLOBAL FORMATTING REQUIREMENTS (apply to ALL content you generate):
-- Explain every concept in DEPTH with detailed paragraphs, real examples, definitions, and industry context. No shallow one-liners.
-- Use a clear heading hierarchy: # for H1 (chapter title), ## for H2 (main sections), ### for H3 (sub-sections), #### for H4 (sub-sub-points).
-- Break long content into readable paragraphs; use bullet points (-) for lists of features, skills, steps, or findings.
-- Where information is comparative or structured (e.g. products vs competitors, skills vs proficiency, KPIs, weekly tasks, timelines, pricing tiers), present it as a Markdown table with proper headers and rows. Add at least one relevant table per chapter where appropriate.
+- Explain every concept in DEPTH. Mix DETAILED PARAGRAPHS with BULLET POINTS in every section — first 1-2 explanatory paragraphs, then a bulleted list of key points/features/steps, then optionally a closing paragraph. Never use only paragraphs or only bullets.
+- Use a clear heading hierarchy: # for H1 (chapter title), ## for H2 (main sections), ### for H3 (sub-sections), #### for H4 (sub-sub-points). All headings will render at 14pt; body content at 12pt.
+- Use bullet points (-) liberally for features, skills, steps, findings, advantages, limitations.
+- Where information is comparative or structured (products vs competitors, skills vs proficiency, KPIs, weekly tasks, timelines, pricing tiers), present it as a Markdown table. Add at least one relevant table per chapter.
 - Assume 1.5 line spacing and that EACH CHAPTER starts on a NEW PAGE in the final document — write self-contained chapter content accordingly.
 - Keep the overall report within a 50-page limit; be detailed but not redundant.`;
  
