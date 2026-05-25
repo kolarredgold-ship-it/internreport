@@ -1403,7 +1403,7 @@ const CreateReport = () => {
         } else if (isH4) {
           children.push(
             new Paragraph({
-              children: [new TextRun({ text: trimmed.replace('#### ', ''), bold: true, italics: true, size: 22 })],
+              children: [new TextRun({ text: trimmed.replace('#### ', ''), bold: true, italics: true, size: 28 })],
               heading: HeadingLevel.HEADING_4,
               spacing: { before: 160, after: 80 },
             })
