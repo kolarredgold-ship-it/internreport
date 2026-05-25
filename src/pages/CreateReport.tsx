@@ -1508,6 +1508,7 @@ const CreateReport = () => {
       styles: {
         default: {
           document: {
+            run: bnuFormat ? { font: 'Times New Roman', size: 24 } : undefined,
             paragraph: {
               spacing: { line: 360 }, // 1.5 line spacing
             },
