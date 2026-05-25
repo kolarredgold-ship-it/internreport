@@ -1103,7 +1103,7 @@ const CreateReport = () => {
   };
 
   // Download full merged report
-  const downloadFullReport = async () => {
+  const downloadFullReport = async (bnuFormat: boolean = false) => {
     if (!hasAnyContent) return;
 
     // Fetch 10 topic-related images
@@ -1138,7 +1138,7 @@ const CreateReport = () => {
         spacing: { after: 600 },
       }),
       new Paragraph({
-        children: [new TextRun({ text: 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
+        children: [new TextRun({ text: bnuFormat ? 'INTERNSHIP REPORT' : 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
         alignment: AlignmentType.CENTER,
         spacing: { after: 400 },
       }),
@@ -1508,6 +1508,7 @@ const CreateReport = () => {
       styles: {
         default: {
           document: {
+            run: bnuFormat ? { font: 'Times New Roman', size: 24 } : undefined,
             paragraph: {
               spacing: { line: 360 }, // 1.5 line spacing
             },
@@ -1839,15 +1840,26 @@ const CreateReport = () => {
 
               {/* Download Button - Only show when ALL chapters are complete */}
               {hasAllContent && !generating && (
-                <Button 
-                  variant="hero" 
-                  onClick={downloadFullReport} 
-                  className="w-full" 
-                  size="lg"
-                >
-                  <Download className="w-5 h-5" />
-                  Download Complete Report
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    variant="hero"
+                    onClick={() => downloadFullReport(false)}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download Complete Report
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => downloadFullReport(true)}
+                    className="w-full"
+                    size="sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download BNU Format (B.Com / BBA)
+                  </Button>
+                </div>
               )}
               
               {/* Progress message if not all chapters are done */}
