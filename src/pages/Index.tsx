@@ -18,6 +18,7 @@ import FloatingShareButton from '@/components/FloatingShareButton';
 import StatsCounter from '@/components/StatsCounter';
 import StickyBanner from '@/components/StickyBanner';
 import HeroBanner from '@/components/HeroBanner';
+import GenerateShortcuts from '@/components/GenerateShortcuts';
 
 const Index = () => {
   const {
@@ -268,6 +269,9 @@ const Index = () => {
       <section className="w-full">
         <HeroBanner />
       </section>
+
+      {/* Quick Generation Shortcuts */}
+      <GenerateShortcuts />
 
       {/* Hero Section - SEO Optimized */}
       <section className="relative container mx-auto px-4 py-16 lg:py-24">
