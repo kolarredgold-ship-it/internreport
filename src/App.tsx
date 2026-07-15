@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
+import Generate from "./pages/Generate";
 import MyReports from "./pages/MyReports";
 import Refer from "./pages/Refer";
 import Terms from "./pages/Terms";
@@ -48,6 +49,7 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/create-report" element={<CreateReport />} />
+                <Route path="/generate" element={<Generate />} />
                 <Route path="/my-reports" element={<MyReports />} />
                 <Route path="/refer" element={<Refer />} />
                 <Route path="/terms" element={<Terms />} />
