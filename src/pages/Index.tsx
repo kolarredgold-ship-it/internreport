@@ -19,6 +19,7 @@ import StatsCounter from '@/components/StatsCounter';
 import StickyBanner from '@/components/StickyBanner';
 import HeroBanner from '@/components/HeroBanner';
 import GenerateShortcuts from '@/components/GenerateShortcuts';
+import ResumeLastReport from '@/components/ResumeLastReport';
 
 const Index = () => {
   const {
@@ -271,6 +272,7 @@ const Index = () => {
       </section>
 
       {/* Quick Generation Shortcuts */}
+      <ResumeLastReport />
       <GenerateShortcuts />
 
       {/* Hero Section - SEO Optimized */}
