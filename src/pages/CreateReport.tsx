@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun, Header, Footer, PageNumber, Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType } from 'docx';
 import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
+import GenerateShortcuts from '@/components/GenerateShortcuts';
 
 interface FormData {
   studentName: string;
@@ -219,6 +220,35 @@ const CreateReport = () => {
       checkForResumableReport();
     }
   }, [user]);
+
+  // Prefill from Generate wizard (sessionStorage handoff)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('prefill_report_form');
+      if (!raw) return;
+      const p = JSON.parse(raw) || {};
+      setFormData(prev => ({
+        ...prev,
+        studentName: p.studentName ?? prev.studentName,
+        registerNumber: p.registerNumber ?? prev.registerNumber,
+        course: p.course ?? prev.course,
+        collegeName: p.collegeName ?? prev.collegeName,
+        university: p.university ?? prev.university,
+        guideName: p.guideName ?? prev.guideName,
+        internshipTitle: p.internshipTitle ?? prev.internshipTitle,
+        companyName: p.companyName ?? prev.companyName,
+        companyLocation: p.companyLocation ?? prev.companyLocation,
+        internshipDuration: p.internshipDuration ?? prev.internshipDuration,
+        academicYear: p.academicYear ?? prev.academicYear,
+        topicSpecialization: p.topicSpecialization ?? prev.topicSpecialization,
+        pagesCount: typeof p.pagesCount === 'number' ? p.pagesCount : prev.pagesCount,
+      }));
+      sessionStorage.removeItem('prefill_report_form');
+      toast({ title: 'Details prefilled', description: 'We filled the form with your wizard answers. Review and generate.' });
+    } catch (e) {
+      console.error('prefill parse error', e);
+    }
+  }, []);
 
   const checkForResumableReport = async () => {
     try {
@@ -1589,9 +1619,14 @@ const CreateReport = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="font-display text-3xl font-bold mb-2">Create New Report</h1>
-          <p className="text-muted-foreground">Fill in your internship details to generate a report</p>
+          <p className="text-muted-foreground">Fill in your details, or pick a quick-start below.</p>
+        </div>
+
+        {/* Quick-start shortcuts (same as home page) */}
+        <div className="mb-8 -mx-4">
+          <GenerateShortcuts />
         </div>
 
         {hasAnyContent ? (
