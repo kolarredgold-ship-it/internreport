@@ -273,6 +273,17 @@ const Index = () => {
 
       {/* Quick Generation Shortcuts */}
       <ResumeLastReport />
+
+      <div className="container mx-auto px-4 pt-10 lg:pt-14">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <h2 className="font-display text-3xl lg:text-4xl font-bold mb-3">
+            Generate Your Report in <span className="text-accent">One Click</span>
+          </h2>
+          <p className="text-muted-foreground">
+            Pick your report type and course — we'll pre-fill the form for you.
+          </p>
+        </div>
+      </div>
       <GenerateShortcuts />
 
       {/* Hero Section - SEO Optimized */}

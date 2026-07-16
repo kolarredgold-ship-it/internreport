@@ -47,15 +47,6 @@ const CATEGORIES = [
 const GenerateShortcuts = () => {
   return (
     <section className="container mx-auto px-4 py-14 lg:py-20">
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <h2 className="font-display text-3xl lg:text-4xl font-bold mb-3">
-          Generate Your Report in <span className="text-accent">One Click</span>
-        </h2>
-        <p className="text-muted-foreground">
-          Pick your report type and course — we'll pre-fill the form for you.
-        </p>
-      </div>
-
       <div className="grid md:grid-cols-3 gap-6">
         {CATEGORIES.map(cat => {
           const Icon = cat.icon;
