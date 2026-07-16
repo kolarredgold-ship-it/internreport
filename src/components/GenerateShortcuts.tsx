@@ -70,16 +70,18 @@ const GenerateShortcuts = () => {
               <h3 className="font-display text-xl font-bold mb-1">{cat.title}</h3>
               <p className="text-sm text-muted-foreground mb-5">{cat.description}</p>
 
-              <div className="flex flex-wrap gap-2 mb-4">
-                {COURSES.map(c => (
-                  <Link
-                    key={c.slug}
-                    to={`/generate?type=${cat.key}&course=${c.slug}`}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
-                  >
-                    {c.label}
-                  </Link>
-                ))}
+              <div className="-mx-2 mb-4">
+                <div className="flex gap-2 overflow-x-auto px-2 pb-2 snap-x snap-mandatory scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-wrap md:overflow-visible md:snap-none">
+                  {COURSES.map(c => (
+                    <Link
+                      key={c.slug}
+                      to={`/generate?type=${cat.key}&course=${c.slug}`}
+                      className="shrink-0 snap-start px-3.5 py-2 rounded-full text-xs font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
+                    >
+                      {c.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
 
               <Link to={`/generate?type=${cat.key}`}>
