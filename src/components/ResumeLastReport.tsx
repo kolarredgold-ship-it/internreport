@@ -54,7 +54,7 @@ const ResumeLastReport = () => {
           </div>
         </div>
         <Link to={`/generate?${params.toString()}`} className="sm:shrink-0">
-          <Button variant="accent" size="sm" className="w-full sm:w-auto">
+          <Button variant="hero" size="sm" className="w-full sm:w-auto">
             Resume <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
         </Link>
