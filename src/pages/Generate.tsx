@@ -126,6 +126,22 @@ const Generate = () => {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    // Persist last course + type as URL slugs for "Resume last report" shortcut
+    try {
+      const courseSlug = Object.keys(courseMap).find(k => courseMap[k] === data.course) || '';
+      const typeSlugMap: Record<string, string> = {
+        'Internship Report': 'internship',
+        'Project Report': 'project',
+        'Dissertation': 'project',
+        'Thesis Assistance': 'thesis',
+      };
+      const typeSlug = typeSlugMap[data.reportType] || '';
+      if (courseSlug || typeSlug) {
+        localStorage.setItem('last_generate_selection', JSON.stringify({
+          course: courseSlug, type: typeSlug, savedAt: Date.now(),
+        }));
+      }
+    } catch {}
   }, [data]);
 
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) =>
