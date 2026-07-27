@@ -31,29 +31,29 @@ const CATEGORIES = [
     title: 'Project Report',
     description: 'Academic project & case-study reports formatted to university guidelines.',
     icon: FolderKanban,
-    accent: 'from-accent/10 to-accent/5',
-    iconBg: 'bg-accent/10 text-accent',
+    accent: 'from-primary/5 to-primary/10',
+    iconBg: 'bg-primary/10 text-primary',
   },
   {
     key: 'thesis',
     title: 'Thesis / Dissertation',
     description: 'Structure and format your research for PhD, M.Phil & PG dissertations.',
     icon: ScrollText,
-    accent: 'from-primary/10 to-accent/5',
+    accent: 'from-primary/10 to-primary/5',
     iconBg: 'bg-primary/10 text-primary',
   },
 ];
 
 const GenerateShortcuts = () => {
   return (
-    <section className="container mx-auto px-4 py-14 lg:py-20">
-      <div className="grid md:grid-cols-3 gap-6">
+    <section className="container mx-auto px-4 py-10 lg:py-20">
+      <div className="grid md:grid-cols-3 gap-5 md:gap-6">
         {CATEGORIES.map(cat => {
           const Icon = cat.icon;
           return (
             <Card
               key={cat.key}
-              className={`p-6 border-0 shadow-soft hover-lift bg-gradient-to-br ${cat.accent}`}
+              className={`p-5 sm:p-6 border-0 shadow-soft hover-lift min-w-0 w-full overflow-hidden bg-gradient-to-br ${cat.accent}`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${cat.iconBg}`}>
                 <Icon className="w-6 h-6" />

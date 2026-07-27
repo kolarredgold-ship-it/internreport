@@ -74,10 +74,11 @@ const WalletHeader = () => {
     return (
       <Link
         to="/auth"
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
+        className="flex items-center gap-1.5 shrink-0 px-2 sm:px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium whitespace-nowrap"
       >
-        <Wallet className="w-4 h-4" />
-        <span>Login to Earn</span>
+        <Wallet className="w-4 h-4 shrink-0" />
+        <span className="hidden sm:inline">Login to Earn</span>
+        <span className="sm:hidden">Earn</span>
       </Link>
     );
   }
@@ -85,7 +86,7 @@ const WalletHeader = () => {
   return (
     <Link
       to="/refer"
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors text-sm font-medium"
+      className="flex items-center gap-1.5 shrink-0 px-2 sm:px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-colors text-sm font-medium whitespace-nowrap"
     >
       <Wallet className="w-4 h-4" />
       <span>
