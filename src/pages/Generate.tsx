@@ -183,13 +183,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
     // Persist last course + type as URL slugs for "Resume last report" shortcut
     try {
       const courseSlug = Object.keys(courseMap).find(k => courseMap[k] === data.course) || '';
-      const typeSlugMap: Record<string, string> = {
-        'Internship Report': 'internship',
-        'Project Report': 'project',
-        'Dissertation': 'project',
-        'Thesis Assistance': 'thesis',
-      };
-      const typeSlug = typeSlugMap[data.reportType] || '';
+      const typeSlug = kind;
       if (courseSlug || typeSlug) {
         localStorage.setItem('last_generate_selection', JSON.stringify({
           course: courseSlug, type: typeSlug, savedAt: Date.now(),
@@ -201,14 +195,14 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setData(prev => ({ ...prev, [k]: v }));
 
-  const isInternship = data.reportType === 'Internship Report';
-  const isProject = data.reportType === 'Project Report' || data.reportType === 'Dissertation';
-  const isThesis = data.reportType === 'Thesis Assistance';
+  const isInternship = kind === 'internship';
+  const isProject = kind === 'project';
+  const isThesis = kind === 'thesis';
 
   const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
-  const stepLabels = ['Course & Type', 'Student Details', 'Report Details', 'Format', 'Review'];
+  const stepLabels = ['Course & University', 'Student Details', config.heading + ' Details', 'Format', 'Review'];
 
   const validate = (s: number): string | null => {
     if (s === 1) {
