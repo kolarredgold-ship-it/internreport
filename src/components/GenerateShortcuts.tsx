@@ -46,8 +46,8 @@ const CATEGORIES = [
 
 const GenerateShortcuts = () => {
   return (
-    <section className="container mx-auto px-4 py-14 lg:py-20">
-      <div className="grid md:grid-cols-3 gap-6">
+    <section className="container mx-auto px-4 py-10 lg:py-20">
+      <div className="grid md:grid-cols-3 gap-5 md:gap-6">
         {CATEGORIES.map(cat => {
           const Icon = cat.icon;
           return (
