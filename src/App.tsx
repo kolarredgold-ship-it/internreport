@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CreateReport from "./pages/CreateReport";
 import Generate from "./pages/Generate";
+import GenerateChooser from "./pages/GenerateChooser";
 import MyReports from "./pages/MyReports";
 import Refer from "./pages/Refer";
 import Terms from "./pages/Terms";
@@ -49,7 +50,10 @@ const App = () => {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/create-report" element={<CreateReport />} />
-                <Route path="/generate" element={<Generate />} />
+                <Route path="/generate" element={<GenerateChooser />} />
+                <Route path="/generate/internship" element={<Generate kind="internship" />} />
+                <Route path="/generate/project" element={<Generate kind="project" />} />
+                <Route path="/generate/thesis" element={<Generate kind="thesis" />} />
                 <Route path="/my-reports" element={<MyReports />} />
                 <Route path="/refer" element={<Refer />} />
                 <Route path="/terms" element={<Terms />} />

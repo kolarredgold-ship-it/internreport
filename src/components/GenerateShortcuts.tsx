@@ -66,7 +66,7 @@ const GenerateShortcuts = () => {
                   {COURSES.map(c => (
                     <Link
                       key={c.slug}
-                      to={`/generate?type=${cat.key}&course=${c.slug}`}
+                      to={`/generate/${cat.key}?course=${c.slug}`}
                       className="shrink-0 snap-start px-3.5 py-2 rounded-full text-xs font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
                     >
                       {c.label}
@@ -75,9 +75,9 @@ const GenerateShortcuts = () => {
                 </div>
               </div>
 
-              <Link to={`/generate?type=${cat.key}`}>
+              <Link to={`/generate/${cat.key}`}>
                 <Button variant="outline" size="sm" className="w-full">
-                  Choose Course <ArrowRight className="w-3 h-3 ml-1" />
+                  Start {cat.title} <ArrowRight className="w-3 h-3 ml-1" />
                 </Button>
               </Link>
             </Card>
