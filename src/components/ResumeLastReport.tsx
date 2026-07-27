@@ -35,9 +35,9 @@ const ResumeLastReport = () => {
 
   const courseLbl = COURSE_LABEL[last.course] || '';
   const typeLbl = TYPE_LABEL[last.type] || '';
+  const kind = TYPE_LABEL[last.type] ? last.type : 'internship';
   const params = new URLSearchParams();
   if (last.course) params.set('course', last.course);
-  if (last.type) params.set('type', last.type);
 
   return (
     <section className="container mx-auto px-4 pt-6">
@@ -53,7 +53,7 @@ const ResumeLastReport = () => {
             </p>
           </div>
         </div>
-        <Link to={`/generate?${params.toString()}`} className="sm:shrink-0">
+        <Link to={`/generate/${kind}?${params.toString()}`} className="sm:shrink-0">
           <Button variant="hero" size="sm" className="w-full sm:w-auto">
             Resume <ArrowRight className="w-4 h-4 ml-1" />
           </Button>

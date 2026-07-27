@@ -275,16 +275,28 @@ const Index = () => {
       <ResumeLastReport />
 
       <div className="container mx-auto px-4 pt-10 lg:pt-14">
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="text-center max-w-2xl mx-auto mb-8">
+          <Badge className="mb-3 bg-accent/20 text-accent-foreground border-0">3 simple forms — no confusion</Badge>
           <h2 className="font-display text-3xl lg:text-4xl font-bold mb-3">
             Generate Your Report in <span className="text-accent">One Click</span>
           </h2>
           <p className="text-muted-foreground">
-            Pick your report type and course — we'll pre-fill the form for you.
+            Choose your report type, then your course. Each type has its own short form — you only fill what's relevant.
           </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/generate">
+              <Button variant="gradient" size="lg">
+                Start Now <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+            <Link to="/my-reports">
+              <Button variant="outline" size="lg">My Reports</Button>
+            </Link>
+          </div>
         </div>
       </div>
       <GenerateShortcuts />
+
 
       {/* Hero Section - SEO Optimized */}
       <section className="relative container mx-auto px-4 py-16 lg:py-24">

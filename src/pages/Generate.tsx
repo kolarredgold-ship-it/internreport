@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,43 @@ const pageOptions: Record<string, { label: string; value: number }[]> = {
   ],
 };
 
-const STORAGE_KEY = 'generate_form_draft_v1';
+type Kind = 'internship' | 'project' | 'thesis';
+
+const KIND_CONFIG: Record<Kind, {
+  slug: Kind;
+  heading: string;
+  tagline: string;
+  defaultType: string;
+  types: string[];
+  courses: string[];
+}> = {
+  internship: {
+    slug: 'internship',
+    heading: 'Internship Report',
+    tagline: 'Company-based internship report with certificate, chapters & annexures.',
+    defaultType: 'Internship Report',
+    types: ['Internship Report'],
+    courses: ['BA', 'B.Com', 'BBA', 'BCA', 'M.Com', 'MBA', 'MA', 'MSc', 'M.Ed.'],
+  },
+  project: {
+    slug: 'project',
+    heading: 'Project Report',
+    tagline: 'Academic project & case-study report formatted to university guidelines.',
+    defaultType: 'Project Report',
+    types: ['Project Report', 'Dissertation'],
+    courses: ['BA', 'B.Com', 'BBA', 'BCA', 'M.Com', 'MBA', 'MA', 'MSc', 'M.Ed.'],
+  },
+  thesis: {
+    slug: 'thesis',
+    heading: 'Thesis / Dissertation',
+    tagline: 'Structure and format your research for PhD, M.Phil & PG dissertations.',
+    defaultType: 'Thesis Assistance',
+    types: ['Thesis Assistance', 'Dissertation'],
+    courses: ['PhD', 'M.Phil', 'MBA', 'M.Com', 'MA', 'MSc', 'M.Ed.'],
+  },
+};
+
+const STORAGE_KEY_BASE = 'generate_form_draft_v1';
 
 interface FormState {
   course: string;
@@ -86,9 +122,10 @@ const initialState: FormState = {
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
-const Generate = () => {
+const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -102,14 +139,31 @@ const Generate = () => {
     internship: 'Internship Report', project: 'Project Report',
     dissertation: 'Dissertation', thesis: 'Thesis Assistance',
   };
+
+  const pathKind = (location.pathname.split('/')[2] || '') as Kind;
+  const kind: Kind = (kindProp || (KIND_CONFIG[pathKind] ? pathKind : undefined)
+    || (urlType.toLowerCase() === 'thesis' || urlType.toLowerCase() === 'dissertation'
+        ? 'thesis'
+        : urlType.toLowerCase() === 'project' ? 'project' : 'internship')) as Kind;
+  const config = KIND_CONFIG[kind];
+  const STORAGE_KEY = `${STORAGE_KEY_BASE}_${kind}`;
+
   const prefilledCourse = courseMap[urlCourse.toLowerCase()] || '';
-  const prefilledType = typeMap[urlType.toLowerCase()] || (prefilledCourse ? suggestReportType(prefilledCourse) : '');
-  const step1Skipped = !!(prefilledCourse && prefilledType);
+  const prefilledType = typeMap[urlType.toLowerCase()] || config.defaultType;
+  const step1Skipped = false;
 
   const [data, setData] = useState<FormState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return { ...initialState, ...JSON.parse(saved) };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...initialState,
+          ...parsed,
+          course: prefilledCourse || parsed.course || '',
+          reportType: config.types.includes(parsed.reportType) ? parsed.reportType : config.defaultType,
+        };
+      }
     } catch {}
     return {
       ...initialState,
@@ -129,13 +183,7 @@ const Generate = () => {
     // Persist last course + type as URL slugs for "Resume last report" shortcut
     try {
       const courseSlug = Object.keys(courseMap).find(k => courseMap[k] === data.course) || '';
-      const typeSlugMap: Record<string, string> = {
-        'Internship Report': 'internship',
-        'Project Report': 'project',
-        'Dissertation': 'project',
-        'Thesis Assistance': 'thesis',
-      };
-      const typeSlug = typeSlugMap[data.reportType] || '';
+      const typeSlug = kind;
       if (courseSlug || typeSlug) {
         localStorage.setItem('last_generate_selection', JSON.stringify({
           course: courseSlug, type: typeSlug, savedAt: Date.now(),
@@ -147,14 +195,14 @@ const Generate = () => {
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setData(prev => ({ ...prev, [k]: v }));
 
-  const isInternship = data.reportType === 'Internship Report';
-  const isProject = data.reportType === 'Project Report' || data.reportType === 'Dissertation';
-  const isThesis = data.reportType === 'Thesis Assistance';
+  const isInternship = kind === 'internship';
+  const isProject = kind === 'project';
+  const isThesis = kind === 'thesis';
 
   const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
-  const stepLabels = ['Course & Type', 'Student Details', 'Report Details', 'Format', 'Review'];
+  const stepLabels = ['Course & University', 'Student Details', config.heading + ' Details', 'Format', 'Review'];
 
   const validate = (s: number): string | null => {
     if (s === 1) {
@@ -288,19 +336,24 @@ const Generate = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Generate Your Report — InternReport.in</title>
-        <meta name="description" content="Generate university-compliant internship, project, dissertation or thesis reports in minutes with AI." />
+        <title>{`${config.heading} Generator — InternReport.in`}</title>
+        <meta name="description" content={config.tagline} />
       </Helmet>
 
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/"><Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Home</Button></Link>
-          <span className="font-display font-bold">Generate Report</span>
-          <div className="w-16" />
+          <Link to="/generate"><Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Change type</Button></Link>
+          <span className="font-display font-bold truncate">{config.heading}</span>
+          <Link to="/"><Button variant="ghost" size="sm">Home</Button></Link>
         </div>
       </nav>
 
       <div className="container mx-auto px-4 py-6 max-w-3xl">
+        <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/10 p-4 sm:p-5">
+          <h1 className="font-display text-xl sm:text-2xl font-bold">{config.heading}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{config.tagline}</p>
+        </div>
+
         {/* Stepper */}
         <div className="mb-6 space-y-3">
           <Progress value={progress} className="h-2" />
@@ -312,11 +365,12 @@ const Generate = () => {
           </p>
         </div>
 
+
         <Card className="shadow-soft border-0">
           <CardHeader>
             <CardTitle className="font-display">{stepLabels[step - 1]}</CardTitle>
             <CardDescription>
-              {step === 1 && 'Tell us what you need to generate.'}
+              {step === 1 && 'Select your course and university.'}
               {step === 2 && 'Your academic details for the title page.'}
               {step === 3 && (isInternship ? 'Details about your internship.' : isProject ? 'Topic and objectives.' : 'Your existing research.')}
               {step === 4 && 'Length and formatting preferences.'}
@@ -327,37 +381,38 @@ const Generate = () => {
             {step === 1 && (
               <>
                 <div>
-                  <Label>Degree / Course *</Label>
-                  <Select
-                    value={data.course}
-                    onValueChange={v => {
-                      update('course', v);
-                      if (!data.reportType) update('reportType', suggestReportType(v));
-                    }}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select your course" /></SelectTrigger>
-                    <SelectContent>
-                      {COURSES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label className="mb-2 block">Degree / Course *</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {config.courses.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => update('course', c)}
+                        className={`px-3.5 py-2 rounded-full text-sm font-medium border transition-all active:scale-95 ${
+                          data.course === c
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background border-border hover:border-primary'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <Label>Report Type *</Label>
-                  <Select value={data.reportType} onValueChange={v => {
-                    update('reportType', v);
-                    update('pagesCount', pageOptions[v]?.[0]?.value || 30);
-                  }}>
-                    <SelectTrigger><SelectValue placeholder="Select report type" /></SelectTrigger>
-                    <SelectContent>
-                      {REPORT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {data.course && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Suggested for {data.course}: <span className="font-medium">{suggestReportType(data.course)}</span>
-                    </p>
-                  )}
-                </div>
+                {config.types.length > 1 && (
+                  <div>
+                    <Label>Document Type *</Label>
+                    <Select value={data.reportType} onValueChange={v => {
+                      update('reportType', v);
+                      update('pagesCount', pageOptions[v]?.[0]?.value || 30);
+                    }}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        {config.types.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div>
                   <Label>University / College *</Label>
                   <Select value={data.university} onValueChange={v => update('university', v)}>
