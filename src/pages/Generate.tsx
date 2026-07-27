@@ -370,7 +370,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
           <CardHeader>
             <CardTitle className="font-display">{stepLabels[step - 1]}</CardTitle>
             <CardDescription>
-              {step === 1 && 'Tell us what you need to generate.'}
+              {step === 1 && 'Select your course and university.'}
               {step === 2 && 'Your academic details for the title page.'}
               {step === 3 && (isInternship ? 'Details about your internship.' : isProject ? 'Topic and objectives.' : 'Your existing research.')}
               {step === 4 && 'Length and formatting preferences.'}
@@ -381,37 +381,38 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
             {step === 1 && (
               <>
                 <div>
-                  <Label>Degree / Course *</Label>
-                  <Select
-                    value={data.course}
-                    onValueChange={v => {
-                      update('course', v);
-                      if (!data.reportType) update('reportType', suggestReportType(v));
-                    }}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select your course" /></SelectTrigger>
-                    <SelectContent>
-                      {COURSES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label className="mb-2 block">Degree / Course *</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {config.courses.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => update('course', c)}
+                        className={`px-3.5 py-2 rounded-full text-sm font-medium border transition-all active:scale-95 ${
+                          data.course === c
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-background border-border hover:border-primary'
+                        }`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <Label>Report Type *</Label>
-                  <Select value={data.reportType} onValueChange={v => {
-                    update('reportType', v);
-                    update('pagesCount', pageOptions[v]?.[0]?.value || 30);
-                  }}>
-                    <SelectTrigger><SelectValue placeholder="Select report type" /></SelectTrigger>
-                    <SelectContent>
-                      {REPORT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {data.course && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Suggested for {data.course}: <span className="font-medium">{suggestReportType(data.course)}</span>
-                    </p>
-                  )}
-                </div>
+                {config.types.length > 1 && (
+                  <div>
+                    <Label>Document Type *</Label>
+                    <Select value={data.reportType} onValueChange={v => {
+                      update('reportType', v);
+                      update('pagesCount', pageOptions[v]?.[0]?.value || 30);
+                    }}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        {config.types.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div>
                   <Label>University / College *</Label>
                   <Select value={data.university} onValueChange={v => update('university', v)}>
