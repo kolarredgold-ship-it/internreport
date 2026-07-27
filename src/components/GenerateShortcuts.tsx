@@ -53,7 +53,7 @@ const GenerateShortcuts = () => {
           return (
             <Card
               key={cat.key}
-              className={`p-6 border-0 shadow-soft hover-lift bg-gradient-to-br ${cat.accent}`}
+              className={`p-5 sm:p-6 border-0 shadow-soft hover-lift min-w-0 w-full overflow-hidden bg-gradient-to-br ${cat.accent}`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${cat.iconBg}`}>
                 <Icon className="w-6 h-6" />
