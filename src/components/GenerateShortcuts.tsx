@@ -31,15 +31,15 @@ const CATEGORIES = [
     title: 'Project Report',
     description: 'Academic project & case-study reports formatted to university guidelines.',
     icon: FolderKanban,
-    accent: 'from-accent/10 to-accent/5',
-    iconBg: 'bg-accent/10 text-accent',
+    accent: 'from-primary/5 to-primary/10',
+    iconBg: 'bg-primary/10 text-primary',
   },
   {
     key: 'thesis',
     title: 'Thesis / Dissertation',
     description: 'Structure and format your research for PhD, M.Phil & PG dissertations.',
     icon: ScrollText,
-    accent: 'from-primary/10 to-accent/5',
+    accent: 'from-primary/10 to-primary/5',
     iconBg: 'bg-primary/10 text-primary',
   },
 ];
