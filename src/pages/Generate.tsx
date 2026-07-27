@@ -122,9 +122,10 @@ const initialState: FormState = {
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
-const Generate = () => {
+const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -138,14 +139,31 @@ const Generate = () => {
     internship: 'Internship Report', project: 'Project Report',
     dissertation: 'Dissertation', thesis: 'Thesis Assistance',
   };
+
+  const pathKind = (location.pathname.split('/')[2] || '') as Kind;
+  const kind: Kind = (kindProp || (KIND_CONFIG[pathKind] ? pathKind : undefined)
+    || (urlType.toLowerCase() === 'thesis' || urlType.toLowerCase() === 'dissertation'
+        ? 'thesis'
+        : urlType.toLowerCase() === 'project' ? 'project' : 'internship')) as Kind;
+  const config = KIND_CONFIG[kind];
+  const STORAGE_KEY = `${STORAGE_KEY_BASE}_${kind}`;
+
   const prefilledCourse = courseMap[urlCourse.toLowerCase()] || '';
-  const prefilledType = typeMap[urlType.toLowerCase()] || (prefilledCourse ? suggestReportType(prefilledCourse) : '');
-  const step1Skipped = !!(prefilledCourse && prefilledType);
+  const prefilledType = typeMap[urlType.toLowerCase()] || config.defaultType;
+  const step1Skipped = false;
 
   const [data, setData] = useState<FormState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return { ...initialState, ...JSON.parse(saved) };
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...initialState,
+          ...parsed,
+          course: prefilledCourse || parsed.course || '',
+          reportType: config.types.includes(parsed.reportType) ? parsed.reportType : config.defaultType,
+        };
+      }
     } catch {}
     return {
       ...initialState,
