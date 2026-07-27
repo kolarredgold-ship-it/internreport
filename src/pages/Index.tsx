@@ -243,28 +243,29 @@ const Index = () => {
 
       {/* Navigation */}
       <nav className="sticky top-0 z-50 glass-effect border-b border-border/50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+        <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl gradient-bg flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-display font-bold text-xl">InternReport.in</span>
-          </div>
-          <div className="flex items-center gap-4">
+            <span className="font-display font-bold text-base sm:text-xl truncate">InternReport.in</span>
+          </Link>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             <WalletHeader />
             {user ? <Link to="/dashboard">
-                <Button variant="gradient">Dashboard</Button>
+                <Button variant="gradient" size="sm" className="sm:h-10 sm:px-4">Dashboard</Button>
               </Link> : <>
-                <Link to="/auth">
+                <Link to="/auth" className="hidden sm:block">
                   <Button variant="ghost">Login</Button>
                 </Link>
                 <Link to="/auth?signup=true">
-                  <Button variant="gradient">Get Started</Button>
+                  <Button variant="gradient" size="sm" className="sm:h-10 sm:px-4">Get Started</Button>
                 </Link>
               </>}
           </div>
         </div>
       </nav>
+
 
       {/* Sliding Banner */}
       <section className="w-full">
