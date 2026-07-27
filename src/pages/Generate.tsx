@@ -336,19 +336,24 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Generate Your Report — InternReport.in</title>
-        <meta name="description" content="Generate university-compliant internship, project, dissertation or thesis reports in minutes with AI." />
+        <title>{`${config.heading} Generator — InternReport.in`}</title>
+        <meta name="description" content={config.tagline} />
       </Helmet>
 
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/"><Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Home</Button></Link>
-          <span className="font-display font-bold">Generate Report</span>
-          <div className="w-16" />
+          <Link to="/generate"><Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Change type</Button></Link>
+          <span className="font-display font-bold truncate">{config.heading}</span>
+          <Link to="/"><Button variant="ghost" size="sm">Home</Button></Link>
         </div>
       </nav>
 
       <div className="container mx-auto px-4 py-6 max-w-3xl">
+        <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/10 p-4 sm:p-5">
+          <h1 className="font-display text-xl sm:text-2xl font-bold">{config.heading}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{config.tagline}</p>
+        </div>
+
         {/* Stepper */}
         <div className="mb-6 space-y-3">
           <Progress value={progress} className="h-2" />
@@ -359,6 +364,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
             Step {step} of {totalSteps}: <span className="font-semibold text-foreground">{stepLabels[step - 1]}</span>
           </p>
         </div>
+
 
         <Card className="shadow-soft border-0">
           <CardHeader>
