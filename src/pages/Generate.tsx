@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,43 @@ const pageOptions: Record<string, { label: string; value: number }[]> = {
   ],
 };
 
-const STORAGE_KEY = 'generate_form_draft_v1';
+type Kind = 'internship' | 'project' | 'thesis';
+
+const KIND_CONFIG: Record<Kind, {
+  slug: Kind;
+  heading: string;
+  tagline: string;
+  defaultType: string;
+  types: string[];
+  courses: string[];
+}> = {
+  internship: {
+    slug: 'internship',
+    heading: 'Internship Report',
+    tagline: 'Company-based internship report with certificate, chapters & annexures.',
+    defaultType: 'Internship Report',
+    types: ['Internship Report'],
+    courses: ['BA', 'B.Com', 'BBA', 'BCA', 'M.Com', 'MBA', 'MA', 'MSc', 'M.Ed.'],
+  },
+  project: {
+    slug: 'project',
+    heading: 'Project Report',
+    tagline: 'Academic project & case-study report formatted to university guidelines.',
+    defaultType: 'Project Report',
+    types: ['Project Report', 'Dissertation'],
+    courses: ['BA', 'B.Com', 'BBA', 'BCA', 'M.Com', 'MBA', 'MA', 'MSc', 'M.Ed.'],
+  },
+  thesis: {
+    slug: 'thesis',
+    heading: 'Thesis / Dissertation',
+    tagline: 'Structure and format your research for PhD, M.Phil & PG dissertations.',
+    defaultType: 'Thesis Assistance',
+    types: ['Thesis Assistance', 'Dissertation'],
+    courses: ['PhD', 'M.Phil', 'MBA', 'M.Com', 'MA', 'MSc', 'M.Ed.'],
+  },
+};
+
+const STORAGE_KEY_BASE = 'generate_form_draft_v1';
 
 interface FormState {
   course: string;
