@@ -296,7 +296,7 @@ const CreateReport = () => {
                 internshipDuration: report.internship_duration,
                 academicYear: report.academic_year,
                 topicSpecialization: report.topic_specialization,
-                pagesCount: report.pages_count,
+                pagesCount: clampPagesCount(report.pages_count),
               });
 
               toast({
@@ -493,7 +493,7 @@ const CreateReport = () => {
           internship_duration: formData.internshipDuration,
           academic_year: formData.academicYear,
           topic_specialization: formData.topicSpecialization,
-          pages_count: formData.pagesCount,
+          pages_count: clampPagesCount(formData.pagesCount),
           status: 'pending_payment',
         })
         .select()
@@ -794,7 +794,7 @@ const CreateReport = () => {
             internship_duration: formData.internshipDuration,
             academic_year: formData.academicYear,
             topic_specialization: formData.topicSpecialization,
-            pages_count: formData.pagesCount,
+            pages_count: clampPagesCount(formData.pagesCount),
             status: 'generating',
           })
           .select()

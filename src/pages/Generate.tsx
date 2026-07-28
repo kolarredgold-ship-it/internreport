@@ -447,7 +447,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                     <Label>Document Type *</Label>
                     <Select value={data.reportType} onValueChange={v => {
                       update('reportType', v);
-                      update('pagesCount', pageOptions[v]?.[0]?.value || 30);
+                      update('pagesCount', pageOptions[v]?.[0]?.value || DEFAULT_PAGES_COUNT);
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                       <SelectContent>
