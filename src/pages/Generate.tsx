@@ -651,21 +651,22 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
             )}
 
             {/* Nav buttons */}
-            <div className="flex items-center justify-between pt-4">
-              <Button variant="outline" onClick={back} disabled={step === (step1Skipped ? 2 : 1)}>
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 mt-2 border-t">
+              <Button className="w-full sm:w-auto" variant="outline" onClick={back} disabled={step === (step1Skipped ? 2 : 1)}>
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
               {step < totalSteps ? (
-                <Button onClick={next} variant="gradient">
+                <Button className="w-full sm:w-auto" size="lg" onClick={next} variant="gradient">
                   Next <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               ) : (
-                <Button onClick={handleGenerate} variant="gradient" size="lg" disabled={generating}>
+                <Button className="w-full sm:w-auto" onClick={handleGenerate} variant="gradient" size="lg" disabled={generating}>
                   {generating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                   Generate Report
                 </Button>
               )}
             </div>
+
           </CardContent>
         </Card>
       </div>
