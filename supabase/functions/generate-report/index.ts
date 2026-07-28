@@ -85,9 +85,10 @@
        );
      }
  
-     if (body.pagesCount < 3 || body.pagesCount > 40) {
-       return new Response(
-         JSON.stringify({ error: 'pagesCount must be between 3 and 40' }),
+    if (body.pagesCount < 3 || body.pagesCount > 50) {
+      return new Response(
+        JSON.stringify({ error: 'pagesCount must be between 3 and 50' }),
+
          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
        );
      }
