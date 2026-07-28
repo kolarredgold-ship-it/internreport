@@ -5,6 +5,9 @@
    "Access-Control-Allow-Origin": "*",
    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
  };
+
+const MIN_PAGES_COUNT = 3;
+const MAX_PAGES_COUNT = 50;
  
  serve(async (req) => {
    if (req.method === "OPTIONS") {
@@ -78,20 +81,25 @@
        }
      }
  
-     if (typeof body.pagesCount !== 'number' || !Number.isInteger(body.pagesCount)) {
+      const requestedPagesCount = typeof body.pagesCount === 'string'
+        ? Number(body.pagesCount)
+        : body.pagesCount;
+
+      if (!Number.isFinite(requestedPagesCount) || !Number.isInteger(requestedPagesCount)) {
        return new Response(
          JSON.stringify({ error: 'pagesCount must be an integer' }),
          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
        );
      }
  
-    if (body.pagesCount < 3 || body.pagesCount > 50) {
-      return new Response(
-        JSON.stringify({ error: 'pagesCount must be between 3 and 50' }),
+      if (requestedPagesCount < MIN_PAGES_COUNT) {
+        return new Response(
+          JSON.stringify({ error: `pagesCount must be at least ${MIN_PAGES_COUNT}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-       );
-     }
+      const pagesCount = Math.min(requestedPagesCount, MAX_PAGES_COUNT);
  
       const fieldMaxLength: Record<string, number> = {
         topicSpecialization: 12000,
@@ -139,7 +147,6 @@
       const academicYear = sanitize(body.academicYear);
       const topicDetails = sanitize(body.topicSpecialization, fieldMaxLength.topicSpecialization);
       const topicSpecialization = createTopicFocus(body.topicSpecialization);
-     const pagesCount = body.pagesCount;
      const chapter = body.chapter || null;
      const part = body.part || null;
  
