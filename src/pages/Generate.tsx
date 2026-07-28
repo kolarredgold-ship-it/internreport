@@ -355,20 +355,51 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
         </div>
 
         {/* Stepper */}
-        <div className="mb-6 space-y-3">
+        <div className="mb-6 space-y-4">
           <Progress value={progress} className="h-2" />
+
+          {/* Desktop: horizontal */}
           <div className="hidden sm:flex items-center justify-between gap-2">
             {stepLabels.map((label, i) => <StepDot key={i} n={i + 1} label={label} />)}
           </div>
-          <p className="sm:hidden text-sm text-muted-foreground text-center">
-            Step {step} of {totalSteps}: <span className="font-semibold text-foreground">{stepLabels[step - 1]}</span>
-          </p>
+
+          {/* Mobile: vertical stepper */}
+          <ol className="sm:hidden rounded-2xl border bg-card p-4 space-y-0">
+            {stepLabels.map((label, i) => {
+              const n = i + 1;
+              const active = step === n;
+              const done = step > n;
+              const last = i === stepLabels.length - 1;
+              return (
+                <li key={label} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
+                      done ? 'bg-primary text-primary-foreground' :
+                      active ? 'bg-primary/15 text-primary ring-2 ring-primary/40' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {done ? <CheckCircle2 className="w-4 h-4" /> : n}
+                    </div>
+                    {!last && <div className={`w-px flex-1 my-1 ${done ? 'bg-primary' : 'bg-border'}`} />}
+                  </div>
+                  <div className={`min-w-0 ${last ? 'pb-0' : 'pb-4'}`}>
+                    <p className={`text-sm leading-7 ${active ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                      {label}
+                    </p>
+                    {active && (
+                      <p className="text-xs text-muted-foreground">Step {n} of {totalSteps}</p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
         </div>
 
 
         <Card className="shadow-soft border-0">
-          <CardHeader>
-            <CardTitle className="font-display">{stepLabels[step - 1]}</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="font-display text-lg sm:text-xl">{stepLabels[step - 1]}</CardTitle>
             <CardDescription>
               {step === 1 && 'Select your course and university.'}
               {step === 2 && 'Your academic details for the title page.'}
@@ -377,7 +408,8 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
               {step === 5 && 'Review everything before we generate.'}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5 px-4 sm:px-6">
+
             {step === 1 && (
               <>
                 <div>
@@ -619,21 +651,22 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
             )}
 
             {/* Nav buttons */}
-            <div className="flex items-center justify-between pt-4">
-              <Button variant="outline" onClick={back} disabled={step === (step1Skipped ? 2 : 1)}>
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 mt-2 border-t">
+              <Button className="w-full sm:w-auto" variant="outline" onClick={back} disabled={step === (step1Skipped ? 2 : 1)}>
                 <ArrowLeft className="w-4 h-4 mr-1" /> Back
               </Button>
               {step < totalSteps ? (
-                <Button onClick={next} variant="gradient">
+                <Button className="w-full sm:w-auto" size="lg" onClick={next} variant="gradient">
                   Next <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               ) : (
-                <Button onClick={handleGenerate} variant="gradient" size="lg" disabled={generating}>
+                <Button className="w-full sm:w-auto" onClick={handleGenerate} variant="gradient" size="lg" disabled={generating}>
                   {generating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
                   Generate Report
                 </Button>
               )}
             </div>
+
           </CardContent>
         </Card>
       </div>
