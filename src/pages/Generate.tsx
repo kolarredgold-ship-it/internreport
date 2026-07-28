@@ -21,6 +21,16 @@ const UNIVERSITIES = [
   'Pune University', 'Calicut University', 'SPPU', 'GTU', 'Other',
 ];
 
+const MIN_PAGES_COUNT = 3;
+const MAX_PAGES_COUNT = 50;
+const DEFAULT_PAGES_COUNT = 30;
+
+const clampPagesCount = (value: unknown) => {
+  const parsed = typeof value === 'number' || typeof value === 'string' ? Number(value) : DEFAULT_PAGES_COUNT;
+  if (!Number.isFinite(parsed)) return DEFAULT_PAGES_COUNT;
+  return Math.min(Math.max(Math.trunc(parsed), MIN_PAGES_COUNT), MAX_PAGES_COUNT);
+};
+
 const suggestReportType = (course: string): string => {
   if (['PhD', 'M.Phil'].includes(course)) return 'Thesis Assistance';
   if (['MBA', 'M.Com', 'MA', 'MSc', 'M.Ed.'].includes(course)) return 'Dissertation';
@@ -33,13 +43,13 @@ const pageOptions: Record<string, { label: string; value: number }[]> = {
     { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
   ],
   'Project Report': [
-    { label: '60 pages', value: 60 }, { label: '80 pages', value: 80 }, { label: '100 pages', value: 100 },
+    { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
   ],
   Dissertation: [
-    { label: '60 pages', value: 60 }, { label: '80 pages', value: 80 }, { label: '100 pages', value: 100 },
+    { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
   ],
   'Thesis Assistance': [
-    { label: '100 pages', value: 100 }, { label: '150 pages', value: 150 }, { label: '200 pages', value: 200 },
+    { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
   ],
 };
 
@@ -117,7 +127,7 @@ const initialState: FormState = {
   companyName: '', internshipStart: '', internshipEnd: '', internshipRole: '', workDescription: '',
   projectTopic: '', caseStudyCompany: '', objective: '',
   researchTitle: '', researchArea: '', researchSummary: '',
-  pagesCount: 30, fontStyle: 'Times New Roman 12pt (Standard)', includeAppendix: true,
+  pagesCount: DEFAULT_PAGES_COUNT, fontStyle: 'Times New Roman 12pt (Standard)', includeAppendix: true,
 };
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
@@ -162,6 +172,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
           ...parsed,
           course: prefilledCourse || parsed.course || '',
           reportType: config.types.includes(parsed.reportType) ? parsed.reportType : config.defaultType,
+          pagesCount: clampPagesCount(parsed.pagesCount),
         };
       }
     } catch {}
@@ -169,7 +180,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       ...initialState,
       course: prefilledCourse,
       reportType: prefilledType,
-      pagesCount: pageOptions[prefilledType]?.[0]?.value || 30,
+      pagesCount: pageOptions[prefilledType]?.[0]?.value || DEFAULT_PAGES_COUNT,
     };
   });
 
@@ -307,7 +318,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       internshipDuration: isInternship ? `${data.internshipStart} to ${data.internshipEnd}` : '',
       academicYear: data.semesterYear,
       topicSpecialization: topicSpec,
-      pagesCount: data.pagesCount,
+      pagesCount: clampPagesCount(data.pagesCount),
       reportType: data.reportType,
       includeAppendix: data.includeAppendix,
     };

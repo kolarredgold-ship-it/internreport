@@ -51,10 +51,19 @@ const initialFormData: FormData = {
 };
 
 const MAX_TOPIC_PAYLOAD_LENGTH = 9000;
+const MIN_PAGES_COUNT = 3;
+const MAX_PAGES_COUNT = 50;
+
+const clampPagesCount = (value: unknown) => {
+  const parsed = typeof value === 'number' || typeof value === 'string' ? Number(value) : initialFormData.pagesCount;
+  if (!Number.isFinite(parsed)) return initialFormData.pagesCount;
+  return Math.min(Math.max(Math.trunc(parsed), MIN_PAGES_COUNT), MAX_PAGES_COUNT);
+};
 
 const getGenerationPayload = (data: FormData): FormData => ({
   ...data,
   topicSpecialization: data.topicSpecialization.trim().slice(0, MAX_TOPIC_PAYLOAD_LENGTH),
+  pagesCount: clampPagesCount(data.pagesCount),
 });
 
 // Chapters to generate (in order) - function to allow dynamic title for Chapter 1
@@ -241,7 +250,7 @@ const CreateReport = () => {
         internshipDuration: p.internshipDuration ?? prev.internshipDuration,
         academicYear: p.academicYear ?? prev.academicYear,
         topicSpecialization: p.topicSpecialization ?? prev.topicSpecialization,
-        pagesCount: typeof p.pagesCount === 'number' ? p.pagesCount : prev.pagesCount,
+        pagesCount: p.pagesCount !== undefined ? clampPagesCount(p.pagesCount) : prev.pagesCount,
       }));
       sessionStorage.removeItem('prefill_report_form');
       toast({ title: 'Details prefilled', description: 'We filled the form with your wizard answers. Review and generate.' });
