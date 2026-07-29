@@ -132,6 +132,83 @@ const initialState: FormState = {
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
+interface TocEntry { title: string; items: string[] }
+
+const buildToc = (kind: Kind, data: FormState): TocEntry[] => {
+  const topic = (kind === 'thesis' ? data.researchTitle : kind === 'project' ? data.projectTopic : data.internshipRole)
+    || 'Your Topic';
+  const org = data.caseStudyCompany || data.companyName || 'the selected organisation';
+  const area = data.researchArea || data.department || 'your research area';
+
+  const front: TocEntry = {
+    title: 'Front Matter',
+    items: ['Title Page', 'Certificate', 'Declaration', 'Acknowledgement',
+      kind === 'thesis' ? 'Abstract & Synopsis' : 'Abstract & Executive Summary',
+      'Table of Contents', 'List of Tables & Figures'],
+  };
+
+  if (kind === 'internship') {
+    return [
+      front,
+      { title: 'Chapter I — Introduction', items: ['Introduction to the Study', 'Industry Overview', 'Objectives of the Internship', 'Scope & Limitations'] },
+      { title: 'Chapter II — Description of the Organisation', items: [`Profile of ${org}`, 'Vision, Mission & Values', 'Organisational Structure', 'Products / Services', 'SWOT Analysis'] },
+      { title: 'Chapter III — Experiential Learning', items: [`Role: ${topic}`, 'Tasks & Responsibilities', 'Tools & Techniques Used', 'Skills Acquired'] },
+      { title: 'Chapter IV — Outcomes & Conclusion', items: ['Key Learnings', 'Challenges Faced', 'Suggestions', 'Conclusion'] },
+      { title: 'Bibliography & Annexures', items: ['References', 'Annexures', data.includeAppendix ? 'Appendix' : 'Certificate Copy'] },
+    ];
+  }
+
+  if (kind === 'project') {
+    return [
+      front,
+      { title: 'Chapter I — Introduction', items: [`Background of "${topic}"`, 'Statement of the Problem', 'Objectives of the Study', 'Scope & Limitations'] },
+      { title: 'Chapter II — Theoretical Background & Profile', items: ['Conceptual Framework', 'Industry Profile', `Company Profile — ${org}`] },
+      { title: 'Chapter III — Research Design & Methodology', items: ['Research Design', 'Sources of Data', 'Sampling & Tools', 'Plan of Analysis'] },
+      { title: 'Chapter IV — Data Analysis & Interpretation', items: ['Tabulation of Data', 'Charts & Graphs', 'Interpretation of Findings'] },
+      { title: 'Chapter V — Findings, Suggestions & Conclusion', items: ['Summary of Findings', 'Suggestions', 'Conclusion', 'Bibliography', data.includeAppendix ? 'Appendix / Questionnaire' : 'References'] },
+    ];
+  }
+
+  return [
+    front,
+    { title: 'Chapter I — Introduction', items: [`Context of "${topic}"`, 'Statement of the Research Problem', 'Research Questions & Hypotheses', 'Significance of the Study', 'Scope & Limitations'] },
+    { title: 'Chapter II — Review of Literature', items: [`Existing Studies in ${area}`, 'Theoretical Frameworks', 'Research Gap Identified'] },
+    { title: 'Chapter III — Research Methodology', items: ['Research Philosophy & Approach', 'Research Design', 'Population, Sample & Instruments', 'Reliability, Validity & Ethics'] },
+    { title: 'Chapter IV — Data Analysis & Interpretation', items: ['Descriptive Statistics', 'Hypothesis Testing', 'Discussion of Results'] },
+    { title: 'Chapter V — Findings, Contribution & Conclusion', items: ['Major Findings', 'Contribution to Knowledge', 'Recommendations', 'Scope for Further Research', 'Conclusion'] },
+    { title: 'References & Annexures', items: ['Bibliography (APA Style)', data.includeAppendix ? 'Appendices & Instruments' : 'Annexures'] },
+  ];
+};
+
+const TocPreview = ({ kind, data }: { kind: Kind; data: FormState }) => {
+  const toc = buildToc(kind, data);
+  const label = kind === 'thesis' ? 'Thesis / Dissertation' : kind === 'project' ? 'Project Report' : 'Internship Report';
+  return (
+    <div className="rounded-2xl border bg-muted/30 p-4">
+      <div className="flex items-center gap-2 mb-1">
+        <ListTree className="w-4 h-4 text-primary shrink-0" />
+        <p className="font-display font-semibold text-sm">Live Table of Contents — {label}</p>
+      </div>
+      <p className="text-xs text-muted-foreground mb-3">
+        Preview of the structure that will be generated. Approx. {data.pagesCount} pages.
+      </p>
+      <ol className="space-y-2.5">
+        {toc.map((entry) => (
+          <li key={entry.title}>
+            <p className="text-sm font-semibold">{entry.title}</p>
+            <ul className="mt-1 ml-4 space-y-0.5 list-disc marker:text-primary/60">
+              {entry.items.map((it) => (
+                <li key={it} className="text-xs text-muted-foreground break-words">{it}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+};
+
+
 const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
