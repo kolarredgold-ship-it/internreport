@@ -747,6 +747,9 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
               </div>
             )}
 
+            {step >= 3 && <TocPreview kind={kind} data={data} />}
+
+
             {/* Nav buttons */}
             <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 mt-2 border-t">
               <Button className="w-full sm:w-auto" variant="outline" onClick={back} disabled={step === (step1Skipped ? 2 : 1)}>
