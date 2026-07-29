@@ -1201,7 +1201,13 @@ const CreateReport = () => {
         spacing: { after: 600 },
       }),
       new Paragraph({
-        children: [new TextRun({ text: bnuFormat ? 'INTERNSHIP REPORT' : 'INTERNSHIP PROJECT REPORT', bold: true, size: 36 })],
+        children: [new TextRun({
+          text: reportKind === 'thesis'
+            ? 'THESIS / DISSERTATION'
+            : reportKind === 'project'
+              ? 'PROJECT REPORT'
+              : (bnuFormat ? 'INTERNSHIP REPORT' : 'INTERNSHIP PROJECT REPORT'),
+          bold: true, size: 36 })],
         alignment: AlignmentType.CENTER,
         spacing: { after: 400 },
       }),
