@@ -748,7 +748,7 @@ Signature of Candidate: _______________`
      let chapterPrompt: string;
      let chapterLabel: string;
      
-     if (chapter && part && partPrompts[chapter]?.[part]) {
+     if (reportKind === 'internship' && chapter && part && partPrompts[chapter]?.[part]) {
        chapterPrompt = partPrompts[chapter][part].prompt;
        chapterLabel = partPrompts[chapter][part].label;
        console.log(`Generating part: ${part} of ${chapter}...`);
