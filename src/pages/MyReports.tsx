@@ -655,9 +655,6 @@ const MyReports = () => {
             ))}
           </div>
         )}
-
-          </div>
-        )}
       </main>
     </div>
   );
