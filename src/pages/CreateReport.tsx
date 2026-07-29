@@ -475,8 +475,11 @@ const CreateReport = () => {
   const validateForm = () => {
     const requiredFields = [
       'studentName', 'registerNumber', 'course', 'collegeName', 
-      'university', 'guideName', 'internshipTitle', 'companyName',
-      'companyLocation', 'internshipDuration', 'academicYear', 'topicSpecialization'
+      'university', 'guideName', 'internshipTitle',
+      ...(reportKind === 'internship'
+        ? ['companyName', 'companyLocation', 'internshipDuration']
+        : []),
+      'academicYear', 'topicSpecialization'
     ];
 
     for (const field of requiredFields) {
