@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { 
   FileText, 
@@ -14,7 +15,9 @@ import {
   Building,
   GraduationCap,
   FileDown,
-  FolderOpen
+  FolderOpen,
+  Search,
+  History as HistoryIcon
 } from 'lucide-react';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun } from 'docx';
 import { saveAs } from 'file-saver';
@@ -624,7 +627,7 @@ const MyReports = () => {
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1.5">
-                          <History className="w-3.5 h-3.5" />
+                          <HistoryIcon className="w-3.5 h-3.5" />
                           {report.download_count > 0
                             ? `Downloaded ${report.download_count} time${report.download_count === 1 ? '' : 's'}`
                             : 'Never downloaded'}
