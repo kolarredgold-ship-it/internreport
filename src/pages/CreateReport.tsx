@@ -515,6 +515,7 @@ const CreateReport = () => {
           internship_duration: formData.internshipDuration,
           academic_year: formData.academicYear,
           topic_specialization: formData.topicSpecialization,
+          report_kind: reportKind,
           pages_count: clampPagesCount(formData.pagesCount),
           status: 'pending_payment',
         })
@@ -818,6 +819,7 @@ const CreateReport = () => {
             internship_duration: formData.internshipDuration,
             academic_year: formData.academicYear,
             topic_specialization: formData.topicSpecialization,
+            report_kind: reportKind,
             pages_count: clampPagesCount(formData.pagesCount),
             status: 'generating',
           })

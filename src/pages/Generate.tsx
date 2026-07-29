@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ArrowRight, CheckCircle2, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Sparkles, Loader2, AlertCircle, ListTree } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -132,6 +132,83 @@ const initialState: FormState = {
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
+interface TocEntry { title: string; items: string[] }
+
+const buildToc = (kind: Kind, data: FormState): TocEntry[] => {
+  const topic = (kind === 'thesis' ? data.researchTitle : kind === 'project' ? data.projectTopic : data.internshipRole)
+    || 'Your Topic';
+  const org = data.caseStudyCompany || data.companyName || 'the selected organisation';
+  const area = data.researchArea || data.department || 'your research area';
+
+  const front: TocEntry = {
+    title: 'Front Matter',
+    items: ['Title Page', 'Certificate', 'Declaration', 'Acknowledgement',
+      kind === 'thesis' ? 'Abstract & Synopsis' : 'Abstract & Executive Summary',
+      'Table of Contents', 'List of Tables & Figures'],
+  };
+
+  if (kind === 'internship') {
+    return [
+      front,
+      { title: 'Chapter I — Introduction', items: ['Introduction to the Study', 'Industry Overview', 'Objectives of the Internship', 'Scope & Limitations'] },
+      { title: 'Chapter II — Description of the Organisation', items: [`Profile of ${org}`, 'Vision, Mission & Values', 'Organisational Structure', 'Products / Services', 'SWOT Analysis'] },
+      { title: 'Chapter III — Experiential Learning', items: [`Role: ${topic}`, 'Tasks & Responsibilities', 'Tools & Techniques Used', 'Skills Acquired'] },
+      { title: 'Chapter IV — Outcomes & Conclusion', items: ['Key Learnings', 'Challenges Faced', 'Suggestions', 'Conclusion'] },
+      { title: 'Bibliography & Annexures', items: ['References', 'Annexures', data.includeAppendix ? 'Appendix' : 'Certificate Copy'] },
+    ];
+  }
+
+  if (kind === 'project') {
+    return [
+      front,
+      { title: 'Chapter I — Introduction', items: [`Background of "${topic}"`, 'Statement of the Problem', 'Objectives of the Study', 'Scope & Limitations'] },
+      { title: 'Chapter II — Theoretical Background & Profile', items: ['Conceptual Framework', 'Industry Profile', `Company Profile — ${org}`] },
+      { title: 'Chapter III — Research Design & Methodology', items: ['Research Design', 'Sources of Data', 'Sampling & Tools', 'Plan of Analysis'] },
+      { title: 'Chapter IV — Data Analysis & Interpretation', items: ['Tabulation of Data', 'Charts & Graphs', 'Interpretation of Findings'] },
+      { title: 'Chapter V — Findings, Suggestions & Conclusion', items: ['Summary of Findings', 'Suggestions', 'Conclusion', 'Bibliography', data.includeAppendix ? 'Appendix / Questionnaire' : 'References'] },
+    ];
+  }
+
+  return [
+    front,
+    { title: 'Chapter I — Introduction', items: [`Context of "${topic}"`, 'Statement of the Research Problem', 'Research Questions & Hypotheses', 'Significance of the Study', 'Scope & Limitations'] },
+    { title: 'Chapter II — Review of Literature', items: [`Existing Studies in ${area}`, 'Theoretical Frameworks', 'Research Gap Identified'] },
+    { title: 'Chapter III — Research Methodology', items: ['Research Philosophy & Approach', 'Research Design', 'Population, Sample & Instruments', 'Reliability, Validity & Ethics'] },
+    { title: 'Chapter IV — Data Analysis & Interpretation', items: ['Descriptive Statistics', 'Hypothesis Testing', 'Discussion of Results'] },
+    { title: 'Chapter V — Findings, Contribution & Conclusion', items: ['Major Findings', 'Contribution to Knowledge', 'Recommendations', 'Scope for Further Research', 'Conclusion'] },
+    { title: 'References & Annexures', items: ['Bibliography (APA Style)', data.includeAppendix ? 'Appendices & Instruments' : 'Annexures'] },
+  ];
+};
+
+const TocPreview = ({ kind, data }: { kind: Kind; data: FormState }) => {
+  const toc = buildToc(kind, data);
+  const label = kind === 'thesis' ? 'Thesis / Dissertation' : kind === 'project' ? 'Project Report' : 'Internship Report';
+  return (
+    <div className="rounded-2xl border bg-muted/30 p-4">
+      <div className="flex items-center gap-2 mb-1">
+        <ListTree className="w-4 h-4 text-primary shrink-0" />
+        <p className="font-display font-semibold text-sm">Live Table of Contents — {label}</p>
+      </div>
+      <p className="text-xs text-muted-foreground mb-3">
+        Preview of the structure that will be generated. Approx. {data.pagesCount} pages.
+      </p>
+      <ol className="space-y-2.5">
+        {toc.map((entry) => (
+          <li key={entry.title}>
+            <p className="text-sm font-semibold">{entry.title}</p>
+            <ul className="mt-1 ml-4 space-y-0.5 list-disc marker:text-primary/60">
+              {entry.items.map((it) => (
+                <li key={it} className="text-xs text-muted-foreground break-words">{it}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+};
+
+
 const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -227,24 +304,32 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       if (!data.rollNumber.trim()) return 'Enter your roll / registration number';
       if (!data.semesterYear.trim()) return 'Enter your semester / year';
       if (!data.department.trim()) return 'Enter your department / specialization';
+      if (!isInternship && !data.guideName.trim()) {
+        return `Guide / Supervisor name is required for a ${isThesis ? 'thesis' : 'project report'}`;
+      }
     }
     if (s === 3) {
       if (isInternship) {
+        // Internship-only fields — validated only for the internship kind
         if (!data.companyName.trim()) return 'Enter company name';
         if (!data.internshipStart || !data.internshipEnd) return 'Enter internship duration';
+        if (new Date(data.internshipEnd) < new Date(data.internshipStart)) return 'End date must be after the start date';
         if (!data.internshipRole.trim()) return 'Enter department / role';
         if (wordCount(data.workDescription) < 50) return 'Work description must be at least 50 words';
       } else if (isProject) {
         if (!data.projectTopic.trim()) return 'Enter your project / research topic';
-        if (wordCount(data.objective) < 50) return 'Objective must be at least 50 words';
+        if (data.projectTopic.trim().length < 10) return 'Project topic should be at least 10 characters';
+        if (wordCount(data.objective) < 50) return 'Objective / scope must be at least 50 words';
       } else if (isThesis) {
         if (!data.researchTitle.trim()) return 'Enter research title';
-        if (!data.researchArea.trim()) return 'Enter research area';
-        if (!data.researchSummary.trim()) return 'Paste your research summary';
+        if (data.researchTitle.trim().length < 10) return 'Research title should be at least 10 characters';
+        if (!data.researchArea.trim()) return 'Enter research area / field';
+        if (wordCount(data.researchSummary) < 80) return 'Research summary must be at least 80 words';
       }
     }
     return null;
   };
+
 
   const next = () => {
     const err = validate(step);
@@ -502,7 +587,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                   />
                 </div>
                 <div>
-                  <Label>Guide / Supervisor Name (optional)</Label>
+                  <Label>Guide / Supervisor Name {isInternship ? '(optional)' : '*'}</Label>
                   <Input value={data.guideName} onChange={e => update('guideName', e.target.value)} />
                 </div>
               </>
@@ -661,6 +746,9 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                 <SummaryRow label="Appendix" value={data.includeAppendix ? 'Yes' : 'No'} />
               </div>
             )}
+
+            {step >= 3 && <TocPreview kind={kind} data={data} />}
+
 
             {/* Nav buttons */}
             <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6 mt-2 border-t">

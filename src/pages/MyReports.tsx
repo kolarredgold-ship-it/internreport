@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { 
   FileText, 
@@ -14,7 +15,9 @@ import {
   Building,
   GraduationCap,
   FileDown,
-  FolderOpen
+  FolderOpen,
+  Search,
+  History as HistoryIcon
 } from 'lucide-react';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, PageBreak, ImageRun } from 'docx';
 import { saveAs } from 'file-saver';
@@ -59,6 +62,14 @@ const getImageKeywords = (report: Report): string[] => {
   return keywords.slice(0, 10);
 };
 
+type ReportKind = 'internship' | 'project' | 'thesis';
+
+const KIND_LABELS: Record<ReportKind, string> = {
+  internship: 'Internship Report',
+  project: 'Project Report',
+  thesis: 'Thesis / Dissertation',
+};
+
 interface Report {
   id: string;
   student_name: string;
@@ -74,6 +85,9 @@ interface Report {
   register_number: string;
   course: string;
   academic_year: string;
+  report_kind: string;
+  download_count: number;
+  last_downloaded_at: string | null;
 }
 
 const MyReports = () => {
@@ -82,6 +96,9 @@ const MyReports = () => {
   const { toast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [kindFilter, setKindFilter] = useState<'all' | ReportKind>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'generating' | 'pending_payment' | 'failed'>('all');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -425,6 +442,7 @@ const MyReports = () => {
     const blob = await Packer.toBlob(doc);
     const filename = `${report.student_name.replace(/\s+/g, '_')}_Internship_Report.docx`;
     saveAs(blob, filename);
+    await recordDownload(report);
 
     toast({
       title: 'Downloaded!',
@@ -432,10 +450,48 @@ const MyReports = () => {
     });
   };
 
+  const recordDownload = async (report: Report) => {
+    const nextCount = (report.download_count || 0) + 1;
+    const now = new Date().toISOString();
+    setReports(prev => prev.map(r =>
+      r.id === report.id ? { ...r, download_count: nextCount, last_downloaded_at: now } : r
+    ));
+    try {
+      await supabase
+        .from('reports')
+        .update({ download_count: nextCount, last_downloaded_at: now })
+        .eq('id', report.id);
+    } catch (e) {
+      console.error('Error recording download:', e);
+    }
+  };
+
+  const normalizedKind = (report: Report): ReportKind => {
+    const k = report.report_kind;
+    return k === 'project' || k === 'thesis' ? k : 'internship';
+  };
+
+  const filteredReports = reports.filter(r => {
+    if (kindFilter !== 'all' && normalizedKind(r) !== kindFilter) return false;
+    if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return [r.internship_title, r.company_name, r.college_name, r.university, r.course, KIND_LABELS[normalizedKind(r)]]
+      .filter(Boolean)
+      .some(v => String(v).toLowerCase().includes(q));
+  });
+
+  const kindCount = (k: 'all' | ReportKind) =>
+    k === 'all' ? reports.length : reports.filter(r => normalizedKind(r) === k).length;
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
         return <Badge className="bg-success text-success-foreground">Completed</Badge>;
+      case 'generating':
+        return <Badge className="bg-accent text-accent-foreground">Generating</Badge>;
+      case 'pending_payment':
+        return <Badge variant="secondary">Awaiting Payment</Badge>;
       case 'pending':
         return <Badge variant="secondary">Pending</Badge>;
       case 'failed':
@@ -472,20 +528,65 @@ const MyReports = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="font-display text-3xl font-bold mb-2">My Reports</h1>
-          <p className="text-muted-foreground">View and download your previously generated reports</p>
+          <p className="text-muted-foreground">Search, filter by report type, and track generation & download history</p>
         </div>
 
-        {reports.length === 0 ? (
+        {/* Filters */}
+        <div className="mb-6 space-y-3">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              placeholder="Search by title, company, college or course..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {([['all', 'All'], ['internship', 'Internship'], ['project', 'Project'], ['thesis', 'Thesis']] as const).map(([k, label]) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setKindFilter(k as 'all' | ReportKind)}
+                className={`shrink-0 px-3.5 py-2 rounded-full text-sm font-medium border transition-all active:scale-95 ${
+                  kindFilter === k ? 'bg-primary text-primary-foreground border-primary' : 'bg-background border-border hover:border-primary'
+                }`}
+              >
+                {label} ({kindCount(k as 'all' | ReportKind)})
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {([['all', 'Any status'], ['completed', 'Completed'], ['generating', 'Generating'], ['pending_payment', 'Awaiting payment'], ['failed', 'Failed']] as const).map(([s, label]) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatusFilter(s as typeof statusFilter)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  statusFilter === s ? 'bg-accent text-accent-foreground border-accent' : 'bg-background border-border hover:border-accent'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {filteredReports.length === 0 ? (
           <Card className="border-0 shadow-soft">
             <CardContent className="p-12 text-center">
               <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
                 <FolderOpen className="w-10 h-10 text-muted-foreground" />
               </div>
-              <h3 className="font-display text-xl font-semibold mb-2">No Reports Yet</h3>
+              <h3 className="font-display text-xl font-semibold mb-2">
+                {reports.length === 0 ? 'No Reports Yet' : 'No Matching Reports'}
+              </h3>
               <p className="text-muted-foreground mb-6">
-                You haven't generated any reports yet. Create your first one!
+                {reports.length === 0
+                  ? "You haven't generated any reports yet. Create your first one!"
+                  : 'Try a different search term or filter.'}
               </p>
               <Link to="/create-report">
                 <Button variant="gradient">Create Your First Report</Button>
@@ -494,20 +595,23 @@ const MyReports = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {reports.map((report) => (
+            {filteredReports.map((report) => (
               <Card key={report.id} className="border-0 shadow-soft hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
                         <h3 className="font-display font-semibold text-lg">{report.internship_title}</h3>
+                        <Badge variant="outline">{KIND_LABELS[normalizedKind(report)]}</Badge>
                         {getStatusBadge(report.status)}
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Building className="w-4 h-4" />
-                          {report.company_name}
-                        </div>
+                        {report.company_name && (
+                          <div className="flex items-center gap-2">
+                            <Building className="w-4 h-4" />
+                            {report.company_name}
+                          </div>
+                        )}
                         <div className="flex items-center gap-2">
                           <GraduationCap className="w-4 h-4" />
                           {report.college_name}
@@ -521,9 +625,20 @@ const MyReports = () => {
                           {format(new Date(report.created_at), 'MMM dd, yyyy')}
                         </div>
                       </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <HistoryIcon className="w-3.5 h-3.5" />
+                          {report.download_count > 0
+                            ? `Downloaded ${report.download_count} time${report.download_count === 1 ? '' : 's'}`
+                            : 'Never downloaded'}
+                        </span>
+                        {report.last_downloaded_at && (
+                          <span>Last download: {format(new Date(report.last_downloaded_at), 'MMM dd, yyyy • hh:mm a')}</span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-2">
-                      {report.status === 'completed' && report.report_content && (
+                      {report.status === 'completed' && report.report_content ? (
                         <Button 
                           variant="gradient" 
                           onClick={() => downloadReport(report)}
@@ -531,6 +646,10 @@ const MyReports = () => {
                           <Download className="w-4 h-4" />
                           Download DOCX
                         </Button>
+                      ) : (
+                        <Link to="/create-report">
+                          <Button variant="outline">Continue</Button>
+                        </Link>
                       )}
                     </div>
                   </div>
