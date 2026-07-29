@@ -133,6 +133,7 @@ const CreateReport = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [reportKind, setReportKind] = useState<ReportKind>('internship');
   const [generating, setGenerating] = useState(false);
   const [currentChapter, setCurrentChapter] = useState<string | null>(null);
   const [chapterContent, setChapterContent] = useState<ChapterContent>({});
