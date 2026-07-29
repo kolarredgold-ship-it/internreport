@@ -587,7 +587,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                   />
                 </div>
                 <div>
-                  <Label>Guide / Supervisor Name (optional)</Label>
+                  <Label>Guide / Supervisor Name {isInternship ? '(optional)' : '*'}</Label>
                   <Input value={data.guideName} onChange={e => update('guideName', e.target.value)} />
                 </div>
               </>
