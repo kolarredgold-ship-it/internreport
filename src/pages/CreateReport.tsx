@@ -66,15 +66,30 @@ const getGenerationPayload = (data: FormData): FormData => ({
   pagesCount: clampPagesCount(data.pagesCount),
 });
 
-// Chapters to generate (in order) - function to allow dynamic title for Chapter 1
-const getChapters = (internshipTitle?: string) => [
-  { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, Executive Summary, TOC' },
-  { key: '1', label: 'Chapter I', description: 'Introduction (5-8 pages)' },
-  { key: '2', label: 'Chapter II', description: 'Description of the Organisation (8-12 pages)' },
-  { key: '3', label: 'Chapter III', description: 'Experiential Learning (6-10 pages)' },
-  { key: '4', label: 'Chapter IV', description: 'Internship Outcomes and Conclusion (6-10 pages)' },
-  { key: '5', label: 'Bibliography', description: 'References & Annexures' },
-];
+// Chapters to generate (in order) - varies by report kind
+export type ReportKind = 'internship' | 'project' | 'thesis';
+
+const getChapters = (internshipTitle?: string, kind: ReportKind = 'internship') => {
+  if (kind === 'internship') {
+    return [
+      { key: 'front', label: 'Front Matter', description: 'Certificate, Declaration, Acknowledgement, Abstract, Executive Summary, TOC' },
+      { key: '1', label: 'Chapter I', description: 'Introduction (5-8 pages)' },
+      { key: '2', label: 'Chapter II', description: 'Description of the Organisation (8-12 pages)' },
+      { key: '3', label: 'Chapter III', description: 'Experiential Learning (6-10 pages)' },
+      { key: '4', label: 'Chapter IV', description: 'Internship Outcomes and Conclusion (6-10 pages)' },
+      { key: '5', label: 'Bibliography', description: 'References & Annexures' },
+    ];
+  }
+  const isThesis = kind === 'thesis';
+  return [
+    { key: 'front', label: 'Front Matter', description: `Certificate, Declaration, Abstract, ${isThesis ? 'Synopsis' : 'Executive Summary'}, TOC` },
+    { key: '1', label: 'Chapter I', description: 'Introduction, Problem Statement & Objectives' },
+    { key: '2', label: 'Chapter II', description: isThesis ? 'Review of Literature' : 'Theoretical Background & Profile' },
+    { key: '3', label: 'Chapter III', description: 'Research Design & Methodology' },
+    { key: '4', label: 'Chapter IV', description: 'Data Analysis & Interpretation' },
+    { key: '5', label: 'Chapter V', description: 'Findings, Suggestions, Conclusion & Bibliography' },
+  ];
+};
 
 // Sound notification function
 const playCompletionSound = () => {
