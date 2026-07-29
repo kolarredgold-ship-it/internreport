@@ -59,6 +59,14 @@ const getImageKeywords = (report: Report): string[] => {
   return keywords.slice(0, 10);
 };
 
+type ReportKind = 'internship' | 'project' | 'thesis';
+
+const KIND_LABELS: Record<ReportKind, string> = {
+  internship: 'Internship Report',
+  project: 'Project Report',
+  thesis: 'Thesis / Dissertation',
+};
+
 interface Report {
   id: string;
   student_name: string;
@@ -74,6 +82,9 @@ interface Report {
   register_number: string;
   course: string;
   academic_year: string;
+  report_kind: string;
+  download_count: number;
+  last_downloaded_at: string | null;
 }
 
 const MyReports = () => {
@@ -82,6 +93,9 @@ const MyReports = () => {
   const { toast } = useToast();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [kindFilter, setKindFilter] = useState<'all' | ReportKind>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'generating' | 'pending_payment' | 'failed'>('all');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -425,6 +439,7 @@ const MyReports = () => {
     const blob = await Packer.toBlob(doc);
     const filename = `${report.student_name.replace(/\s+/g, '_')}_Internship_Report.docx`;
     saveAs(blob, filename);
+    await recordDownload(report);
 
     toast({
       title: 'Downloaded!',
@@ -432,10 +447,48 @@ const MyReports = () => {
     });
   };
 
+  const recordDownload = async (report: Report) => {
+    const nextCount = (report.download_count || 0) + 1;
+    const now = new Date().toISOString();
+    setReports(prev => prev.map(r =>
+      r.id === report.id ? { ...r, download_count: nextCount, last_downloaded_at: now } : r
+    ));
+    try {
+      await supabase
+        .from('reports')
+        .update({ download_count: nextCount, last_downloaded_at: now })
+        .eq('id', report.id);
+    } catch (e) {
+      console.error('Error recording download:', e);
+    }
+  };
+
+  const normalizedKind = (report: Report): ReportKind => {
+    const k = report.report_kind;
+    return k === 'project' || k === 'thesis' ? k : 'internship';
+  };
+
+  const filteredReports = reports.filter(r => {
+    if (kindFilter !== 'all' && normalizedKind(r) !== kindFilter) return false;
+    if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return [r.internship_title, r.company_name, r.college_name, r.university, r.course, KIND_LABELS[normalizedKind(r)]]
+      .filter(Boolean)
+      .some(v => String(v).toLowerCase().includes(q));
+  });
+
+  const kindCount = (k: 'all' | ReportKind) =>
+    k === 'all' ? reports.length : reports.filter(r => normalizedKind(r) === k).length;
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
         return <Badge className="bg-success text-success-foreground">Completed</Badge>;
+      case 'generating':
+        return <Badge className="bg-accent text-accent-foreground">Generating</Badge>;
+      case 'pending_payment':
+        return <Badge variant="secondary">Awaiting Payment</Badge>;
       case 'pending':
         return <Badge variant="secondary">Pending</Badge>;
       case 'failed':
@@ -477,7 +530,7 @@ const MyReports = () => {
           <p className="text-muted-foreground">View and download your previously generated reports</p>
         </div>
 
-        {reports.length === 0 ? (
+        {filteredReports.length === 0 ? (
           <Card className="border-0 shadow-soft">
             <CardContent className="p-12 text-center">
               <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
@@ -494,7 +547,7 @@ const MyReports = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {reports.map((report) => (
+            {filteredReports.map((report) => (
               <Card key={report.id} className="border-0 shadow-soft hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
