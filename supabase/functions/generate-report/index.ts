@@ -571,7 +571,171 @@ Write clear, professional content with formal academic English. No markers like 
          }
        }
      };
- 
+
+     // ===== PROJECT / THESIS specific structures =====
+     if (reportKind !== 'internship') {
+       const isThesis = reportKind === 'thesis';
+       const docLabel = isThesis ? 'THESIS / DISSERTATION' : 'PROJECT REPORT';
+       const title = internshipTitle;
+       const altBase = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
+College: ${collegeName}, University: ${university}, Guide: ${guideName}
+${isThesis ? 'Research Title' : 'Project Title'}: ${title}
+${companyName ? `Organisation / Case Study: ${companyName}` : 'No company involved — this is an academic study.'}
+Academic Year: ${academicYear}
+Topic focus: ${topicSpecialization}
+Student-provided details: ${topicDetails}
+Target: ${pagesCount} pages total (MAXIMUM 50 pages overall)
+
+THIS IS A ${docLabel}. It is NOT an internship report.
+- NEVER write about an internship, intern duties, internship duration, daily tasks at a company, supervisor feedback, or "experiential learning".
+- Write as an academic ${isThesis ? 'research thesis' : 'project study'} on "${title}".
+
+GLOBAL FORMATTING REQUIREMENTS:
+- Explain every concept in DEPTH: 1-2 detailed paragraphs, then bullet points, then a closing paragraph.
+- Heading hierarchy: # H1 (chapter title), ## H2, ### H3, #### H4.
+- Add at least one relevant Markdown table per chapter.
+- Each chapter starts on a NEW PAGE; keep total within 50 pages.
+- No asterisks, no "(In-Depth)" markers, formal academic English.`;
+
+       const P = (label: string, prompt: string) => ({ label, prompt: `${altBase}\n\n${prompt}` });
+
+       chapterPrompts['front'] = P(
+         'Front Matter',
+         `Generate the FRONT MATTER for a ${docLabel} titled "${title}" (1500-2000 words):
+
+# CERTIFICATE
+(Formal certificate from the guide/department certifying this ${isThesis ? 'thesis' : 'project work'} — 80-100 words, signature placeholders for Guide, HOD, Principal, External Examiner)
+
+# DECLARATION
+(Student declaration of original ${isThesis ? 'research' : 'project'} work — 100-120 words)
+
+# ACKNOWLEDGEMENT
+(150-180 words thanking guide, department, institution, respondents, family)
+
+# ABSTRACT
+(200-250 words: problem, ${isThesis ? 'research questions and hypotheses' : 'objectives'}, methodology, key findings, conclusion)
+
+# ${isThesis ? 'SYNOPSIS' : 'EXECUTIVE SUMMARY'}
+(300-400 words overview of the whole ${isThesis ? 'thesis' : 'project'})
+
+# TABLE OF CONTENTS
+(Clean list without page numbers matching this structure:
+${isThesis
+  ? `CHAPTER I: INTRODUCTION\nCHAPTER II: REVIEW OF LITERATURE\nCHAPTER III: RESEARCH METHODOLOGY\nCHAPTER IV: DATA ANALYSIS AND INTERPRETATION\nCHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION`
+  : `CHAPTER I: INTRODUCTION\nCHAPTER II: PROFILE / THEORETICAL BACKGROUND\nCHAPTER III: RESEARCH DESIGN AND METHODOLOGY\nCHAPTER IV: DATA ANALYSIS AND INTERPRETATION\nCHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION`}
+
+BIBLIOGRAPHY
+ANNEXURES)
+
+# LIST OF FIGURES
+# LIST OF TABLES
+# LIST OF ABBREVIATIONS
+(10-15 relevant abbreviations)`
+       );
+
+       chapterPrompts['1'] = P(
+         'Chapter I: Introduction',
+         `Generate CHAPTER I: INTRODUCTION (2500-3500 words) for the ${docLabel} "${title}".
+
+# CHAPTER I: INTRODUCTION
+
+## 1.1 Background of the Study
+## 1.2 Theoretical Concepts related to ${topicSpecialization}
+## 1.3 Statement of the Problem
+## 1.4 ${isThesis ? 'Research Questions and Hypotheses' : 'Objectives of the Study'}
+## 1.5 Scope of the Study
+## 1.6 Significance / Need of the Study
+## 1.7 Limitations of the Study
+## 1.8 Chapter Scheme
+
+(Write 300-500 words per section. No internship content.)`
+       );
+
+       chapterPrompts['2'] = P(
+         isThesis ? 'Chapter II: Review of Literature' : 'Chapter II: Theoretical Background / Profile',
+         isThesis
+           ? `Generate CHAPTER II: REVIEW OF LITERATURE (2500-3500 words) for "${title}".
+
+# CHAPTER II: REVIEW OF LITERATURE
+
+## 2.1 Introduction to the Review
+## 2.2 Conceptual Framework
+## 2.3 Review of National Studies (summarise 8-10 studies, author + year + findings)
+## 2.4 Review of International Studies (summarise 8-10 studies)
+## 2.5 Research Gap Identified
+## 2.6 Summary
+
+(Include a Markdown table summarising Author / Year / Objective / Findings.)`
+           : `Generate CHAPTER II: THEORETICAL BACKGROUND AND PROFILE (2500-3500 words) for "${title}".
+
+# CHAPTER II: THEORETICAL BACKGROUND AND PROFILE
+
+## 2.1 Theoretical Framework of ${topicSpecialization}
+## 2.2 Industry Overview
+## 2.3 ${companyName ? `Profile of ${companyName} (history, vision, mission, structure, products)` : 'Profile of the Study Area / Sector'}
+## 2.4 Review of Related Literature (6-8 studies with author and year)
+## 2.5 Research Gap
+## 2.6 Summary`
+       );
+
+       chapterPrompts['3'] = P(
+         'Chapter III: Research Design and Methodology',
+         `Generate CHAPTER III: RESEARCH DESIGN AND METHODOLOGY (2000-3000 words) for "${title}".
+
+# CHAPTER III: RESEARCH DESIGN AND METHODOLOGY
+
+## 3.1 Research Design
+## 3.2 ${isThesis ? 'Hypotheses' : 'Objectives Restated'}
+## 3.3 Sources of Data (primary and secondary)
+## 3.4 Sampling Design (population, sample size, technique)
+## 3.5 Tools of Data Collection (questionnaire/interview schedule design)
+## 3.6 Statistical Tools Used (percentage analysis, chi-square, correlation, regression as appropriate)
+## 3.7 Period of Study
+## 3.8 Limitations of the Methodology`
+       );
+
+       chapterPrompts['4'] = P(
+         'Chapter IV: Data Analysis and Interpretation',
+         `Generate CHAPTER IV: DATA ANALYSIS AND INTERPRETATION (2500-3500 words) for "${title}".
+
+# CHAPTER IV: DATA ANALYSIS AND INTERPRETATION
+
+Present 8-12 analysed items. For each: a Markdown table of illustrative data (respondents / frequency / percentage), followed by interpretation paragraphs.
+
+## 4.1 Demographic Profile of Respondents
+## 4.2 Analysis related to ${topicSpecialization}
+## 4.3 ${isThesis ? 'Hypothesis Testing (state hypothesis, test applied, statistic, decision)' : 'Comparative Analysis'}
+## 4.4 Summary of Analysis
+
+(Clearly label every table as Table 4.x with a title. Data may be realistic illustrative data.)`
+       );
+
+       chapterPrompts['5'] = P(
+         'Chapter V: Findings, Suggestions & Conclusion + Bibliography',
+         `Generate CHAPTER V plus BIBLIOGRAPHY and ANNEXURES (2000-2500 words) for "${title}".
+
+# CHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION
+
+## 5.1 Major Findings (10-12 numbered findings)
+## 5.2 Suggestions and Recommendations (8-10 actionable points)
+## 5.3 Scope for Further Research
+## 5.4 Conclusion
+
+# BIBLIOGRAPHY
+(25-30 APA references: journals, books, reports, websites, published 2018-2026)
+
+# ANNEXURES
+## Annexure A: Questionnaire / Interview Schedule (write a full 20-question instrument)
+## Annexure B: Statistical Output Tables (placeholder)
+## Annexure C: Plagiarism / Similarity Report (placeholder)
+
+**Declaration:** I, ${studentName} (Reg. No: ${registerNumber}), declare that this ${isThesis ? 'thesis' : 'project report'} titled "${title}" is my original work carried out under the guidance of ${guideName}.
+
+Date: ${academicYear}
+Signature of Candidate: _______________`
+       );
+     }
+
      // Determine which prompt to use
      let chapterPrompt: string;
      let chapterLabel: string;
