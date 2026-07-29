@@ -561,6 +561,7 @@ const CreateReport = () => {
           body: {
             ...getGenerationPayload(formData),
             userId: user?.id,
+            reportKind,
             chapter: chapterKey,
           },
         });
@@ -670,6 +671,7 @@ const CreateReport = () => {
           body: {
             ...getGenerationPayload(formData),
             userId: user?.id,
+            reportKind,
             chapter: chapterKey,
             part: part,
           },
