@@ -149,6 +149,8 @@ const MAX_PAGES_COUNT = 50;
       const topicSpecialization = createTopicFocus(body.topicSpecialization);
      const chapter = body.chapter || null;
      const part = body.part || null;
+     const reportKind: 'internship' | 'project' | 'thesis' =
+       body.reportKind === 'project' || body.reportKind === 'thesis' ? body.reportKind : 'internship';
  
      console.log("Input validation passed for user:", userId, "Chapter:", chapter || "Full", "Part:", part || "Full");
  
