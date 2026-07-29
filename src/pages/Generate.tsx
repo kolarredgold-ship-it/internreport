@@ -227,24 +227,32 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       if (!data.rollNumber.trim()) return 'Enter your roll / registration number';
       if (!data.semesterYear.trim()) return 'Enter your semester / year';
       if (!data.department.trim()) return 'Enter your department / specialization';
+      if (!isInternship && !data.guideName.trim()) {
+        return `Guide / Supervisor name is required for a ${isThesis ? 'thesis' : 'project report'}`;
+      }
     }
     if (s === 3) {
       if (isInternship) {
+        // Internship-only fields — validated only for the internship kind
         if (!data.companyName.trim()) return 'Enter company name';
         if (!data.internshipStart || !data.internshipEnd) return 'Enter internship duration';
+        if (new Date(data.internshipEnd) < new Date(data.internshipStart)) return 'End date must be after the start date';
         if (!data.internshipRole.trim()) return 'Enter department / role';
         if (wordCount(data.workDescription) < 50) return 'Work description must be at least 50 words';
       } else if (isProject) {
         if (!data.projectTopic.trim()) return 'Enter your project / research topic';
-        if (wordCount(data.objective) < 50) return 'Objective must be at least 50 words';
+        if (data.projectTopic.trim().length < 10) return 'Project topic should be at least 10 characters';
+        if (wordCount(data.objective) < 50) return 'Objective / scope must be at least 50 words';
       } else if (isThesis) {
         if (!data.researchTitle.trim()) return 'Enter research title';
-        if (!data.researchArea.trim()) return 'Enter research area';
-        if (!data.researchSummary.trim()) return 'Paste your research summary';
+        if (data.researchTitle.trim().length < 10) return 'Research title should be at least 10 characters';
+        if (!data.researchArea.trim()) return 'Enter research area / field';
+        if (wordCount(data.researchSummary) < 80) return 'Research summary must be at least 80 words';
       }
     }
     return null;
   };
+
 
   const next = () => {
     const err = validate(step);
