@@ -252,6 +252,9 @@ const CreateReport = () => {
       const raw = sessionStorage.getItem('prefill_report_form');
       if (!raw) return;
       const p = JSON.parse(raw) || {};
+      if (p.reportKind === 'project' || p.reportKind === 'thesis' || p.reportKind === 'internship') {
+        setReportKind(p.reportKind);
+      }
       setFormData(prev => ({
         ...prev,
         studentName: p.studentName ?? prev.studentName,
