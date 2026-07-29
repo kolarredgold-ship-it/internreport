@@ -65,13 +65,21 @@ const MAX_PAGES_COUNT = 50;
        );
      }
  
+     const isInternshipKind = !(body.reportKind === 'project' || body.reportKind === 'thesis');
      const requiredFields = [
        'studentName', 'registerNumber', 'course', 'collegeName',
-       'university', 'guideName', 'internshipTitle', 'companyName',
-       'companyLocation', 'internshipDuration', 'academicYear',
+       'university', 'guideName', 'internshipTitle',
+       ...(isInternshipKind ? ['companyName', 'companyLocation', 'internshipDuration'] : []),
+       'academicYear',
        'topicSpecialization', 'pagesCount'
      ];
- 
+
+     // Optional fields still validated for type/length when present
+     const optionalStringFields = isInternshipKind ? [] : ['companyName', 'companyLocation', 'internshipDuration'];
+     for (const field of optionalStringFields) {
+       if (body[field] === undefined || body[field] === null) body[field] = '';
+     }
+
      for (const field of requiredFields) {
        if (body[field] === undefined || body[field] === null || body[field] === '') {
          return new Response(
