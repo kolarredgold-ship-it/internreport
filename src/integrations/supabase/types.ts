@@ -407,14 +407,17 @@ export type Database = {
           company_name: string
           course: string
           created_at: string
+          download_count: number
           file_url: string | null
           guide_name: string
           id: string
           internship_duration: string
           internship_title: string
+          last_downloaded_at: string | null
           pages_count: number
           register_number: string
           report_content: string | null
+          report_kind: string
           status: string
           student_name: string
           topic_specialization: string
@@ -429,14 +432,17 @@ export type Database = {
           company_name: string
           course: string
           created_at?: string
+          download_count?: number
           file_url?: string | null
           guide_name: string
           id?: string
           internship_duration: string
           internship_title: string
+          last_downloaded_at?: string | null
           pages_count?: number
           register_number: string
           report_content?: string | null
+          report_kind?: string
           status?: string
           student_name: string
           topic_specialization: string
@@ -451,14 +457,17 @@ export type Database = {
           company_name?: string
           course?: string
           created_at?: string
+          download_count?: number
           file_url?: string | null
           guide_name?: string
           id?: string
           internship_duration?: string
           internship_title?: string
+          last_downloaded_at?: string | null
           pages_count?: number
           register_number?: string
           report_content?: string | null
+          report_kind?: string
           status?: string
           student_name?: string
           topic_specialization?: string
