@@ -320,6 +320,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       topicSpecialization: topicSpec,
       pagesCount: clampPagesCount(data.pagesCount),
       reportType: data.reportType,
+      reportKind: kind,
       includeAppendix: data.includeAppendix,
     };
     sessionStorage.setItem('prefill_report_form', JSON.stringify(payload));
