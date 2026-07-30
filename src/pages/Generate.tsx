@@ -397,11 +397,16 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
     setGenerating(true);
     // Map to CreateReport form data
     const finalUni = data.university === 'Other' ? data.universityOther : data.university;
-    const topicSpec = isInternship
+    const outline = applyToc(kind, data);
+    const outlineText = outline
+      .map(e => `${e.title}\n${e.items.map(i => `  - ${i}`).join('\n')}`)
+      .join('\n');
+    const baseTopicSpec = isInternship
       ? data.workDescription
       : isProject
         ? `${data.projectTopic}${data.caseStudyCompany ? ` (Case Study: ${data.caseStudyCompany})` : ''}\n\n${data.objective}`
         : `${data.researchTitle} — ${data.researchArea}\n\n${data.researchSummary}`;
+    const topicSpec = `${baseTopicSpec}\n\nREQUIRED SECTION HEADINGS (use exactly these titles):\n${outlineText}`.slice(0, 9000);
 
     const payload = {
       studentName: data.fullName,
@@ -420,7 +425,9 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       reportType: data.reportType,
       reportKind: kind,
       includeAppendix: data.includeAppendix,
+      customToc: outline.map(e => ({ title: e.title, items: e.items })),
     };
+
     sessionStorage.setItem('prefill_report_form', JSON.stringify(payload));
     localStorage.removeItem(STORAGE_KEY);
     navigate('/create-report?from=generate');
