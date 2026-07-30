@@ -185,8 +185,15 @@ const buildToc = (kind: Kind, data: FormState): TocEntry[] => {
   ];
 };
 
+// Applies the user's section-heading customization on top of the default outline.
+const applyToc = (kind: Kind, data: FormState): (TocEntry & { defaultTitle: string })[] =>
+  buildToc(kind, data)
+    .filter(e => !(data.hiddenSections || []).includes(e.title))
+    .map(e => ({ ...e, defaultTitle: e.title, title: (data.sectionTitles || {})[e.title]?.trim() || e.title }));
+
 const TocPreview = ({ kind, data }: { kind: Kind; data: FormState }) => {
-  const toc = buildToc(kind, data);
+  const toc = applyToc(kind, data);
+
   const label = kind === 'thesis' ? 'Thesis / Dissertation' : kind === 'project' ? 'Project Report' : 'Internship Report';
   return (
     <div className="rounded-2xl border bg-muted/30 p-4">
