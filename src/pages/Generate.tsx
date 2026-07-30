@@ -119,6 +119,9 @@ interface FormState {
   pagesCount: number;
   fontStyle: string;
   includeAppendix: boolean;
+  // section customization (keyed by the default section title)
+  sectionTitles: Record<string, string>;
+  hiddenSections: string[];
 }
 
 const initialState: FormState = {
@@ -128,7 +131,9 @@ const initialState: FormState = {
   projectTopic: '', caseStudyCompany: '', objective: '',
   researchTitle: '', researchArea: '', researchSummary: '',
   pagesCount: DEFAULT_PAGES_COUNT, fontStyle: 'Times New Roman 12pt (Standard)', includeAppendix: true,
+  sectionTitles: {}, hiddenSections: [],
 };
+
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
