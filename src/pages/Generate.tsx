@@ -522,7 +522,9 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
               {step === 2 && 'Your academic details for the title page.'}
               {step === 3 && (isInternship ? 'Details about your internship.' : isProject ? 'Topic and objectives.' : 'Your existing research.')}
               {step === 4 && 'Length and formatting preferences.'}
-              {step === 5 && 'Review everything before we generate.'}
+              {step === 5 && 'Rename or remove the table-of-contents headings before generating.'}
+              {step === 6 && 'Review everything before we generate.'}
+
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 px-4 sm:px-6">
