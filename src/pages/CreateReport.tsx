@@ -17,6 +17,8 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Page
 import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
 import GenerateShortcuts from '@/components/GenerateShortcuts';
+import QualityGate from '@/components/QualityGate';
+
 
 interface FormData {
   studentName: string;
