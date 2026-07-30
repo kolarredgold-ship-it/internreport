@@ -1914,14 +1914,16 @@ const CreateReport = () => {
               )}
 
 
-              {/* Download Button - Only show when ALL chapters are complete */}
+              {/* Quality gate + download — only when ALL chapters are complete */}
               {hasAllContent && !generating && (
-                <div className="space-y-2">
+                <div className="space-y-3">
+                  <QualityGate chapters={chapterContent as Record<string, string>} onResult={setQualityPassed} />
                   <Button
                     variant="hero"
                     onClick={() => downloadFullReport(false)}
                     className="w-full"
                     size="lg"
+                    disabled={!qualityPassed}
                   >
                     <Download className="w-5 h-5" />
                     Download Complete Report
@@ -1931,12 +1933,19 @@ const CreateReport = () => {
                     onClick={() => downloadFullReport(true)}
                     className="w-full"
                     size="sm"
+                    disabled={!qualityPassed}
                   >
                     <Download className="w-4 h-4" />
                     Download BNU Format (B.Com / BBA)
                   </Button>
+                  {!qualityPassed && (
+                    <p className="text-xs text-center text-muted-foreground">
+                      Downloads unlock once the quality check passes.
+                    </p>
+                  )}
                 </div>
               )}
+
               
               {/* Progress message if not all chapters are done */}
               {hasAnyContent && !hasAllContent && !generating && (
