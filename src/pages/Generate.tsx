@@ -738,7 +738,50 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
             )}
 
             {step === 5 && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  These are the {isThesis ? 'thesis' : isProject ? 'project report' : 'internship report'} section headings.
+                  Edit any title to match your university guidelines, or switch a section off to exclude it.
+                </p>
+                {buildToc(kind, data).map((entry, idx) => {
+                  const hidden = (data.hiddenSections || []).includes(entry.title);
+                  const locked = idx === 0;
+                  return (
+                    <div key={entry.title} className="rounded-xl border p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs text-muted-foreground truncate">Default: {entry.title}</span>
+                        {!locked && (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-muted-foreground">{hidden ? 'Excluded' : 'Included'}</span>
+                            <Switch
+                              checked={!hidden}
+                              onCheckedChange={on =>
+                                update('hiddenSections', on
+                                  ? (data.hiddenSections || []).filter(t => t !== entry.title)
+                                  : [...(data.hiddenSections || []), entry.title])
+                              }
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <Input
+                        value={(data.sectionTitles || {})[entry.title] ?? entry.title}
+                        disabled={hidden}
+                        onChange={e => update('sectionTitles', { ...(data.sectionTitles || {}), [entry.title]: e.target.value })}
+                        placeholder={entry.title}
+                      />
+                    </div>
+                  );
+                })}
+                <Button variant="outline" size="sm" onClick={() => { update('sectionTitles', {}); update('hiddenSections', []); }}>
+                  Reset to default headings
+                </Button>
+              </div>
+            )}
+
+            {step === 6 && (
               <div className="space-y-3 text-sm">
+
                 <SummaryRow label="Course" value={data.course} />
                 <SummaryRow label="Report Type" value={data.reportType} />
                 <SummaryRow label="University" value={data.university === 'Other' ? data.universityOther : data.university} />
