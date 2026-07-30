@@ -299,10 +299,11 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const isProject = kind === 'project';
   const isThesis = kind === 'thesis';
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const progress = (step / totalSteps) * 100;
 
-  const stepLabels = ['Course & University', 'Student Details', config.heading + ' Details', 'Format', 'Review'];
+  const stepLabels = ['Course & University', 'Student Details', config.heading + ' Details', 'Format', 'Sections', 'Review'];
+
 
   const validate = (s: number): string | null => {
     if (s === 1) {
