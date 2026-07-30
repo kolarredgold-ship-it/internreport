@@ -809,6 +809,11 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                 <SummaryRow label="Pages" value={`${data.pagesCount} pages`} />
                 <SummaryRow label="Font" value={data.fontStyle} />
                 <SummaryRow label="Appendix" value={data.includeAppendix ? 'Yes' : 'No'} />
+                <SummaryRow
+                  label="Sections"
+                  value={`${applyToc(kind, data).length} sections${Object.keys(data.sectionTitles || {}).length ? ' (customised)' : ''}`}
+                />
+
               </div>
             )}
 
