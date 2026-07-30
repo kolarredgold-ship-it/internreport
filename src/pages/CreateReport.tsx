@@ -141,6 +141,10 @@ const CreateReport = () => {
   const [generating, setGenerating] = useState(false);
   const [currentChapter, setCurrentChapter] = useState<string | null>(null);
   const [chapterContent, setChapterContent] = useState<ChapterContent>({});
+
+  // Any change to generated content invalidates a previous quality check.
+  useEffect(() => { setQualityPassed(false); }, [chapterContent]);
+
   const [canGenerate, setCanGenerate] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [pendingReportId, setPendingReportId] = useState<string | null>(null);
