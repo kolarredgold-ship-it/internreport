@@ -119,6 +119,9 @@ interface FormState {
   pagesCount: number;
   fontStyle: string;
   includeAppendix: boolean;
+  // section customization (keyed by the default section title)
+  sectionTitles: Record<string, string>;
+  hiddenSections: string[];
 }
 
 const initialState: FormState = {
@@ -128,7 +131,9 @@ const initialState: FormState = {
   projectTopic: '', caseStudyCompany: '', objective: '',
   researchTitle: '', researchArea: '', researchSummary: '',
   pagesCount: DEFAULT_PAGES_COUNT, fontStyle: 'Times New Roman 12pt (Standard)', includeAppendix: true,
+  sectionTitles: {}, hiddenSections: [],
 };
+
 
 const wordCount = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
@@ -180,8 +185,15 @@ const buildToc = (kind: Kind, data: FormState): TocEntry[] => {
   ];
 };
 
+// Applies the user's section-heading customization on top of the default outline.
+const applyToc = (kind: Kind, data: FormState): (TocEntry & { defaultTitle: string })[] =>
+  buildToc(kind, data)
+    .filter(e => !(data.hiddenSections || []).includes(e.title))
+    .map(e => ({ ...e, defaultTitle: e.title, title: (data.sectionTitles || {})[e.title]?.trim() || e.title }));
+
 const TocPreview = ({ kind, data }: { kind: Kind; data: FormState }) => {
-  const toc = buildToc(kind, data);
+  const toc = applyToc(kind, data);
+
   const label = kind === 'thesis' ? 'Thesis / Dissertation' : kind === 'project' ? 'Project Report' : 'Internship Report';
   return (
     <div className="rounded-2xl border bg-muted/30 p-4">
@@ -287,10 +299,11 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const isProject = kind === 'project';
   const isThesis = kind === 'thesis';
 
-  const totalSteps = 5;
+  const totalSteps = 6;
   const progress = (step / totalSteps) * 100;
 
-  const stepLabels = ['Course & University', 'Student Details', config.heading + ' Details', 'Format', 'Review'];
+  const stepLabels = ['Course & University', 'Student Details', config.heading + ' Details', 'Format', 'Sections', 'Review'];
+
 
   const validate = (s: number): string | null => {
     if (s === 1) {
@@ -384,11 +397,16 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
     setGenerating(true);
     // Map to CreateReport form data
     const finalUni = data.university === 'Other' ? data.universityOther : data.university;
-    const topicSpec = isInternship
+    const outline = applyToc(kind, data);
+    const outlineText = outline
+      .map(e => `${e.title}\n${e.items.map(i => `  - ${i}`).join('\n')}`)
+      .join('\n');
+    const baseTopicSpec = isInternship
       ? data.workDescription
       : isProject
         ? `${data.projectTopic}${data.caseStudyCompany ? ` (Case Study: ${data.caseStudyCompany})` : ''}\n\n${data.objective}`
         : `${data.researchTitle} — ${data.researchArea}\n\n${data.researchSummary}`;
+    const topicSpec = `${baseTopicSpec}\n\nREQUIRED SECTION HEADINGS (use exactly these titles):\n${outlineText}`.slice(0, 9000);
 
     const payload = {
       studentName: data.fullName,
@@ -407,7 +425,9 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       reportType: data.reportType,
       reportKind: kind,
       includeAppendix: data.includeAppendix,
+      customToc: outline.map(e => ({ title: e.title, items: e.items })),
     };
+
     sessionStorage.setItem('prefill_report_form', JSON.stringify(payload));
     localStorage.removeItem(STORAGE_KEY);
     navigate('/create-report?from=generate');
@@ -502,7 +522,9 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
               {step === 2 && 'Your academic details for the title page.'}
               {step === 3 && (isInternship ? 'Details about your internship.' : isProject ? 'Topic and objectives.' : 'Your existing research.')}
               {step === 4 && 'Length and formatting preferences.'}
-              {step === 5 && 'Review everything before we generate.'}
+              {step === 5 && 'Rename or remove the table-of-contents headings before generating.'}
+              {step === 6 && 'Review everything before we generate.'}
+
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 px-4 sm:px-6">
@@ -716,7 +738,50 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
             )}
 
             {step === 5 && (
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  These are the {isThesis ? 'thesis' : isProject ? 'project report' : 'internship report'} section headings.
+                  Edit any title to match your university guidelines, or switch a section off to exclude it.
+                </p>
+                {buildToc(kind, data).map((entry, idx) => {
+                  const hidden = (data.hiddenSections || []).includes(entry.title);
+                  const locked = idx === 0;
+                  return (
+                    <div key={entry.title} className="rounded-xl border p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs text-muted-foreground truncate">Default: {entry.title}</span>
+                        {!locked && (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-muted-foreground">{hidden ? 'Excluded' : 'Included'}</span>
+                            <Switch
+                              checked={!hidden}
+                              onCheckedChange={on =>
+                                update('hiddenSections', on
+                                  ? (data.hiddenSections || []).filter(t => t !== entry.title)
+                                  : [...(data.hiddenSections || []), entry.title])
+                              }
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <Input
+                        value={(data.sectionTitles || {})[entry.title] ?? entry.title}
+                        disabled={hidden}
+                        onChange={e => update('sectionTitles', { ...(data.sectionTitles || {}), [entry.title]: e.target.value })}
+                        placeholder={entry.title}
+                      />
+                    </div>
+                  );
+                })}
+                <Button variant="outline" size="sm" onClick={() => { update('sectionTitles', {}); update('hiddenSections', []); }}>
+                  Reset to default headings
+                </Button>
+              </div>
+            )}
+
+            {step === 6 && (
               <div className="space-y-3 text-sm">
+
                 <SummaryRow label="Course" value={data.course} />
                 <SummaryRow label="Report Type" value={data.reportType} />
                 <SummaryRow label="University" value={data.university === 'Other' ? data.universityOther : data.university} />
@@ -744,6 +809,11 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                 <SummaryRow label="Pages" value={`${data.pagesCount} pages`} />
                 <SummaryRow label="Font" value={data.fontStyle} />
                 <SummaryRow label="Appendix" value={data.includeAppendix ? 'Yes' : 'No'} />
+                <SummaryRow
+                  label="Sections"
+                  value={`${applyToc(kind, data).length} sections${Object.keys(data.sectionTitles || {}).length ? ' (customised)' : ''}`}
+                />
+
               </div>
             )}
 
