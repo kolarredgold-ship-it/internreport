@@ -673,6 +673,12 @@ export type Database = {
         Args: { p_referred_user_id: string }
         Returns: Json
       }
+      ensure_wallet: {
+        Args: never
+        Returns: {
+          total_balance: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
