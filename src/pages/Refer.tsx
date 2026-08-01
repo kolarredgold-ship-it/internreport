@@ -74,19 +74,16 @@ const Refer = () => {
           setMobileNumber(profile.mobile_number);
         }
 
-        // Fetch or create wallet
+        // Fetch or create wallet (creation is server-side with enforced defaults)
         let {
-          data: walletData,
-          error: walletError
-        } = await supabase.from('wallets').select('*').eq('user_id', user.id).single();
-        if (walletError && walletError.code === 'PGRST116') {
-          const {
-            data: newWallet
-          } = await supabase.from('wallets').insert({
-            user_id: user.id
-          }).select('*').single();
-          walletData = newWallet;
+          data: walletData
+        } = await supabase.from('wallets').select('*').eq('user_id', user.id).maybeSingle();
+        if (!walletData) {
+          await supabase.rpc('ensure_wallet');
+          const { data: created } = await supabase.from('wallets').select('*').eq('user_id', user.id).maybeSingle();
+          walletData = created;
         }
+
         if (walletData) {
           setWallet(walletData);
         }
