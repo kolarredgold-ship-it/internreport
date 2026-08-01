@@ -6,14 +6,54 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const json = (status: number, body: Record<string, unknown>) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+const clean = (value: unknown, max: number) =>
+  typeof value === "string" ? value.trim().slice(0, max) : "";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { course, topic, description, userId } = await req.json();
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // ========== AUTHENTICATION ==========
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return json(401, { error: "Authentication required" });
+    }
+    const token = authHeader.slice("Bearer ".length);
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub;
+    if (claimsError || !userId) {
+      return json(401, { error: "Invalid or expired token" });
+    }
+
+    // ========== INPUT VALIDATION ==========
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object") {
+      return json(400, { error: "Invalid request body" });
+    }
+    const course = clean(body.course, 200);
+    const topic = clean(body.topic, 500);
+    const description = clean(body.description, 2000);
+    if (!course || !topic) {
+      return json(400, { error: "course and topic are required" });
+    }
 
     const DEEPSEEK_API_KEY = Deno.env.get("DEEPSEEK_API_KEY");
-    if (!DEEPSEEK_API_KEY) throw new Error("DEEPSEEK_API_KEY not configured");
+    if (!DEEPSEEK_API_KEY) {
+      console.error("DEEPSEEK_API_KEY not configured");
+      return json(500, { error: "Service temporarily unavailable" });
+    }
 
     const prompt = `Generate a professional internship/project report content for:
 Course: ${course}
@@ -45,7 +85,7 @@ Return ONLY valid JSON like: {"abstract":"...","introduction":"...","methodology
     if (!response.ok) {
       const errText = await response.text();
       console.error("DeepSeek error:", response.status, errText);
-      throw new Error(`AI API error: ${response.status}`);
+      return json(502, { error: "Content generation failed, please try again" });
     }
 
     const data = await response.json();
@@ -59,27 +99,19 @@ Return ONLY valid JSON like: {"abstract":"...","introduction":"...","methodology
       content = { abstract: raw, introduction: "", methodology: "", results: "", conclusion: "" };
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    if (userId) {
-      await supabase.from("ai_usage_log").insert({
-        user_id: userId,
-        feature: "report-content",
-        tokens_used: data.usage?.total_tokens || 0,
-        model: "deepseek-chat",
-      });
-    }
-
-    return new Response(JSON.stringify({ content }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    await supabase.from("ai_usage_log").insert({
+      user_id: userId,
+      feature: "report-content",
+      tokens_used: data.usage?.total_tokens || 0,
+      model: "deepseek-chat",
     });
+
+    return json(200, { content });
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json(500, { error: "Unexpected error, please try again" });
   }
 });
