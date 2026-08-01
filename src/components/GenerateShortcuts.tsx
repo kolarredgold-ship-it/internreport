@@ -1,7 +1,8 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Briefcase, FolderKanban, ScrollText, ArrowRight } from 'lucide-react';
+import { Briefcase, FolderKanban, ScrollText, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const COURSES = [
   { label: 'BA', slug: 'ba' },
