@@ -45,6 +45,53 @@ const CATEGORIES = [
   },
 ];
 
+const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const scrollBy = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * Math.max(160, el.clientWidth * 0.7), behavior: 'smooth' });
+  };
+
+  return (
+    <div className="relative -mx-2 mb-4 group/slider">
+      <button
+        type="button"
+        aria-label="Scroll courses left"
+        onClick={() => scrollBy(-1)}
+        className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+
+      <div
+        ref={trackRef}
+        className="flex gap-2 overflow-x-auto px-2 sm:px-8 pb-2 snap-x snap-mandatory scroll-smooth scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {COURSES.map(c => (
+          <Link
+            key={c.slug}
+            to={`/generate/${categoryKey}?course=${c.slug}`}
+            className="shrink-0 snap-start px-3.5 py-2 rounded-full text-xs font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
+          >
+            {c.label}
+          </Link>
+        ))}
+      </div>
+
+      <button
+        type="button"
+        aria-label="Scroll courses right"
+        onClick={() => scrollBy(1)}
+        className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
+
 const GenerateShortcuts = () => {
   return (
     <section className="container mx-auto px-4 py-10 lg:py-20">
@@ -62,19 +109,8 @@ const GenerateShortcuts = () => {
               <h3 className="font-display text-xl font-bold mb-1">{cat.title}</h3>
               <p className="text-sm text-muted-foreground mb-5">{cat.description}</p>
 
-              <div className="-mx-2 mb-4">
-                <div className="flex gap-2 overflow-x-auto px-2 pb-2 snap-x snap-mandatory scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:flex-wrap md:overflow-visible md:snap-none">
-                  {COURSES.map(c => (
-                    <Link
-                      key={c.slug}
-                      to={`/generate/${cat.key}?course=${c.slug}`}
-                      className="shrink-0 snap-start px-3.5 py-2 rounded-full text-xs font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
-                    >
-                      {c.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              <CourseSlider categoryKey={cat.key} />
+
 
               <Link to={`/generate/${cat.key}`}>
                 <Button variant="outline" size="sm" className="w-full">
