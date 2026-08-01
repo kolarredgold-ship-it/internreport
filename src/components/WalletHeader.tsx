@@ -21,28 +21,24 @@ const WalletHeader = () => {
           .from('wallets')
           .select('total_balance')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code === 'PGRST116') {
-          // Wallet doesn't exist, create one
-          const { data: newWallet, error: createError } = await supabase
-            .from('wallets')
-            .insert({ user_id: user.id })
-            .select('total_balance')
-            .single();
-
-          if (!createError && newWallet) {
-            setBalance(newWallet.total_balance);
-          }
-        } else if (data) {
+        if (!error && data) {
           setBalance(data.total_balance);
+          return;
         }
+
+        // No wallet yet — provision one server-side with enforced defaults.
+        const { data: created } = await supabase.rpc('ensure_wallet');
+        const row = Array.isArray(created) ? created[0] : created;
+        setBalance(row?.total_balance ?? 0);
       } catch (error) {
         console.error('Error fetching wallet:', error);
       } finally {
         setLoading(false);
       }
     };
+
 
     fetchWallet();
 
