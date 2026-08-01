@@ -6,26 +6,67 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const json = (status: number, body: Record<string, unknown>) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+const isUuid = (value: unknown): value is string =>
+  typeof value === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // ========== AUTHENTICATION ==========
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return json(401, { error: "Authentication required" });
+    }
+    const token = authHeader.slice("Bearer ".length);
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    const callerId = claimsData?.claims?.sub;
+    if (claimsError || !callerId) {
+      return json(401, { error: "Invalid or expired token" });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { productId, title } = await req.json();
+    // ========== AUTHORIZATION (admin only) ==========
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callerId)
+      .eq("role", "admin")
+      .maybeSingle();
 
-    if (!productId || !title) {
-      return new Response(JSON.stringify({ error: "productId and title required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!roleData) {
+      return json(403, { error: "Admin access required" });
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY not configured");
+      return json(500, { error: "Service temporarily unavailable" });
+    }
+
+    const body = await req.json().catch(() => null);
+    const productId = body?.productId;
+    const title = typeof body?.title === "string" ? body.title.trim().slice(0, 300) : "";
+
+    if (!isUuid(productId) || !title) {
+      return json(400, { error: "A valid productId and title are required" });
     }
 
     // Generate image using Lovable AI
@@ -48,24 +89,23 @@ serve(async (req) => {
       const errText = await aiResponse.text();
       console.error("AI error:", aiResponse.status, errText);
       if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, please try again later" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return json(429, { error: "Rate limited, please try again later" });
       }
-      throw new Error(`AI gateway error: ${aiResponse.status}`);
+      return json(502, { error: "Image generation failed, please try again" });
     }
 
     const aiData = await aiResponse.json();
     const imageData = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!imageData) {
-      throw new Error("No image generated");
+      return json(502, { error: "No image generated" });
     }
 
     // Extract base64 data and upload to storage
     const base64Match = imageData.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
-    if (!base64Match) throw new Error("Invalid image data format");
+    if (!base64Match) {
+      return json(502, { error: "Invalid image data received" });
+    }
 
     const ext = base64Match[1];
     const base64 = base64Match[2];
@@ -80,26 +120,26 @@ serve(async (req) => {
       .from("product-images")
       .upload(fileName, bytes, { contentType: `image/${ext}` });
 
-    if (uploadError) throw uploadError;
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      return json(500, { error: "Failed to store generated image" });
+    }
 
     const publicUrl = supabase.storage.from("product-images").getPublicUrl(fileName).data.publicUrl;
 
-    // Update the product
     const { error: updateError } = await supabase
       .from("digital_products")
       .update({ image_url: publicUrl })
       .eq("id", productId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error("Update error:", updateError);
+      return json(500, { error: "Failed to update product" });
+    }
 
-    return new Response(JSON.stringify({ success: true, image_url: publicUrl }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json(200, { success: true, image_url: publicUrl });
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json(500, { error: "Unexpected error, please try again" });
   }
 });
