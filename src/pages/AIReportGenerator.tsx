@@ -49,6 +49,11 @@ const AIReportGenerator = () => {
       return;
     }
 
+    if (!user) {
+      toast({ title: 'Sign in required', description: 'Please sign in to generate AI content.', variant: 'destructive' });
+      return;
+    }
+
     setGenerating(true);
     setGeneratedContent({});
     setEditedContent({});

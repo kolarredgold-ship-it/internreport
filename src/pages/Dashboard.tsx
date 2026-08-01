@@ -68,27 +68,26 @@ const Dashboard = () => {
 
   const fetchWallet = async () => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('wallets')
         .select('total_balance')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code === 'PGRST116') {
-        // Wallet doesn't exist, create one
-        const { data: newWallet } = await supabase
-          .from('wallets')
-          .insert({ user_id: user?.id })
-          .select('total_balance')
-          .single();
-        if (newWallet) setWallet(newWallet);
-      } else if (data) {
+      if (data) {
         setWallet(data);
+        return;
       }
+
+      // Wallet doesn't exist — create it server-side with enforced defaults
+      const { data: created } = await supabase.rpc('ensure_wallet');
+      const row = Array.isArray(created) ? created[0] : created;
+      if (row) setWallet({ total_balance: row.total_balance });
     } catch (error) {
       console.error('Error fetching wallet:', error);
     }
   };
+
 
   const fetchProfile = async () => {
     try {

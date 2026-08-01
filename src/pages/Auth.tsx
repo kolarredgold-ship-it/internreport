@@ -126,10 +126,9 @@ const Auth = () => {
               })
               .eq('user_id', newUser.id);
 
-            // Create wallet for user
-            await supabase
-              .from('wallets')
-              .insert({ user_id: newUser.id });
+            // Wallet is provisioned server-side on sign-up; ensure it exists.
+            await supabase.rpc('ensure_wallet');
+
 
             // Process referral if provided
             if (referralId && referralId !== mobileNumber) {
