@@ -355,6 +355,10 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
   const back = () => setStep(s => Math.max(step1Skipped ? 2 : 1, s - 1));
 
   const handleSuggestTopics = async () => {
+    if (!user) {
+      toast({ title: 'Sign in required', description: 'Please sign in to get AI topic suggestions.', variant: 'destructive' });
+      return;
+    }
     setSuggesting(true);
     try {
       const { data: res, error } = await supabase.functions.invoke('ai-report-content', {
