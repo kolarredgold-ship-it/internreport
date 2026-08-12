@@ -509,12 +509,24 @@ const Admin = () => {
       });
 
       if (response.error) {
-        throw new Error(response.error.message || 'Failed to update password');
+        // Surface the real reason returned by the function body (e.g. weak password)
+        let detail = '';
+        try {
+          const ctx: any = (response.error as any).context;
+          if (ctx && typeof ctx.json === 'function') {
+            const parsed = await ctx.json();
+            detail = parsed?.error || '';
+          }
+        } catch (_) {
+          // ignore parse failures, fall back to generic message
+        }
+        throw new Error(detail || response.error.message || 'Failed to update password');
       }
 
       if (response.data?.error) {
         throw new Error(response.data.error);
       }
+
 
       toast({
         title: 'Password Updated',
