@@ -135,13 +135,23 @@ const Auth = () => {
           
           if (newUser) {
             // Update profile with mobile number
-            await supabase
+            const { error: profileError } = await supabase
               .from('profiles')
               .update({ 
                 mobile_number: mobileNumber,
                 referred_by: referralId || null
               })
               .eq('user_id', newUser.id);
+
+            if (profileError) {
+              toast({
+                title: 'Profile not fully saved',
+                description: profileError.code === '23505'
+                  ? 'This mobile number is already linked to another account.'
+                  : profileError.message,
+                variant: 'destructive',
+              });
+            }
 
             // Wallet is provisioned server-side on sign-up; ensure it exists.
             await supabase.rpc('ensure_wallet');
