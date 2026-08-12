@@ -97,6 +97,23 @@ const Auth = () => {
           return;
         }
         
+        // Check if mobile number already used
+        const { data: existingMobiles } = await supabase
+          .from('profiles')
+          .select('mobile_number')
+          .eq('mobile_number', mobileNumber)
+          .limit(1);
+
+        if (existingMobiles && existingMobiles.length > 0) {
+          toast({
+            title: 'Mobile already registered',
+            description: 'This mobile number is already linked to another account.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await signUp(email, password);
         if (error) {
           if (error.message.includes('already registered')) {
@@ -118,13 +135,23 @@ const Auth = () => {
           
           if (newUser) {
             // Update profile with mobile number
-            await supabase
+            const { error: profileError } = await supabase
               .from('profiles')
               .update({ 
                 mobile_number: mobileNumber,
                 referred_by: referralId || null
               })
               .eq('user_id', newUser.id);
+
+            if (profileError) {
+              toast({
+                title: 'Profile not fully saved',
+                description: profileError.code === '23505'
+                  ? 'This mobile number is already linked to another account.'
+                  : profileError.message,
+                variant: 'destructive',
+              });
+            }
 
             // Wallet is provisioned server-side on sign-up; ensure it exists.
             await supabase.rpc('ensure_wallet');
