@@ -97,6 +97,23 @@ const Auth = () => {
           return;
         }
         
+        // Check if mobile number already used
+        const { data: existingMobiles } = await supabase
+          .from('profiles')
+          .select('mobile_number')
+          .eq('mobile_number', mobileNumber)
+          .limit(1);
+
+        if (existingMobiles && existingMobiles.length > 0) {
+          toast({
+            title: 'Mobile already registered',
+            description: 'This mobile number is already linked to another account.',
+            variant: 'destructive',
+          });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await signUp(email, password);
         if (error) {
           if (error.message.includes('already registered')) {
