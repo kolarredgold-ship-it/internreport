@@ -136,6 +136,9 @@ const CreateReport = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [reportKind, setReportKind] = useState<ReportKind>('internship');
+  const kindTheme = getReportKindTheme(reportKind);
+  const KindIcon = kindTheme.icon;
+
   const [qualityPassed, setQualityPassed] = useState(false);
 
   const [generating, setGenerating] = useState(false);
