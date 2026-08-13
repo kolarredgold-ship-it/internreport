@@ -137,7 +137,42 @@
     --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
     --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   }
+
+  /* ---- Report-type scoped palettes ----
+     Wrapping a page in one of these classes re-themes every semantic token,
+     so internship / project / thesis flows look distinct without hardcoded colours. */
+  .kind-internship {
+    --primary: 20 90% 48%;
+    --primary-foreground: 33 100% 96%;
+    --ring: 20 90% 48%;
+    --accent: 33 100% 94%;
+    --accent-foreground: 24 92% 34%;
+    --kind-surface: linear-gradient(135deg, hsl(20 90% 48% / 0.12) 0%, hsl(38 96% 56% / 0.12) 100%);
+  }
+  .kind-project {
+    --primary: 212 78% 40%;
+    --primary-foreground: 210 100% 97%;
+    --ring: 212 78% 40%;
+    --accent: 205 90% 94%;
+    --accent-foreground: 212 78% 32%;
+    --kind-surface: linear-gradient(135deg, hsl(212 78% 40% / 0.12) 0%, hsl(190 85% 45% / 0.12) 100%);
+  }
+  .kind-thesis {
+    --primary: 265 55% 45%;
+    --primary-foreground: 270 100% 97%;
+    --ring: 265 55% 45%;
+    --accent: 268 70% 95%;
+    --accent-foreground: 265 55% 36%;
+    --kind-surface: linear-gradient(135deg, hsl(265 55% 45% / 0.12) 0%, hsl(320 60% 50% / 0.12) 100%);
+  }
+
+  .dark .kind-internship { --primary: 27 95% 60%; --primary-foreground: 12 81% 14%; --ring: 27 95% 60%; --accent: 20 91% 16%; --accent-foreground: 43 96% 62%; }
+  .dark .kind-project { --primary: 205 90% 60%; --primary-foreground: 212 80% 12%; --ring: 205 90% 60%; --accent: 212 60% 18%; --accent-foreground: 199 90% 70%; }
+  .dark .kind-thesis { --primary: 268 75% 68%; --primary-foreground: 265 60% 12%; --ring: 268 75% 68%; --accent: 265 45% 20%; --accent-foreground: 270 85% 82%; }
+
+  .kind-surface { background-image: var(--kind-surface, var(--gradient-primary)); }
 }
+
 
 @layer base {
   * {
