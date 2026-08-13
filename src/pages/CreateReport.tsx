@@ -2140,61 +2140,67 @@ const CreateReport = () => {
                   </div>
                 </div>
 
-                {/* Internship Details */}
+                {/* Report-kind specific details */}
                 <div className="space-y-4">
-                  <h3 className="font-display font-semibold text-lg">Internship Details</h3>
+                  <h3 className="font-display font-semibold text-lg">{kindFields.detailsHeading}</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="internshipTitle">Internship Title *</Label>
+                      <Label htmlFor="internshipTitle">{kindFields.titleLabel}</Label>
                       <Input
                         id="internshipTitle"
                         name="internshipTitle"
                         value={formData.internshipTitle}
                         onChange={handleInputChange}
-                        placeholder="Enter internship title"
+                        placeholder={kindFields.titlePlaceholder}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="companyName">Company Name *</Label>
+                    <div className={kindFields.showCompany ? 'space-y-2' : 'space-y-2 md:col-span-2'}>
+                      <Label htmlFor="companyName">{kindFields.orgLabel}</Label>
                       <Input
                         id="companyName"
                         name="companyName"
                         value={formData.companyName}
                         onChange={handleInputChange}
-                        placeholder="Enter company name"
+                        placeholder={kindFields.orgPlaceholder}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="companyLocation">Company Location *</Label>
-                      <Input
-                        id="companyLocation"
-                        name="companyLocation"
-                        value={formData.companyLocation}
-                        onChange={handleInputChange}
-                        placeholder="Enter company location"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="internshipDuration">Internship Duration *</Label>
-                      <Input
-                        id="internshipDuration"
-                        name="internshipDuration"
-                        value={formData.internshipDuration}
-                        onChange={handleInputChange}
-                        placeholder="Enter internship duration"
-                      />
-                    </div>
+                    {kindFields.showCompany && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="companyLocation">Company Location *</Label>
+                          <Input
+                            id="companyLocation"
+                            name="companyLocation"
+                            value={formData.companyLocation}
+                            onChange={handleInputChange}
+                            placeholder="Enter company location"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="internshipDuration">Internship Duration *</Label>
+                          <Input
+                            id="internshipDuration"
+                            name="internshipDuration"
+                            value={formData.internshipDuration}
+                            onChange={handleInputChange}
+                            placeholder="Enter internship duration"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="topicSpecialization">Topic/Specialization *</Label>
+                    <Label htmlFor="topicSpecialization">{kindFields.topicLabel}</Label>
                     <Textarea
                       id="topicSpecialization"
                       name="topicSpecialization"
                       value={formData.topicSpecialization}
                       onChange={handleInputChange}
-                      placeholder="Explain about the company and the internship you completed in this company. Include the company website for better understanding and results"
+                      placeholder={kindFields.topicPlaceholder}
                       rows={4}
                     />
+                  </div>
+
                   </div>
                 </div>
 
