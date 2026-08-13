@@ -140,6 +140,48 @@ const CreateReport = () => {
   const [reportKind, setReportKind] = useState<ReportKind>('internship');
   const kindTheme = getReportKindTheme(reportKind);
   const KindIcon = kindTheme.icon;
+  const kindFields = reportKind === 'thesis'
+    ? {
+        sectionTitle: 'Thesis / Dissertation Details',
+        sectionHint: 'Provide your research details. Accurate inputs give a stronger thesis.',
+        detailsHeading: 'Research Details',
+        titleLabel: 'Research Title *',
+        titlePlaceholder: 'e.g. Impact of AI on retail supply chains',
+        showCompany: false,
+        orgLabel: 'Case Study Organisation (optional)',
+        orgPlaceholder: 'Organisation studied, if any',
+        topicLabel: 'Research Area & Summary *',
+        topicPlaceholder: 'Describe your research area, problem statement, hypothesis, methodology and expected outcomes.',
+        pitch: '✓ Customized for your research topic',
+      }
+    : reportKind === 'project'
+      ? {
+          sectionTitle: 'Project Report Details',
+          sectionHint: 'Provide your project details. Accurate inputs give a stronger report.',
+          detailsHeading: 'Project Details',
+          titleLabel: 'Project Title *',
+          titlePlaceholder: 'e.g. Customer satisfaction study for XYZ Ltd',
+          showCompany: false,
+          orgLabel: 'Case Study Company (optional)',
+          orgPlaceholder: 'Company studied, if any',
+          topicLabel: 'Project Objective & Scope *',
+          topicPlaceholder: 'Describe the project objective, scope, methodology and the data or tools you used.',
+          pitch: '✓ Customized for your project',
+        }
+      : {
+          sectionTitle: 'Internship Details',
+          sectionHint: 'All fields are required. Provide accurate information for the best results.',
+          detailsHeading: 'Internship Details',
+          titleLabel: 'Internship Title *',
+          titlePlaceholder: 'Enter internship title',
+          showCompany: true,
+          orgLabel: 'Company Name *',
+          orgPlaceholder: 'Enter company name',
+          topicLabel: 'Topic/Specialization *',
+          topicPlaceholder: 'Explain about the company and the internship you completed in this company. Include the company website for better understanding and results',
+          pitch: '✓ Customized for your internship',
+        };
+
 
   const [qualityPassed, setQualityPassed] = useState(false);
 
