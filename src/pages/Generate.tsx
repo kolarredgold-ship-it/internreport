@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, ArrowRight, CheckCircle2, Sparkles, Loader2, AlertCircle, ListTree } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { getReportKindTheme } from '@/lib/reportKindTheme';
+
 
 const COURSES = ['BA', 'B.Com', 'BBA', 'BCA', 'M.Com', 'MBA', 'MA', 'MSc', 'M.Ed.', 'PhD', 'M.Phil'];
 const REPORT_TYPES = ['Internship Report', 'Project Report', 'Dissertation', 'Thesis Assistance'];
@@ -454,8 +456,11 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
     );
   };
 
+  const theme = getReportKindTheme(kind);
+  const KindIcon = theme.icon;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${theme.className}`}>
       <Helmet>
         <title>{`${config.heading} Generator — InternReport.in`}</title>
         <meta name="description" content={config.tagline} />
@@ -464,16 +469,38 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/generate"><Button variant="ghost" size="sm"><ArrowLeft className="w-4 h-4 mr-1" /> Change type</Button></Link>
-          <span className="font-display font-bold truncate">{config.heading}</span>
+          <span className="font-display font-bold truncate flex items-center gap-2">
+            <KindIcon className="w-4 h-4 text-primary shrink-0" />
+            {config.heading}
+          </span>
           <Link to="/"><Button variant="ghost" size="sm">Home</Button></Link>
         </div>
       </nav>
 
       <div className="container mx-auto px-4 py-6 max-w-3xl">
-        <div className="mb-5 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/10 p-4 sm:p-5">
-          <h1 className="font-display text-xl sm:text-2xl font-bold">{config.heading}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{config.tagline}</p>
+        <div className="mb-5 rounded-2xl kind-surface border border-primary/20 p-4 sm:p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+              <KindIcon className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="inline-block text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-accent text-accent-foreground mb-1">
+                {theme.shortLabel} mode
+              </span>
+              <h1 className="font-display text-xl sm:text-2xl font-bold">{config.heading}</h1>
+              <p className="text-sm text-muted-foreground mt-1">{config.tagline}</p>
+            </div>
+          </div>
+          <ul className="mt-4 grid sm:grid-cols-2 gap-x-4 gap-y-1.5">
+            {theme.highlights.map(h => (
+              <li key={h} className="flex items-start gap-2 text-xs text-muted-foreground">
+                <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                <span>{h}</span>
+              </li>
+            ))}
+          </ul>
         </div>
+
 
         {/* Stepper */}
         <div className="mb-6 space-y-4">
