@@ -2355,7 +2355,7 @@ const CreateReport = () => {
                       </div>
                       <div className="text-xs text-muted-foreground space-y-1">
                         <p>✓ AI-powered professional report</p>
-                        <p>✓ Customized for your internship</p>
+                        <p>{kindFields.pitch}</p>
                         <p>✓ 3 report generations included</p>
                         <p>✓ Instant download as DOCX</p>
                       </div>
