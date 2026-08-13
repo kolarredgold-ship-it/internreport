@@ -2003,11 +2003,15 @@ const CreateReport = () => {
         ) : (
           <Card className="border-0 shadow-xl">
             <CardHeader>
-              <CardTitle className="font-display">Internship Details</CardTitle>
+              <CardTitle className="font-display flex items-center gap-2">
+                <KindIcon className="w-5 h-5 text-primary" />
+                {kindFields.sectionTitle}
+              </CardTitle>
               <CardDescription>
-                All fields are required. Provide accurate information for the best results.
+                {kindFields.sectionHint}
               </CardDescription>
             </CardHeader>
+
             <CardContent>
               <form className="space-y-6">
                 {/* Student Information */}
