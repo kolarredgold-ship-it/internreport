@@ -140,6 +140,48 @@ const CreateReport = () => {
   const [reportKind, setReportKind] = useState<ReportKind>('internship');
   const kindTheme = getReportKindTheme(reportKind);
   const KindIcon = kindTheme.icon;
+  const kindFields = reportKind === 'thesis'
+    ? {
+        sectionTitle: 'Thesis / Dissertation Details',
+        sectionHint: 'Provide your research details. Accurate inputs give a stronger thesis.',
+        detailsHeading: 'Research Details',
+        titleLabel: 'Research Title *',
+        titlePlaceholder: 'e.g. Impact of AI on retail supply chains',
+        showCompany: false,
+        orgLabel: 'Case Study Organisation (optional)',
+        orgPlaceholder: 'Organisation studied, if any',
+        topicLabel: 'Research Area & Summary *',
+        topicPlaceholder: 'Describe your research area, problem statement, hypothesis, methodology and expected outcomes.',
+        pitch: '✓ Customized for your research topic',
+      }
+    : reportKind === 'project'
+      ? {
+          sectionTitle: 'Project Report Details',
+          sectionHint: 'Provide your project details. Accurate inputs give a stronger report.',
+          detailsHeading: 'Project Details',
+          titleLabel: 'Project Title *',
+          titlePlaceholder: 'e.g. Customer satisfaction study for XYZ Ltd',
+          showCompany: false,
+          orgLabel: 'Case Study Company (optional)',
+          orgPlaceholder: 'Company studied, if any',
+          topicLabel: 'Project Objective & Scope *',
+          topicPlaceholder: 'Describe the project objective, scope, methodology and the data or tools you used.',
+          pitch: '✓ Customized for your project',
+        }
+      : {
+          sectionTitle: 'Internship Details',
+          sectionHint: 'All fields are required. Provide accurate information for the best results.',
+          detailsHeading: 'Internship Details',
+          titleLabel: 'Internship Title *',
+          titlePlaceholder: 'Enter internship title',
+          showCompany: true,
+          orgLabel: 'Company Name *',
+          orgPlaceholder: 'Enter company name',
+          topicLabel: 'Topic/Specialization *',
+          topicPlaceholder: 'Explain about the company and the internship you completed in this company. Include the company website for better understanding and results',
+          pitch: '✓ Customized for your internship',
+        };
+
 
   const [qualityPassed, setQualityPassed] = useState(false);
 
@@ -2003,11 +2045,15 @@ const CreateReport = () => {
         ) : (
           <Card className="border-0 shadow-xl">
             <CardHeader>
-              <CardTitle className="font-display">Internship Details</CardTitle>
+              <CardTitle className="font-display flex items-center gap-2">
+                <KindIcon className="w-5 h-5 text-primary" />
+                {kindFields.sectionTitle}
+              </CardTitle>
               <CardDescription>
-                All fields are required. Provide accurate information for the best results.
+                {kindFields.sectionHint}
               </CardDescription>
             </CardHeader>
+
             <CardContent>
               <form className="space-y-6">
                 {/* Student Information */}
@@ -2094,59 +2140,63 @@ const CreateReport = () => {
                   </div>
                 </div>
 
-                {/* Internship Details */}
+                {/* Report-kind specific details */}
                 <div className="space-y-4">
-                  <h3 className="font-display font-semibold text-lg">Internship Details</h3>
+                  <h3 className="font-display font-semibold text-lg">{kindFields.detailsHeading}</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="internshipTitle">Internship Title *</Label>
+                      <Label htmlFor="internshipTitle">{kindFields.titleLabel}</Label>
                       <Input
                         id="internshipTitle"
                         name="internshipTitle"
                         value={formData.internshipTitle}
                         onChange={handleInputChange}
-                        placeholder="Enter internship title"
+                        placeholder={kindFields.titlePlaceholder}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="companyName">Company Name *</Label>
+                    <div className={kindFields.showCompany ? 'space-y-2' : 'space-y-2 md:col-span-2'}>
+                      <Label htmlFor="companyName">{kindFields.orgLabel}</Label>
                       <Input
                         id="companyName"
                         name="companyName"
                         value={formData.companyName}
                         onChange={handleInputChange}
-                        placeholder="Enter company name"
+                        placeholder={kindFields.orgPlaceholder}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="companyLocation">Company Location *</Label>
-                      <Input
-                        id="companyLocation"
-                        name="companyLocation"
-                        value={formData.companyLocation}
-                        onChange={handleInputChange}
-                        placeholder="Enter company location"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="internshipDuration">Internship Duration *</Label>
-                      <Input
-                        id="internshipDuration"
-                        name="internshipDuration"
-                        value={formData.internshipDuration}
-                        onChange={handleInputChange}
-                        placeholder="Enter internship duration"
-                      />
-                    </div>
+                    {kindFields.showCompany && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="companyLocation">Company Location *</Label>
+                          <Input
+                            id="companyLocation"
+                            name="companyLocation"
+                            value={formData.companyLocation}
+                            onChange={handleInputChange}
+                            placeholder="Enter company location"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="internshipDuration">Internship Duration *</Label>
+                          <Input
+                            id="internshipDuration"
+                            name="internshipDuration"
+                            value={formData.internshipDuration}
+                            onChange={handleInputChange}
+                            placeholder="Enter internship duration"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="topicSpecialization">Topic/Specialization *</Label>
+                    <Label htmlFor="topicSpecialization">{kindFields.topicLabel}</Label>
                     <Textarea
                       id="topicSpecialization"
                       name="topicSpecialization"
                       value={formData.topicSpecialization}
                       onChange={handleInputChange}
-                      placeholder="Explain about the company and the internship you completed in this company. Include the company website for better understanding and results"
+                      placeholder={kindFields.topicPlaceholder}
                       rows={4}
                     />
                   </div>
@@ -2305,7 +2355,7 @@ const CreateReport = () => {
                       </div>
                       <div className="text-xs text-muted-foreground space-y-1">
                         <p>✓ AI-powered professional report</p>
-                        <p>✓ Customized for your internship</p>
+                        <p>{kindFields.pitch}</p>
                         <p>✓ 3 report generations included</p>
                         <p>✓ Instant download as DOCX</p>
                       </div>
