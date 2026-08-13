@@ -1650,7 +1650,8 @@ const CreateReport = () => {
   }
 
   return (
-    <div className="min-h-screen hero-gradient">
+    <div className={`min-h-screen hero-gradient ${kindTheme.className}`}>
+
       {/* Header */}
       <header className="sticky top-0 z-50 glass-effect border-b border-border/50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
