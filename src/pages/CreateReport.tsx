@@ -2200,8 +2200,6 @@ const CreateReport = () => {
                       rows={4}
                     />
                   </div>
-
-                  </div>
                 </div>
 
                 {/* Status & Action Section */}
