@@ -18,6 +18,8 @@ import { saveAs } from 'file-saver';
 import PaymentModal from '@/components/PaymentModal';
 import GenerateShortcuts from '@/components/GenerateShortcuts';
 import QualityGate from '@/components/QualityGate';
+import { getReportKindTheme } from '@/lib/reportKindTheme';
+
 
 
 interface FormData {
