@@ -1665,8 +1665,8 @@ const CreateReport = () => {
             Back to Dashboard
           </Link>
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-primary-foreground" />
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+              <KindIcon className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display font-bold text-xl">InternReport.in</span>
           </div>
@@ -1674,9 +1674,19 @@ const CreateReport = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-6">
-          <h1 className="font-display text-3xl font-bold mb-2">Create New Report</h1>
-          <p className="text-muted-foreground">Fill in your details, or pick a quick-start below.</p>
+        <div className="mb-6 rounded-2xl kind-surface border border-primary/20 p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+              <KindIcon className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="inline-block text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-accent text-accent-foreground mb-1">
+                {kindTheme.shortLabel} mode
+              </span>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold">{kindTheme.label}</h1>
+              <p className="text-muted-foreground text-sm mt-1">{kindTheme.tagline}</p>
+            </div>
+          </div>
         </div>
 
         {/* Quick-start shortcuts (same as home page) */}
@@ -1688,15 +1698,16 @@ const CreateReport = () => {
           <Card className="border-0 shadow-xl">
             <CardHeader>
               <CardTitle className="font-display flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                Report Generation Progress
+                <KindIcon className="w-5 h-5 text-primary" />
+                {kindTheme.progressTitle}
               </CardTitle>
               <CardDescription>
                 {hasAllContent 
-                  ? 'All chapters generated! Download your complete report.'
-                  : `${completedChapters.length} of ${getChapters(formData.internshipTitle, reportKind).length} chapters generated.`}
+                  ? `All ${kindTheme.unitPlural} generated! Download your complete ${kindTheme.label.toLowerCase()}.`
+                  : `${completedChapters.length} of ${getChapters(formData.internshipTitle, reportKind).length} ${kindTheme.unitPlural} generated. ${kindTheme.progressHint}`}
               </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               {/* Chapter Generation Grid - Individual Buttons */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
