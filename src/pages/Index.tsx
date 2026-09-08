@@ -199,7 +199,7 @@ const Index = () => {
     review: "Worth every rupee! The digital marketing internship report was comprehensive and well-researched. Thank you!",
     avatar: "MR"
   }];
-  return <div className="min-h-screen hero-gradient overflow-hidden">
+  return <div className="theme-home min-h-screen bg-background overflow-hidden">
       {/* SEO Meta Tags */}
       <Helmet>
         <title>Internship Report Generator | Free Reports for BCA, BTech, MBA Students – InternReport.in</title>
@@ -267,36 +267,120 @@ const Index = () => {
       </nav>
 
 
-      {/* Sliding Banner */}
-      <section className="w-full">
-        <HeroBanner />
-      </section>
+      {/* Bento Hero */}
+      <section className="container mx-auto px-4 py-8 lg:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-6">
 
-      {/* Quick Generation Shortcuts */}
-      <ResumeLastReport />
+          {/* Hero card */}
+          <div className="md:col-span-8 bento-dark p-8 md:p-12 flex flex-col justify-between animate-slide-up">
+            <div className="relative z-10">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-accent text-xs sm:text-sm font-bold tracking-wide mb-6 uppercase">
+                AI-Powered Generator
+              </span>
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-5">
+                Internship, Project &amp; Thesis Reports — <span className="text-accent">Generated in Minutes</span>
+              </h1>
+              <p className="text-base md:text-xl text-primary-foreground/75 max-w-lg mb-8">
+                University-compliant, plagiarism-free reports for BCA, BTech, MBA, BCom &amp; BBA students across India.
+              </p>
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+                <Link to="/generate">
+                  <Button size="xl" className="w-full sm:w-auto bento-amber hover:opacity-90 font-bold">
+                    Start Your Report <ArrowRight className="w-5 h-5 ml-1" />
+                  </Button>
+                </Link>
+                <Button size="xl" variant="outline" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border-white/25 text-primary-foreground hover:text-primary-foreground" asChild>
+                  <a href="#how-it-works">How it works</a>
+                </Button>
+              </div>
+            </div>
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full -mr-20 -mt-20 blur-3xl opacity-60 bg-secondary pointer-events-none" />
+          </div>
 
-      <div className="container mx-auto px-4 pt-10 lg:pt-14">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <Badge className="mb-3 bg-primary/10 text-primary border-0">3 simple forms — no confusion</Badge>
-          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
-            Generate Your Report in <span className="text-primary">One Click</span>
-          </h2>
-          <p className="text-muted-foreground">
-            Choose your report type, then your course. Each type has its own short form — you only fill what's relevant.
-          </p>
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/generate">
-              <Button variant="gradient" size="lg">
-                Start Now <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-            <Link to="/my-reports">
-              <Button variant="outline" size="lg">My Reports</Button>
-            </Link>
+          {/* Trust & resume card */}
+          <div className="md:col-span-4 bento-card p-8 flex flex-col justify-between animate-scale-in">
+            <div>
+              <h2 className="font-display font-bold text-xl mb-2">Trusted by thousands</h2>
+              <div className="flex items-center gap-2 mb-6">
+                <Star className="w-5 h-5 fill-current text-accent" />
+                <span className="font-bold text-lg">4.8/5</span>
+                <span className="text-muted-foreground text-sm">Average rating</span>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-display font-bold">10,000+</span>
+                  <span className="text-muted-foreground">Students</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-accent w-4/5" />
+                </div>
+                <p className="text-sm text-muted-foreground pt-2">
+                  ₹499 • 3 report generations • instant DOCX download
+                </p>
+              </div>
+            </div>
+            <div className="mt-8 flex flex-col gap-3">
+              <Link to="/my-reports">
+                <Button variant="outline" className="w-full">My Reports</Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Report type cards */}
+          {[{
+            icon: Briefcase,
+            title: 'Internship Report',
+            desc: 'Company-based reports with certificate, chapters & annexures.',
+            tags: ['BBA', 'B.Com', 'MBA'],
+            to: '/generate/internship'
+          }, {
+            icon: FileText,
+            title: 'Project Report',
+            desc: 'Final year & mini-project documentation with technical accuracy.',
+            tags: ['BCA', 'B.Tech', 'MCA'],
+            to: '/generate/project'
+          }, {
+            icon: BookOpen,
+            title: 'Thesis / Dissertation',
+            desc: 'Research-oriented formatting for PG, M.Phil & PhD submissions.',
+            tags: ['M.Phil', 'M.Tech', 'PhD'],
+            to: '/generate/thesis'
+          }].map((item, i) => <Link key={item.title} to={item.to} className="md:col-span-4 group bento-card p-8 block animate-scale-in" style={{
+            animationDelay: `${i * 80}ms`
+          }}>
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <item.icon className="w-6 h-6" />
+              </div>
+              <h2 className="font-display font-bold text-2xl mb-3">{item.title}</h2>
+              <p className="text-muted-foreground mb-6">{item.desc}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                {item.tags.map(t => <span key={t} className="text-xs font-semibold px-3 py-1 bg-muted text-muted-foreground rounded-full">{t}</span>)}
+                <span className="ml-auto inline-flex items-center gap-1 text-sm font-bold text-accent group-hover:translate-x-1 transition-transform">
+                  Start <ArrowRight className="w-4 h-4" />
+                </span>
+              </div>
+            </Link>)}
+
+          {/* University strip */}
+          <div className="md:col-span-12 rounded-3xl bg-secondary text-secondary-foreground p-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+            <p className="text-center md:text-left text-secondary-foreground/85">
+              Built for <span className="font-bold text-secondary-foreground">Indian universities</span> — Bengaluru North University, VTU, JNTU, SPPU and more.
+            </p>
+            <div className="flex flex-wrap justify-center gap-5 font-medium">
+              <a href="#pricing" className="hover:text-accent transition-colors">Pricing</a>
+              <Link to="/products" className="hover:text-accent transition-colors">Products</Link>
+              <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Resume last report */}
+      <ResumeLastReport />
+
+      {/* Course shortcuts */}
       <GenerateShortcuts />
+
 
 
       {/* Hero Section - SEO Optimized */}
