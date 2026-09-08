@@ -78,6 +78,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Automatic blog/post generation is DISABLED by owner request.
+  // This function is a no-op until AUTO_BLOG_ENABLED is set to "true".
+  if (Deno.env.get("AUTO_BLOG_ENABLED") !== "true") {
+    return new Response(
+      JSON.stringify({ success: false, disabled: true, generated: 0, message: "Automatic blog generation is disabled." }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
