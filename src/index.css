@@ -312,3 +312,59 @@
 #lovable-badge {
   display: none !important;
 }
+/* ---- Home page: Deep Indigo & Amber bento theme ---- */
+.theme-home {
+  --background: 210 40% 98%;
+  --foreground: 244 45% 20%;
+  --card: 0 0% 100%;
+  --card-foreground: 244 45% 20%;
+  --primary: 244 45% 20%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 243 47% 34%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 244 45% 20%;
+  --muted: 214 32% 91%;
+  --muted-foreground: 215 16% 42%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 38 92% 50%;
+  --radius: 1.25rem;
+  --gradient-primary: linear-gradient(135deg, hsl(244 45% 20%) 0%, hsl(243 47% 34%) 100%);
+  --gradient-hero: linear-gradient(180deg, hsl(210 40% 98%) 0%, hsl(214 32% 95%) 100%);
+  --shadow-glow: 0 18px 50px -18px hsl(244 45% 20% / 0.45);
+  font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-home h1,
+.theme-home h2,
+.theme-home h3,
+.theme-home h4,
+.theme-home .font-display {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.theme-home .glass-effect {
+  @apply backdrop-blur-xl bg-background/80 border border-border/60;
+}
+
+.bento-card {
+  @apply bg-card border border-border rounded-3xl transition-all duration-300;
+}
+
+.bento-card:hover {
+  border-color: hsl(var(--secondary) / 0.6);
+  box-shadow: 0 18px 44px -20px hsl(244 45% 20% / 0.35);
+  transform: translateY(-4px);
+}
+
+.bento-dark {
+  @apply rounded-3xl text-primary-foreground relative overflow-hidden;
+  background-color: hsl(var(--primary));
+}
+
+.bento-amber {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
