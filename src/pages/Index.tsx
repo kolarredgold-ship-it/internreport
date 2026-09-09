@@ -403,11 +403,12 @@ const Index = () => {
             </div>
           </div>
 
-          {/* SEO Headline H1 */}
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Free <span className="gradient-text">Internship Reports Generator</span>
-            <br />& Student Career Resources
-          </h1>
+          {/* Secondary headline */}
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+            Free <span className="text-secondary">Internship Reports Generator</span>
+            <br />&amp; Student Career Resources
+          </h2>
+
           
           <p className="text-lg md:text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
             AI-powered report generator that creates university-compliant internship project reports. 
