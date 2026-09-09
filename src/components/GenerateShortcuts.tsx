@@ -55,25 +55,25 @@ const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
   };
 
   return (
-    <div className="relative -mx-2 mb-4 group/slider">
+    <div className="relative -mx-2 mb-3 group/slider">
       <button
         type="button"
         aria-label="Scroll courses left"
         onClick={() => scrollBy(-1)}
-        className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
+        className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="w-3.5 h-3.5" />
       </button>
 
       <div
         ref={trackRef}
-        className="flex gap-2 overflow-x-auto px-2 sm:px-8 pb-2 snap-x snap-mandatory scroll-smooth scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-1.5 overflow-x-auto px-2 sm:px-7 pb-1.5 snap-x snap-mandatory scroll-smooth scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {COURSES.map(c => (
           <Link
             key={c.slug}
             to={`/generate/${categoryKey}?course=${c.slug}`}
-            className="shrink-0 snap-start px-3.5 py-2 rounded-full text-xs font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
+            className="shrink-0 snap-start px-3 py-1.5 rounded-full text-[11px] font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
           >
             {c.label}
           </Link>
@@ -84,9 +84,9 @@ const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
         type="button"
         aria-label="Scroll courses right"
         onClick={() => scrollBy(1)}
-        className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
+        className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
       >
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-3.5 h-3.5" />
       </button>
     </div>
   );
@@ -94,30 +94,30 @@ const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
 
 const GenerateShortcuts = () => {
   return (
-    <section className="container mx-auto px-4 py-8 lg:py-12">
-      <div className="bento-card p-6 sm:p-8">
-        <div className="mb-6">
-          <h2 className="font-display text-xl sm:text-2xl font-bold mb-1">Jump straight to your course</h2>
-          <p className="text-sm text-muted-foreground">Pick a course and we'll pre-fill the right form for you.</p>
+    <section className="container mx-auto px-4 py-5 lg:py-7">
+      <div className="bento-card p-4 sm:p-5">
+        <div className="mb-4">
+          <h2 className="font-display text-lg sm:text-xl font-bold mb-0.5">Jump straight to your course</h2>
+          <p className="text-xs text-muted-foreground">Pick a course and we'll pre-fill the right form for you.</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {CATEGORIES.map(cat => {
             const Icon = cat.icon;
             return (
               <div key={cat.key} className="min-w-0">
-                <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="flex items-center justify-between gap-3 mb-1.5">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${cat.iconBg}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cat.iconBg}`}>
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <span className="font-semibold text-sm sm:text-base truncate">{cat.title}</span>
+                    <span className="font-semibold text-sm truncate">{cat.title}</span>
                   </div>
                   <Link
                     to={`/generate/${cat.key}`}
-                    className="shrink-0 inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-accent hover:underline"
+                    className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline"
                   >
-                    Start <ArrowRight className="w-3.5 h-3.5" />
+                    Start <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
                 <CourseSlider categoryKey={cat.key} />
