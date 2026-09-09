@@ -267,60 +267,60 @@ const Index = () => {
 
 
       {/* Bento Hero */}
-      <section className="container mx-auto px-4 py-8 lg:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-6">
+      <section className="container mx-auto px-4 py-5 lg:py-7">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
 
           {/* Hero card */}
-          <div className="md:col-span-8 bento-dark p-8 md:p-12 flex flex-col justify-between animate-slide-up">
+          <div className="md:col-span-8 bento-dark p-5 md:p-7 flex flex-col justify-between animate-slide-up">
             <div className="relative z-10">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-accent text-xs sm:text-sm font-bold tracking-wide mb-6 uppercase">
+              <span className="inline-block px-3 py-1 rounded-full bg-secondary text-accent text-[11px] sm:text-xs font-bold tracking-wide mb-3 uppercase">
                 AI-Powered Generator
               </span>
-              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-5">
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-3">
                 Internship, Project &amp; Thesis Reports — <span className="text-accent">Generated in Minutes</span>
               </h1>
-              <p className="text-base md:text-xl text-primary-foreground/75 max-w-lg mb-8">
+              <p className="text-sm md:text-base text-primary-foreground/75 max-w-lg mb-5">
                 University-compliant, plagiarism-free reports for BCA, BTech, MBA, BCom &amp; BBA students across India.
               </p>
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
                 <Link to="/generate">
-                  <Button size="xl" className="w-full sm:w-auto bento-amber hover:opacity-90 font-bold">
-                    Start Your Report <ArrowRight className="w-5 h-5 ml-1" />
+                  <Button size="default" className="w-full sm:w-auto bento-amber hover:opacity-90 font-bold">
+                    Start Your Report <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
-                <Button size="xl" variant="outline" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border-white/25 text-primary-foreground hover:text-primary-foreground" asChild>
+                <Button size="default" variant="outline" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border-white/25 text-primary-foreground hover:text-primary-foreground" asChild>
                   <a href="#how-it-works">How it works</a>
                 </Button>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-64 h-64 rounded-full -mr-20 -mt-20 blur-3xl opacity-60 bg-secondary pointer-events-none" />
+            <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 rounded-full -mr-16 -mt-16 md:-mr-20 md:-mt-20 blur-3xl opacity-60 bg-secondary pointer-events-none" />
           </div>
 
           {/* Trust & resume card */}
-          <div className="md:col-span-4 bento-card p-8 flex flex-col justify-between animate-scale-in">
+          <div className="md:col-span-4 bento-card p-5 flex flex-col justify-between animate-scale-in">
             <div>
-              <h2 className="font-display font-bold text-xl mb-2">Trusted by thousands</h2>
-              <div className="flex items-center gap-2 mb-6">
-                <Star className="w-5 h-5 fill-current text-accent" />
-                <span className="font-bold text-lg">4.8/5</span>
-                <span className="text-muted-foreground text-sm">Average rating</span>
+              <h2 className="font-display font-bold text-lg mb-1">Trusted by thousands</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="w-4 h-4 fill-current text-accent" />
+                <span className="font-bold text-base">4.8/5</span>
+                <span className="text-muted-foreground text-xs">Average rating</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-display font-bold">10,000+</span>
-                  <span className="text-muted-foreground">Students</span>
+                  <span className="text-2xl font-display font-bold">10,000+</span>
+                  <span className="text-muted-foreground text-sm">Students</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-accent w-4/5" />
                 </div>
-                <p className="text-sm text-muted-foreground pt-2">
+                <p className="text-xs text-muted-foreground pt-1">
                   ₹499 • 3 report generations • instant DOCX download
                 </p>
               </div>
             </div>
-            <div className="mt-8 flex flex-col gap-3">
+            <div className="mt-5 flex flex-col gap-2">
               <Link to="/my-reports">
-                <Button variant="outline" className="w-full">My Reports</Button>
+                <Button variant="outline" size="sm" className="w-full">My Reports</Button>
               </Link>
             </div>
           </div>
@@ -344,18 +344,18 @@ const Index = () => {
             desc: 'Research-oriented formatting for PG, M.Phil & PhD submissions.',
             tags: ['M.Phil', 'M.Tech', 'PhD'],
             to: '/generate/thesis'
-          }].map((item, i) => <Link key={item.title} to={item.to} className="md:col-span-4 group bento-card p-8 block animate-scale-in" style={{
+          }].map((item, i) => <Link key={item.title} to={item.to} className="md:col-span-4 group bento-card p-5 block animate-scale-in" style={{
             animationDelay: `${i * 80}ms`
           }}>
-              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <item.icon className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <item.icon className="w-5 h-5" />
               </div>
-              <h2 className="font-display font-bold text-2xl mb-3">{item.title}</h2>
-              <p className="text-muted-foreground mb-6">{item.desc}</p>
+              <h2 className="font-display font-bold text-xl mb-2">{item.title}</h2>
+              <p className="text-sm text-muted-foreground mb-4">{item.desc}</p>
               <div className="flex flex-wrap items-center gap-2">
-                {item.tags.map(t => <span key={t} className="text-xs font-semibold px-3 py-1 bg-muted text-muted-foreground rounded-full">{t}</span>)}
-                <span className="ml-auto inline-flex items-center gap-1 text-sm font-bold text-accent group-hover:translate-x-1 transition-transform">
-                  Start <ArrowRight className="w-4 h-4" />
+                {item.tags.map(t => <span key={t} className="text-[11px] font-semibold px-2.5 py-1 bg-muted text-muted-foreground rounded-full">{t}</span>)}
+                <span className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-accent group-hover:translate-x-1 transition-transform">
+                  Start <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </Link>)}
