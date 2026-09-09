@@ -8,6 +8,11 @@
 
 const MIN_PAGES_COUNT = 3;
 const MAX_PAGES_COUNT = 50;
+const THESIS_MIN_PAGES_COUNT = 150;
+const THESIS_MAX_PAGES_COUNT = 400;
+
+const getMinPagesCount = (kind: string) => kind === 'thesis' ? THESIS_MIN_PAGES_COUNT : MIN_PAGES_COUNT;
+const getMaxPagesCount = (kind: string) => kind === 'thesis' ? THESIS_MAX_PAGES_COUNT : MAX_PAGES_COUNT;
  
  serve(async (req) => {
    if (req.method === "OPTIONS") {
@@ -93,21 +98,24 @@ const MAX_PAGES_COUNT = 50;
         ? Number(body.pagesCount)
         : body.pagesCount;
 
+      const reportKind: 'internship' | 'project' | 'thesis' =
+        body.reportKind === 'project' || body.reportKind === 'thesis' ? body.reportKind : 'internship';
+
       if (!Number.isFinite(requestedPagesCount) || !Number.isInteger(requestedPagesCount)) {
        return new Response(
          JSON.stringify({ error: 'pagesCount must be an integer' }),
-         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-       );
-     }
- 
-      if (requestedPagesCount < MIN_PAGES_COUNT) {
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+  
+      if (requestedPagesCount < getMinPagesCount(reportKind)) {
         return new Response(
-          JSON.stringify({ error: `pagesCount must be at least ${MIN_PAGES_COUNT}` }),
+          JSON.stringify({ error: `pagesCount must be at least ${getMinPagesCount(reportKind)} for ${reportKind} reports` }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      const pagesCount = Math.min(requestedPagesCount, MAX_PAGES_COUNT);
+      const pagesCount = Math.min(requestedPagesCount, getMaxPagesCount(reportKind));
  
       const fieldMaxLength: Record<string, number> = {
         topicSpecialization: 12000,
@@ -155,12 +163,10 @@ const MAX_PAGES_COUNT = 50;
       const academicYear = sanitize(body.academicYear);
       const topicDetails = sanitize(body.topicSpecialization, fieldMaxLength.topicSpecialization);
       const topicSpecialization = createTopicFocus(body.topicSpecialization);
-     const chapter = body.chapter || null;
-     const part = body.part || null;
-     const reportKind: 'internship' | 'project' | 'thesis' =
-       body.reportKind === 'project' || body.reportKind === 'thesis' ? body.reportKind : 'internship';
- 
-     console.log("Input validation passed for user:", userId, "Chapter:", chapter || "Full", "Part:", part || "Full");
+      const chapter = body.chapter || null;
+      const part = body.part || null;
+  
+      console.log("Input validation passed for user:", userId, "Kind:", reportKind, "Chapter:", chapter || "Full", "Part:", part || "Full");
  
      // ========== BUSINESS LOGIC ==========
      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -195,18 +201,35 @@ const MAX_PAGES_COUNT = 50;
         throw new Error("DeepSeek API key not configured");
       }
  
+     // Scale factor for thesis length. Internship/project cap at 50 pages; thesis can be 150-400.
+      const isThesis = reportKind === 'thesis';
+      const thesisScale = isThesis ? Math.max(1, pagesCount / 50) : 1;
+      const maxPagesLabel = isThesis ? `${THESIS_MAX_PAGES_COUNT} pages` : `${MAX_PAGES_COUNT} pages`;
+      const scaled = (min: number, max: number) => {
+        const sMin = Math.round(min * thesisScale);
+        const sMax = Math.round(max * thesisScale);
+        return `${sMin}-${sMax}`;
+      };
+      const scaledSingle = (target: number) => `${Math.round(target * thesisScale)}`;
+      const scaledRange = (target: number, variance: number) => {
+        const min = Math.round((target - variance) * thesisScale);
+        const max = Math.round((target + variance) * thesisScale);
+        return `${min}-${max}`;
+      };
+
      // Base context for all prompts
-     const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
- College: ${collegeName}, University: ${university}, Guide: ${guideName}
- Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
- Duration: ${internshipDuration}, Year: ${academicYear}
-  Topic/Specialization: ${topicSpecialization}
-  Student-provided internship/company details: ${topicDetails}
- Target: ${pagesCount} pages total (MAXIMUM 50 pages overall)
+      const baseContext = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
+  College: ${collegeName}, University: ${university}, Guide: ${guideName}
+  Internship: ${internshipTitle} at ${companyName}, ${companyLocation}
+  Duration: ${internshipDuration}, Year: ${academicYear}
+   Topic/Specialization: ${topicSpecialization}
+   Student-provided internship/company details: ${topicDetails}
+  Target: ${pagesCount} pages total (MAXIMUM ${maxPagesLabel} overall)
 
 GLOBAL FORMATTING REQUIREMENTS (apply to ALL content you generate):
 - Explain every concept in DEPTH. Mix DETAILED PARAGRAPHS with BULLET POINTS in every section — first 1-2 explanatory paragraphs, then a bulleted list of key points/features/steps, then optionally a closing paragraph. Never use only paragraphs or only bullets.
 - Use a clear heading hierarchy: # for H1 (chapter title), ## for H2 (main sections), ### for H3 (sub-sections), #### for H4 (sub-sub-points). All headings will render at 14pt; body content at 12pt.
+- ${isThesis ? `This is a THESIS. Scale depth and length to reach approximately ${pagesCount} pages. Use the expanded word-count targets provided in each section prompt.` : 'Keep the overall report within a 50-page limit; be detailed but not redundant.'}
 - Use bullet points (-) liberally for features, skills, steps, findings, advantages, limitations.
 - Where information is comparative or structured (products vs competitors, skills vs proficiency, KPIs, weekly tasks, timelines, pricing tiers), present it as a Markdown table. Add at least one relevant table per chapter.
 - Assume 1.5 line spacing and that EACH CHAPTER starts on a NEW PAGE in the final document — write self-contained chapter content accordingly.
@@ -578,21 +601,23 @@ Write clear, professional content with formal academic English. No markers like 
            prompt: `${baseContext}\n\n# ANNEXURES\n\n## Annexure A: Internship Offer Letter (placeholder)\n## Annexure B: Sample Work Documents (placeholder)\n## Annexure C: Photographs from Internship (placeholder)\n## Annexure D: Weekly Report Samples (placeholder)\n## Annexure E: Internship Completion Certificate (placeholder)\n## Annexure F: Supervisor Feedback Form (placeholder)\n## Annexure G: Interview Transcripts/Survey Questionnaires (placeholder)\n\n---\n\n**Student Declaration:**\nI, ${studentName} (Register No: ${registerNumber}), hereby declare that this internship report titled "${internshipTitle}" is based on my genuine work at ${companyName}, ${companyLocation}. Prepared under guidance of ${guideName}.\n\nDate: ${academicYear}\nPlace: ${companyLocation}\n\nSignature of Student: _______________`
          }
        }
-     };
+      };
 
-     // ===== PROJECT / THESIS specific structures =====
-     if (reportKind !== 'internship') {
-       const isThesis = reportKind === 'thesis';
-       const docLabel = isThesis ? 'THESIS / DISSERTATION' : 'PROJECT REPORT';
-       const title = internshipTitle;
-       const altBase = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
+      const thesisPartPrompts: Record<string, Record<string, { label: string; prompt: string }>> = {};
+
+      // ===== PROJECT / THESIS specific structures =====
+      if (reportKind !== 'internship') {
+        const isThesis = reportKind === 'thesis';
+        const docLabel = isThesis ? 'THESIS / DISSERTATION' : 'PROJECT REPORT';
+        const title = internshipTitle;
+        const altBase = `Student: ${studentName}, Reg: ${registerNumber}, Course: ${course}
 College: ${collegeName}, University: ${university}, Guide: ${guideName}
 ${isThesis ? 'Research Title' : 'Project Title'}: ${title}
 ${companyName ? `Organisation / Case Study: ${companyName}` : 'No company involved — this is an academic study.'}
 Academic Year: ${academicYear}
 Topic focus: ${topicSpecialization}
 Student-provided details: ${topicDetails}
-Target: ${pagesCount} pages total (MAXIMUM 50 pages overall)
+Target: ${pagesCount} pages total (MAXIMUM ${maxPagesLabel} overall)
 
 THIS IS A ${docLabel}. It is NOT an internship report.
 - NEVER write about an internship, intern duties, internship duration, daily tasks at a company, supervisor feedback, or "experiential learning".
@@ -602,36 +627,38 @@ GLOBAL FORMATTING REQUIREMENTS:
 - Explain every concept in DEPTH: 1-2 detailed paragraphs, then bullet points, then a closing paragraph.
 - Heading hierarchy: # H1 (chapter title), ## H2, ### H3, #### H4.
 - Add at least one relevant Markdown table per chapter.
-- Each chapter starts on a NEW PAGE; keep total within 50 pages.
+- ${isThesis ? `Scale chapter depth to approximately ${pagesCount} pages total. Use the expanded word-count targets in each section.` : 'Each chapter starts on a NEW PAGE; keep total within 50 pages.'}
 - No asterisks, no "(In-Depth)" markers, formal academic English.`;
 
        const P = (label: string, prompt: string) => ({ label, prompt: `${altBase}\n\n${prompt}` });
 
-       chapterPrompts['front'] = P(
-         'Front Matter',
-         `Generate the FRONT MATTER for a ${docLabel} titled "${title}" (1500-2000 words):
+        chapterPrompts['front'] = P(
+          'Front Matter',
+          isThesis
+            ? `Generate the FRONT MATTER for a ${docLabel} titled "${title}" (${scaled(1500, 2000)} words):
 
 # CERTIFICATE
-(Formal certificate from the guide/department certifying this ${isThesis ? 'thesis' : 'project work'} — 80-100 words, signature placeholders for Guide, HOD, Principal, External Examiner)
+(Formal certificate from the guide/department certifying this thesis — ${scaledSingle(90)} words, signature placeholders for Guide, HOD, Principal, External Examiner)
 
 # DECLARATION
-(Student declaration of original ${isThesis ? 'research' : 'project'} work — 100-120 words)
+(Student declaration of original research work — ${scaledSingle(110)} words)
 
 # ACKNOWLEDGEMENT
-(150-180 words thanking guide, department, institution, respondents, family)
+(${scaled(150, 180)} words thanking guide, department, institution, respondents, family)
 
 # ABSTRACT
-(200-250 words: problem, ${isThesis ? 'research questions and hypotheses' : 'objectives'}, methodology, key findings, conclusion)
+(${scaled(200, 250)} words: problem, research questions and hypotheses, methodology, key findings, conclusion)
 
-# ${isThesis ? 'SYNOPSIS' : 'EXECUTIVE SUMMARY'}
-(300-400 words overview of the whole ${isThesis ? 'thesis' : 'project'})
+# SYNOPSIS
+(${scaled(300, 400)} words overview of the whole thesis)
 
 # TABLE OF CONTENTS
 (Clean list without page numbers matching this structure:
-${isThesis
-  ? `CHAPTER I: INTRODUCTION\nCHAPTER II: REVIEW OF LITERATURE\nCHAPTER III: RESEARCH METHODOLOGY\nCHAPTER IV: DATA ANALYSIS AND INTERPRETATION\nCHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION`
-  : `CHAPTER I: INTRODUCTION\nCHAPTER II: PROFILE / THEORETICAL BACKGROUND\nCHAPTER III: RESEARCH DESIGN AND METHODOLOGY\nCHAPTER IV: DATA ANALYSIS AND INTERPRETATION\nCHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION`}
-
+CHAPTER I: INTRODUCTION
+CHAPTER II: REVIEW OF LITERATURE
+CHAPTER III: RESEARCH METHODOLOGY
+CHAPTER IV: DATA ANALYSIS AND INTERPRETATION
+CHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION
 BIBLIOGRAPHY
 ANNEXURES)
 
@@ -639,42 +666,88 @@ ANNEXURES)
 # LIST OF TABLES
 # LIST OF ABBREVIATIONS
 (10-15 relevant abbreviations)`
-       );
+            : `Generate the FRONT MATTER for a ${docLabel} titled "${title}" (1500-2000 words):
 
-       chapterPrompts['1'] = P(
-         'Chapter I: Introduction',
-         `Generate CHAPTER I: INTRODUCTION (2500-3500 words) for the ${docLabel} "${title}".
+# CERTIFICATE
+(Formal certificate from the guide/department certifying this project work — 80-100 words, signature placeholders for Guide, HOD, Principal, External Examiner)
+
+# DECLARATION
+(Student declaration of original project work — 100-120 words)
+
+# ACKNOWLEDGEMENT
+(150-180 words thanking guide, department, institution, respondents, family)
+
+# ABSTRACT
+(200-250 words: problem, objectives, methodology, key findings, conclusion)
+
+# EXECUTIVE SUMMARY
+(300-400 words overview of the whole project)
+
+# TABLE OF CONTENTS
+(Clean list without page numbers matching this structure:
+CHAPTER I: INTRODUCTION
+CHAPTER II: PROFILE / THEORETICAL BACKGROUND
+CHAPTER III: RESEARCH DESIGN AND METHODOLOGY
+CHAPTER IV: DATA ANALYSIS AND INTERPRETATION
+CHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION
+BIBLIOGRAPHY
+ANNEXURES)
+
+# LIST OF FIGURES
+# LIST OF TABLES
+# LIST OF ABBREVIATIONS
+(10-15 relevant abbreviations)`
+        );
+
+        chapterPrompts['1'] = P(
+          'Chapter I: Introduction',
+          isThesis
+            ? `Generate CHAPTER I: INTRODUCTION (${scaled(2500, 3500)} words) for the THESIS "${title}".
 
 # CHAPTER I: INTRODUCTION
 
 ## 1.1 Background of the Study
 ## 1.2 Theoretical Concepts related to ${topicSpecialization}
 ## 1.3 Statement of the Problem
-## 1.4 ${isThesis ? 'Research Questions and Hypotheses' : 'Objectives of the Study'}
+## 1.4 Research Questions and Hypotheses
+## 1.5 Scope of the Study
+## 1.6 Significance / Need of the Study
+## 1.7 Limitations of the Study
+## 1.8 Chapter Scheme
+
+(Write ${scaled(300, 500)} words per section. No internship content.)`
+            : `Generate CHAPTER I: INTRODUCTION (2500-3500 words) for the PROJECT REPORT "${title}".
+
+# CHAPTER I: INTRODUCTION
+
+## 1.1 Background of the Study
+## 1.2 Theoretical Concepts related to ${topicSpecialization}
+## 1.3 Statement of the Problem
+## 1.4 Objectives of the Study
 ## 1.5 Scope of the Study
 ## 1.6 Significance / Need of the Study
 ## 1.7 Limitations of the Study
 ## 1.8 Chapter Scheme
 
 (Write 300-500 words per section. No internship content.)`
-       );
+        );
 
        chapterPrompts['2'] = P(
-         isThesis ? 'Chapter II: Review of Literature' : 'Chapter II: Theoretical Background / Profile',
-         isThesis
-           ? `Generate CHAPTER II: REVIEW OF LITERATURE (2500-3500 words) for "${title}".
+          isThesis ? 'Chapter II: Review of Literature' : 'Chapter II: Theoretical Background / Profile',
+          isThesis
+            ? `Generate CHAPTER II: REVIEW OF LITERATURE (${scaled(2500, 3500)} words) for "${title}".
 
 # CHAPTER II: REVIEW OF LITERATURE
 
 ## 2.1 Introduction to the Review
 ## 2.2 Conceptual Framework
-## 2.3 Review of National Studies (summarise 8-10 studies, author + year + findings)
-## 2.4 Review of International Studies (summarise 8-10 studies)
+## 2.3 Review of National Studies (summarise ${Math.round(8 * thesisScale)}-${Math.round(10 * thesisScale)} studies, author + year + findings)
+## 2.4 Review of International Studies (summarise ${Math.round(8 * thesisScale)}-${Math.round(10 * thesisScale)} studies)
 ## 2.5 Research Gap Identified
 ## 2.6 Summary
 
-(Include a Markdown table summarising Author / Year / Objective / Findings.)`
-           : `Generate CHAPTER II: THEORETICAL BACKGROUND AND PROFILE (2500-3500 words) for "${title}".
+(Include a Markdown table summarising Author / Year / Objective / Findings. Write ${scaled(300, 500)} words per section.)`
+            : `Generate CHAPTER II: THEORETICAL BACKGROUND AND PROFILE (2500-3500 words) for "${title}".
 
 # CHAPTER II: THEORETICAL BACKGROUND AND PROFILE
 
@@ -684,43 +757,84 @@ ANNEXURES)
 ## 2.4 Review of Related Literature (6-8 studies with author and year)
 ## 2.5 Research Gap
 ## 2.6 Summary`
-       );
+        );
 
        chapterPrompts['3'] = P(
-         'Chapter III: Research Design and Methodology',
-         `Generate CHAPTER III: RESEARCH DESIGN AND METHODOLOGY (2000-3000 words) for "${title}".
+          'Chapter III: Research Design and Methodology',
+          isThesis
+            ? `Generate CHAPTER III: RESEARCH DESIGN AND METHODOLOGY (${scaled(2000, 3000)} words) for "${title}".
 
 # CHAPTER III: RESEARCH DESIGN AND METHODOLOGY
 
 ## 3.1 Research Design
-## 3.2 ${isThesis ? 'Hypotheses' : 'Objectives Restated'}
+## 3.2 Hypotheses
+## 3.3 Sources of Data (primary and secondary)
+## 3.4 Sampling Design (population, sample size, technique)
+## 3.5 Tools of Data Collection (questionnaire/interview schedule design)
+## 3.6 Statistical Tools Used (percentage analysis, chi-square, correlation, regression as appropriate)
+## 3.7 Period of Study
+## 3.8 Limitations of the Methodology
+
+(Write ${scaled(250, 400)} words per section.)`
+            : `Generate CHAPTER III: RESEARCH DESIGN AND METHODOLOGY (2000-3000 words) for "${title}".
+
+# CHAPTER III: RESEARCH DESIGN AND METHODOLOGY
+
+## 3.1 Research Design
+## 3.2 Objectives Restated
 ## 3.3 Sources of Data (primary and secondary)
 ## 3.4 Sampling Design (population, sample size, technique)
 ## 3.5 Tools of Data Collection (questionnaire/interview schedule design)
 ## 3.6 Statistical Tools Used (percentage analysis, chi-square, correlation, regression as appropriate)
 ## 3.7 Period of Study
 ## 3.8 Limitations of the Methodology`
-       );
+        );
 
-       chapterPrompts['4'] = P(
-         'Chapter IV: Data Analysis and Interpretation',
-         `Generate CHAPTER IV: DATA ANALYSIS AND INTERPRETATION (2500-3500 words) for "${title}".
+        chapterPrompts['4'] = P(
+          'Chapter IV: Data Analysis and Interpretation',
+          isThesis
+            ? `Generate CHAPTER IV: DATA ANALYSIS AND INTERPRETATION (${scaled(2500, 3500)} words) for "${title}".
 
-# CHAPTER IV: DATA ANALYSIS AND INTERPRETATION
+Present ${Math.round(8 * thesisScale)}-${Math.round(12 * thesisScale)} analysed items. For each: a Markdown table of illustrative data (respondents / frequency / percentage), followed by interpretation paragraphs.
+
+## 4.1 Demographic Profile of Respondents
+## 4.2 Analysis related to ${topicSpecialization}
+## 4.3 Hypothesis Testing (state hypothesis, test applied, statistic, decision)
+## 4.4 Summary of Analysis
+
+(Clearly label every table as Table 4.x with a title. Data may be realistic illustrative data.)`
+            : `Generate CHAPTER IV: DATA ANALYSIS AND INTERPRETATION (2500-3500 words) for "${title}".
 
 Present 8-12 analysed items. For each: a Markdown table of illustrative data (respondents / frequency / percentage), followed by interpretation paragraphs.
 
 ## 4.1 Demographic Profile of Respondents
 ## 4.2 Analysis related to ${topicSpecialization}
-## 4.3 ${isThesis ? 'Hypothesis Testing (state hypothesis, test applied, statistic, decision)' : 'Comparative Analysis'}
+## 4.3 Comparative Analysis
 ## 4.4 Summary of Analysis
 
 (Clearly label every table as Table 4.x with a title. Data may be realistic illustrative data.)`
-       );
+        );
 
-       chapterPrompts['5'] = P(
-         'Chapter V: Findings, Suggestions & Conclusion + Bibliography',
-         `Generate CHAPTER V plus BIBLIOGRAPHY and ANNEXURES (2000-2500 words) for "${title}".
+        chapterPrompts['5'] = P(
+          'Chapter V: Findings, Suggestions & Conclusion + Bibliography',
+          isThesis
+            ? `Generate CHAPTER V plus BIBLIOGRAPHY and ANNEXURES (${scaled(2000, 2500)} words) for "${title}".
+
+# CHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION
+
+## 5.1 Major Findings (${Math.round(10 * thesisScale)}-${Math.round(12 * thesisScale)} numbered findings)
+## 5.2 Suggestions and Recommendations (${Math.round(8 * thesisScale)}-${Math.round(10 * thesisScale)} actionable points)
+## 5.3 Scope for Further Research
+## 5.4 Conclusion
+
+# BIBLIOGRAPHY
+(${Math.round(25 * thesisScale)}-${Math.round(30 * thesisScale)} APA references: journals, books, reports, websites, published 2018-2026)
+
+# ANNEXURES
+## Annexure A: Questionnaire / Interview Schedule (write a full ${Math.round(20 * thesisScale)}-question instrument)
+## Annexure B: Statistical Output Tables (placeholder)
+## Annexure C: Plagiarism / Similarity Report (placeholder)`
+            : `Generate CHAPTER V plus BIBLIOGRAPHY and ANNEXURES (2000-2500 words) for "${title}".
 
 # CHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION
 
@@ -741,24 +855,93 @@ Present 8-12 analysed items. For each: a Markdown table of illustrative data (re
 
 Date: ${academicYear}
 Signature of Candidate: _______________`
-       );
-     }
+        );
+      }
+
+      if (isThesis) {
+        thesisPartPrompts['front'] = {
+          'part1': {
+            label: 'Front Matter Part 1',
+            prompt: `${altBase}\n\nGenerate the FIRST HALF of the FRONT MATTER for the thesis "${title}" (${scaled(700, 1000)} words):\n\n# CERTIFICATE\n(Formal certificate from guide/department — ${scaledSingle(90)} words)\n\n# DECLARATION\n(Student declaration of original research — ${scaledSingle(110)} words)\n\n# ACKNOWLEDGEMENT\n(${scaled(150, 180)} words thanking guide, department, institution, respondents, family)`
+          },
+          'part2': {
+            label: 'Front Matter Part 2',
+            prompt: `${altBase}\n\nGenerate the SECOND HALF of the FRONT MATTER for the thesis "${title}" (${scaled(800, 1200)} words):\n\n# ABSTRACT\n(${scaled(200, 250)} words: problem, research questions and hypotheses, methodology, key findings, conclusion)\n\n# SYNOPSIS\n(${scaled(300, 400)} words overview of the whole thesis)\n\n# TABLE OF CONTENTS\n(Clean list without page numbers: CHAPTER I–V, BIBLIOGRAPHY, ANNEXURES)\n\n# LIST OF FIGURES\n# LIST OF TABLES\n# LIST OF ABBREVIATIONS`
+          }
+        };
+
+        thesisPartPrompts['1'] = {
+          'part1': {
+            label: 'Chapter I Part 1',
+            prompt: `${altBase}\n\nGenerate the FIRST HALF of CHAPTER I: INTRODUCTION for the thesis "${title}" (${scaled(1200, 1800)} words):\n\n## 1.1 Background of the Study\n## 1.2 Theoretical Concepts related to ${topicSpecialization}\n## 1.3 Statement of the Problem\n\n(Write ${scaled(400, 600)} words per section. No internship content.)`
+          },
+          'part2': {
+            label: 'Chapter I Part 2',
+            prompt: `${altBase}\n\nGenerate the SECOND HALF of CHAPTER I: INTRODUCTION for the thesis "${title}" (${scaled(1300, 1700)} words):\n\n## 1.4 Research Questions and Hypotheses\n## 1.5 Scope of the Study\n## 1.6 Significance / Need of the Study\n## 1.7 Limitations of the Study\n## 1.8 Chapter Scheme\n\n(Write ${scaled(250, 400)} words per section. No internship content.)`
+          }
+        };
+
+        thesisPartPrompts['2'] = {
+          'part1': {
+            label: 'Chapter II Part 1',
+            prompt: `${altBase}\n\nGenerate the FIRST HALF of CHAPTER II: REVIEW OF LITERATURE for "${title}" (${scaled(1200, 1800)} words):\n\n## 2.1 Introduction to the Review\n## 2.2 Conceptual Framework\n## 2.3 Review of National Studies (summarise ${Math.round(4 * thesisScale)}-${Math.round(5 * thesisScale)} studies, author + year + findings)\n\n(Include a Markdown table: Author / Year / Objective / Findings. Write ${scaled(350, 600)} words per section.)`
+          },
+          'part2': {
+            label: 'Chapter II Part 2',
+            prompt: `${altBase}\n\nGenerate the SECOND HALF of CHAPTER II: REVIEW OF LITERATURE for "${title}" (${scaled(1300, 1700)} words):\n\n## 2.4 Review of International Studies (summarise ${Math.round(4 * thesisScale)}-${Math.round(5 * thesisScale)} studies)\n## 2.5 Research Gap Identified\n## 2.6 Summary\n\n(Include a Markdown table: Author / Year / Objective / Findings. Write ${scaled(400, 600)} words per section.)`
+          }
+        };
+
+        thesisPartPrompts['3'] = {
+          'part1': {
+            label: 'Chapter III Part 1',
+            prompt: `${altBase}\n\nGenerate the FIRST HALF of CHAPTER III: RESEARCH DESIGN AND METHODOLOGY for "${title}" (${scaled(1000, 1500)} words):\n\n## 3.1 Research Design\n## 3.2 Hypotheses\n## 3.3 Sources of Data (primary and secondary)\n## 3.4 Sampling Design (population, sample size, technique)\n\n(Write ${scaled(250, 400)} words per section.)`
+          },
+          'part2': {
+            label: 'Chapter III Part 2',
+            prompt: `${altBase}\n\nGenerate the SECOND HALF of CHAPTER III: RESEARCH DESIGN AND METHODOLOGY for "${title}" (${scaled(1000, 1500)} words):\n\n## 3.5 Tools of Data Collection (questionnaire/interview schedule design)\n## 3.6 Statistical Tools Used (percentage analysis, chi-square, correlation, regression as appropriate)\n## 3.7 Period of Study\n## 3.8 Limitations of the Methodology\n\n(Write ${scaled(250, 400)} words per section.)`
+          }
+        };
+
+        thesisPartPrompts['4'] = {
+          'part1': {
+            label: 'Chapter IV Part 1',
+            prompt: `${altBase}\n\nGenerate the FIRST HALF of CHAPTER IV: DATA ANALYSIS AND INTERPRETATION for "${title}" (${scaled(1200, 1800)} words):\n\n## 4.1 Demographic Profile of Respondents\n## 4.2 Analysis related to ${topicSpecialization} — Items 1 to ${Math.round(4 * thesisScale)}\n\nFor each item: a Markdown table of illustrative data (respondents / frequency / percentage), followed by interpretation paragraphs. Clearly label every table as Table 4.x with a title.`
+          },
+          'part2': {
+            label: 'Chapter IV Part 2',
+            prompt: `${altBase}\n\nGenerate the SECOND HALF of CHAPTER IV: DATA ANALYSIS AND INTERPRETATION for "${title}" (${scaled(1300, 1700)} words):\n\n## 4.2 Analysis related to ${topicSpecialization} — Items ${Math.round(4 * thesisScale) + 1} to ${Math.round(8 * thesisScale)}\n## 4.3 Hypothesis Testing (state hypothesis, test applied, statistic, decision)\n## 4.4 Summary of Analysis\n\nFor each item: a Markdown table of illustrative data, followed by interpretation paragraphs. Clearly label every table as Table 4.x with a title.`
+          }
+        };
+
+        thesisPartPrompts['5'] = {
+          'part1': {
+            label: 'Chapter V Part 1',
+            prompt: `${altBase}\n\nGenerate CHAPTER V: FINDINGS, SUGGESTIONS AND CONCLUSION for "${title}" (${scaled(1000, 1500)} words):\n\n## 5.1 Major Findings (${Math.round(10 * thesisScale)}-${Math.round(12 * thesisScale)} numbered findings)\n## 5.2 Suggestions and Recommendations (${Math.round(8 * thesisScale)}-${Math.round(10 * thesisScale)} actionable points)\n## 5.3 Scope for Further Research\n## 5.4 Conclusion\n\n(Write ${scaled(250, 400)} words per section.)`
+          },
+          'part2': {
+            label: 'Chapter V Part 2',
+            prompt: `${altBase}\n\nGenerate BIBLIOGRAPHY and ANNEXURES for "${title}" (${scaled(1000, 1500)} words):\n\n# BIBLIOGRAPHY\n(${Math.round(25 * thesisScale)}-${Math.round(30 * thesisScale)} APA references: journals, books, reports, websites, published 2018-2026)\n\n# ANNEXURES\n## Annexure A: Questionnaire / Interview Schedule (write a full ${Math.round(20 * thesisScale)}-question instrument)\n## Annexure B: Statistical Output Tables (placeholder)\n## Annexure C: Plagiarism / Similarity Report (placeholder)`
+          }
+        };
+      }
 
      // Determine which prompt to use
      let chapterPrompt: string;
      let chapterLabel: string;
      
-     if (reportKind === 'internship' && chapter && part && partPrompts[chapter]?.[part]) {
-       chapterPrompt = partPrompts[chapter][part].prompt;
-       chapterLabel = partPrompts[chapter][part].label;
-       console.log(`Generating part: ${part} of ${chapter}...`);
-     } else if (chapter && chapterPrompts[chapter]) {
-       chapterPrompt = chapterPrompts[chapter].prompt;
-       chapterLabel = chapterPrompts[chapter].label;
-     } else {
-       chapterPrompt = chapterPrompts['front'].prompt;
-       chapterLabel = "Front Matter";
-     }
+      const activePartPrompts = reportKind === 'thesis' ? thesisPartPrompts : partPrompts;
+      if (chapter && part && activePartPrompts[chapter]?.[part]) {
+        chapterPrompt = activePartPrompts[chapter][part].prompt;
+        chapterLabel = activePartPrompts[chapter][part].label;
+        console.log(`Generating part: ${part} of ${chapter}...`);
+      } else if (chapter && chapterPrompts[chapter]) {
+        chapterPrompt = chapterPrompts[chapter].prompt;
+        chapterLabel = chapterPrompts[chapter].label;
+      } else {
+        chapterPrompt = chapterPrompts['front'].prompt;
+        chapterLabel = "Front Matter";
+      }
      
      console.log(`Generating ${chapterLabel}...`);
      

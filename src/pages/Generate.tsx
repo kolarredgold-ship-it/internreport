@@ -25,12 +25,21 @@ const UNIVERSITIES = [
 
 const MIN_PAGES_COUNT = 3;
 const MAX_PAGES_COUNT = 50;
+const THESIS_MIN_PAGES_COUNT = 150;
+const THESIS_MAX_PAGES_COUNT = 400;
 const DEFAULT_PAGES_COUNT = 30;
+const DEFAULT_THESIS_PAGES_COUNT = 200;
 
-const clampPagesCount = (value: unknown) => {
-  const parsed = typeof value === 'number' || typeof value === 'string' ? Number(value) : DEFAULT_PAGES_COUNT;
-  if (!Number.isFinite(parsed)) return DEFAULT_PAGES_COUNT;
-  return Math.min(Math.max(Math.trunc(parsed), MIN_PAGES_COUNT), MAX_PAGES_COUNT);
+type PagesKind = 'internship' | 'project' | 'thesis';
+
+const getMinPagesCount = (kind: PagesKind) => kind === 'thesis' ? THESIS_MIN_PAGES_COUNT : MIN_PAGES_COUNT;
+const getMaxPagesCount = (kind: PagesKind) => kind === 'thesis' ? THESIS_MAX_PAGES_COUNT : MAX_PAGES_COUNT;
+const getDefaultPagesCount = (kind: PagesKind) => kind === 'thesis' ? DEFAULT_THESIS_PAGES_COUNT : DEFAULT_PAGES_COUNT;
+
+const clampPagesCount = (value: unknown, kind: PagesKind = 'internship') => {
+  const parsed = typeof value === 'number' || typeof value === 'string' ? Number(value) : getDefaultPagesCount(kind);
+  if (!Number.isFinite(parsed)) return getDefaultPagesCount(kind);
+  return Math.min(Math.max(Math.trunc(parsed), getMinPagesCount(kind)), getMaxPagesCount(kind));
 };
 
 const suggestReportType = (course: string): string => {
@@ -40,18 +49,16 @@ const suggestReportType = (course: string): string => {
   return 'Project Report';
 };
 
-const pageOptions: Record<string, { label: string; value: number }[]> = {
-  'Internship Report': [
+const pageOptions: Record<Kind, { label: string; value: number }[]> = {
+  internship: [
     { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
   ],
-  'Project Report': [
+  project: [
     { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
   ],
-  Dissertation: [
-    { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
-  ],
-  'Thesis Assistance': [
-    { label: '30 pages', value: 30 }, { label: '40 pages', value: 40 }, { label: '50 pages', value: 50 },
+  thesis: [
+    { label: '150 pages', value: 150 }, { label: '200 pages', value: 200 }, { label: '250 pages', value: 250 },
+    { label: '300 pages', value: 300 }, { label: '350 pages', value: 350 }, { label: '400 pages', value: 400 },
   ],
 };
 
@@ -263,7 +270,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
           ...parsed,
           course: prefilledCourse || parsed.course || '',
           reportType: config.types.includes(parsed.reportType) ? parsed.reportType : config.defaultType,
-          pagesCount: clampPagesCount(parsed.pagesCount),
+          pagesCount: clampPagesCount(parsed.pagesCount, kind),
         };
       }
     } catch {}
@@ -271,7 +278,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       ...initialState,
       course: prefilledCourse,
       reportType: prefilledType,
-      pagesCount: pageOptions[prefilledType]?.[0]?.value || DEFAULT_PAGES_COUNT,
+      pagesCount: pageOptions[kind]?.[0]?.value || getDefaultPagesCount(kind),
     };
   });
 
@@ -427,7 +434,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
       internshipDuration: isInternship ? `${data.internshipStart} to ${data.internshipEnd}` : '',
       academicYear: data.semesterYear,
       topicSpecialization: topicSpec,
-      pagesCount: clampPagesCount(data.pagesCount),
+      pagesCount: clampPagesCount(data.pagesCount, kind),
       reportType: data.reportType,
       reportKind: kind,
       includeAppendix: data.includeAppendix,
@@ -586,7 +593,8 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                     <Label>Document Type *</Label>
                     <Select value={data.reportType} onValueChange={v => {
                       update('reportType', v);
-                      update('pagesCount', pageOptions[v]?.[0]?.value || DEFAULT_PAGES_COUNT);
+                      const newKind = v === 'Thesis Assistance' ? 'thesis' : kind;
+                      update('pagesCount', pageOptions[newKind]?.[0]?.value || getDefaultPagesCount(newKind));
                     }}>
                       <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                       <SelectContent>
@@ -740,7 +748,7 @@ const Generate = ({ kind: kindProp }: { kind?: Kind }) => {
                   <Select value={String(data.pagesCount)} onValueChange={v => update('pagesCount', Number(v))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {(pageOptions[data.reportType] || pageOptions['Internship Report']).map(o =>
+                      {(pageOptions[kind] || pageOptions['internship']).map(o =>
                         <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
                       )}
                     </SelectContent>
