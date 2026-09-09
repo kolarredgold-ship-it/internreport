@@ -94,30 +94,30 @@ const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
 
 const GenerateShortcuts = () => {
   return (
-    <section className="container mx-auto px-4 py-8 lg:py-12">
-      <div className="bento-card p-6 sm:p-8">
-        <div className="mb-6">
-          <h2 className="font-display text-xl sm:text-2xl font-bold mb-1">Jump straight to your course</h2>
-          <p className="text-sm text-muted-foreground">Pick a course and we'll pre-fill the right form for you.</p>
+    <section className="container mx-auto px-4 py-5 lg:py-7">
+      <div className="bento-card p-4 sm:p-5">
+        <div className="mb-4">
+          <h2 className="font-display text-lg sm:text-xl font-bold mb-0.5">Jump straight to your course</h2>
+          <p className="text-xs text-muted-foreground">Pick a course and we'll pre-fill the right form for you.</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {CATEGORIES.map(cat => {
             const Icon = cat.icon;
             return (
               <div key={cat.key} className="min-w-0">
-                <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="flex items-center justify-between gap-3 mb-1.5">
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${cat.iconBg}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cat.iconBg}`}>
+                      <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <span className="font-semibold text-sm sm:text-base truncate">{cat.title}</span>
+                    <span className="font-semibold text-sm truncate">{cat.title}</span>
                   </div>
                   <Link
                     to={`/generate/${cat.key}`}
-                    className="shrink-0 inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-accent hover:underline"
+                    className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-accent hover:underline"
                   >
-                    Start <ArrowRight className="w-3.5 h-3.5" />
+                    Start <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
                 <CourseSlider categoryKey={cat.key} />
