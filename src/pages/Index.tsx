@@ -17,7 +17,6 @@ import SharePopup from '@/components/SharePopup';
 import FloatingShareButton from '@/components/FloatingShareButton';
 import StatsCounter from '@/components/StatsCounter';
 import StickyBanner from '@/components/StickyBanner';
-import HeroBanner from '@/components/HeroBanner';
 import GenerateShortcuts from '@/components/GenerateShortcuts';
 import ResumeLastReport from '@/components/ResumeLastReport';
 
@@ -403,11 +402,12 @@ const Index = () => {
             </div>
           </div>
 
-          {/* SEO Headline H1 */}
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Free <span className="gradient-text">Internship Reports Generator</span>
-            <br />& Student Career Resources
-          </h1>
+          {/* Secondary headline */}
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+            Free <span className="text-secondary">Internship Reports Generator</span>
+            <br />&amp; Student Career Resources
+          </h2>
+
           
           <p className="text-lg md:text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
             AI-powered report generator that creates university-compliant internship project reports. 
@@ -449,7 +449,7 @@ const Index = () => {
       </section>
 
       {/* Stats Counter Section */}
-      <section className="container mx-auto px-4 py-12 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+      <section className="container mx-auto px-4 py-12 bg-muted/40 rounded-3xl my-8 border border-border/60">
         <div className="text-center mb-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold mb-2">
             Trusted by Students Across India
@@ -485,7 +485,7 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="container mx-auto px-4 py-20 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+      <section id="how-it-works" className="container mx-auto px-4 py-20 bg-muted/40 rounded-3xl my-8 border border-border/60">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             How It Works
@@ -736,7 +736,7 @@ const Index = () => {
       </section>
 
       {/* Student Reviews Section - Auto Slider */}
-      <section className="container mx-auto px-4 py-16 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+      <section className="container mx-auto px-4 py-16 bg-muted/40 rounded-3xl my-8 border border-border/60">
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 text-yellow-600 mb-4">
             <Star className="w-4 h-4 fill-yellow-500" />
