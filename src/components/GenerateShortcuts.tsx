@@ -55,25 +55,25 @@ const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
   };
 
   return (
-    <div className="relative -mx-2 mb-4 group/slider">
+    <div className="relative -mx-2 mb-3 group/slider">
       <button
         type="button"
         aria-label="Scroll courses left"
         onClick={() => scrollBy(-1)}
-        className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
+        className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="w-3.5 h-3.5" />
       </button>
 
       <div
         ref={trackRef}
-        className="flex gap-2 overflow-x-auto px-2 sm:px-8 pb-2 snap-x snap-mandatory scroll-smooth scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-1.5 overflow-x-auto px-2 sm:px-7 pb-1.5 snap-x snap-mandatory scroll-smooth scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {COURSES.map(c => (
           <Link
             key={c.slug}
             to={`/generate/${categoryKey}?course=${c.slug}`}
-            className="shrink-0 snap-start px-3.5 py-2 rounded-full text-xs font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
+            className="shrink-0 snap-start px-3 py-1.5 rounded-full text-[11px] font-medium bg-background/80 border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary active:scale-95 transition-all whitespace-nowrap"
           >
             {c.label}
           </Link>
@@ -84,9 +84,9 @@ const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
         type="button"
         aria-label="Scroll courses right"
         onClick={() => scrollBy(1)}
-        className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
+        className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center rounded-full bg-background border border-border shadow-soft text-foreground/70 hover:text-primary hover:border-primary transition-colors"
       >
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="w-3.5 h-3.5" />
       </button>
     </div>
   );
