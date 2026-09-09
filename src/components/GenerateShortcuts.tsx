@@ -94,35 +94,41 @@ const CourseSlider = ({ categoryKey }: { categoryKey: string }) => {
 
 const GenerateShortcuts = () => {
   return (
-    <section className="container mx-auto px-4 py-10 lg:py-20">
-      <div className="grid md:grid-cols-3 gap-5 md:gap-6">
-        {CATEGORIES.map(cat => {
-          const Icon = cat.icon;
-          return (
-            <Card
-              key={cat.key}
-              className={`p-5 sm:p-6 border-0 shadow-soft hover-lift min-w-0 w-full overflow-hidden bg-gradient-to-br ${cat.accent}`}
-            >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${cat.iconBg}`}>
-                <Icon className="w-6 h-6" />
+    <section className="container mx-auto px-4 py-8 lg:py-12">
+      <div className="bento-card p-6 sm:p-8">
+        <div className="mb-6">
+          <h2 className="font-display text-xl sm:text-2xl font-bold mb-1">Jump straight to your course</h2>
+          <p className="text-sm text-muted-foreground">Pick a course and we'll pre-fill the right form for you.</p>
+        </div>
+
+        <div className="space-y-6">
+          {CATEGORIES.map(cat => {
+            const Icon = cat.icon;
+            return (
+              <div key={cat.key} className="min-w-0">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${cat.iconBg}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-sm sm:text-base truncate">{cat.title}</span>
+                  </div>
+                  <Link
+                    to={`/generate/${cat.key}`}
+                    className="shrink-0 inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-accent hover:underline"
+                  >
+                    Start <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+                <CourseSlider categoryKey={cat.key} />
               </div>
-              <h3 className="font-display text-xl font-bold mb-1">{cat.title}</h3>
-              <p className="text-sm text-muted-foreground mb-5">{cat.description}</p>
-
-              <CourseSlider categoryKey={cat.key} />
-
-
-              <Link to={`/generate/${cat.key}`}>
-                <Button variant="outline" size="sm" className="w-full">
-                  Start {cat.title} <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
-              </Link>
-            </Card>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </section>
   );
 };
+
 
 export default GenerateShortcuts;
