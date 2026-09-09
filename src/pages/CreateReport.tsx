@@ -57,17 +57,22 @@ const initialFormData: FormData = {
 const MAX_TOPIC_PAYLOAD_LENGTH = 9000;
 const MIN_PAGES_COUNT = 3;
 const MAX_PAGES_COUNT = 50;
+const THESIS_MIN_PAGES_COUNT = 150;
+const THESIS_MAX_PAGES_COUNT = 400;
 
-const clampPagesCount = (value: unknown) => {
+const getMinPagesCount = (kind: ReportKind) => kind === 'thesis' ? THESIS_MIN_PAGES_COUNT : MIN_PAGES_COUNT;
+const getMaxPagesCount = (kind: ReportKind) => kind === 'thesis' ? THESIS_MAX_PAGES_COUNT : MAX_PAGES_COUNT;
+
+const clampPagesCount = (value: unknown, kind: ReportKind = 'internship') => {
   const parsed = typeof value === 'number' || typeof value === 'string' ? Number(value) : initialFormData.pagesCount;
   if (!Number.isFinite(parsed)) return initialFormData.pagesCount;
-  return Math.min(Math.max(Math.trunc(parsed), MIN_PAGES_COUNT), MAX_PAGES_COUNT);
+  return Math.min(Math.max(Math.trunc(parsed), getMinPagesCount(kind)), getMaxPagesCount(kind));
 };
 
-const getGenerationPayload = (data: FormData): FormData => ({
+const getGenerationPayload = (data: FormData, kind: ReportKind = 'internship'): FormData => ({
   ...data,
   topicSpecialization: data.topicSpecialization.trim().slice(0, MAX_TOPIC_PAYLOAD_LENGTH),
-  pagesCount: clampPagesCount(data.pagesCount),
+  pagesCount: clampPagesCount(data.pagesCount, kind),
 });
 
 // Chapters to generate (in order) - varies by report kind
@@ -324,7 +329,7 @@ const CreateReport = () => {
         internshipDuration: p.internshipDuration ?? prev.internshipDuration,
         academicYear: p.academicYear ?? prev.academicYear,
         topicSpecialization: p.topicSpecialization ?? prev.topicSpecialization,
-        pagesCount: p.pagesCount !== undefined ? clampPagesCount(p.pagesCount) : prev.pagesCount,
+        pagesCount: p.pagesCount !== undefined ? clampPagesCount(p.pagesCount, reportKind) : prev.pagesCount,
       }));
       sessionStorage.removeItem('prefill_report_form');
       toast({ title: 'Details prefilled', description: 'We filled the form with your wizard answers. Review and generate.' });
@@ -370,7 +375,7 @@ const CreateReport = () => {
                 internshipDuration: report.internship_duration,
                 academicYear: report.academic_year,
                 topicSpecialization: report.topic_specialization,
-                pagesCount: clampPagesCount(report.pages_count),
+                pagesCount: clampPagesCount(report.pages_count, reportKind),
               });
 
               toast({
@@ -571,7 +576,7 @@ const CreateReport = () => {
           academic_year: formData.academicYear,
           topic_specialization: formData.topicSpecialization,
           report_kind: reportKind,
-          pages_count: clampPagesCount(formData.pagesCount),
+          pages_count: clampPagesCount(formData.pagesCount, reportKind),
           status: 'pending_payment',
         })
         .select()
@@ -615,7 +620,7 @@ const CreateReport = () => {
         
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
-            ...getGenerationPayload(formData),
+            ...getGenerationPayload(formData, reportKind),
             userId: user?.id,
             reportKind,
             chapter: chapterKey,
@@ -694,18 +699,27 @@ const CreateReport = () => {
 
   // Generate chapter in smaller parts when full generation times out
   const generateChapterInParts = async (chapterKey: string): Promise<string | null> => {
-    const chapterParts: Record<string, string[]> = {
-      'front': ['part1_certificate', 'part2_abstract'],
-      '1': ['part1_background', 'part2_objectives'],
-      '2': ['part1_industry', 'part2_company'],
-      '3': ['part1_theory', 'part2_review'],
-      '4': ['part1_activities', 'part2_projects'],
-      '5': ['part1_technical', 'part2_soft'],
-      '6': ['part1_methodology', 'part2_findings'],
-      '7': ['part1_challenges', 'part2_solutions'],
-      '8': ['part1_recommendations', 'part2_future'],
-      '9': ['part1_conclusion', 'part2_references'],
-    };
+    const chapterParts: Record<string, string[]> = reportKind === 'thesis'
+      ? {
+          'front': ['part1', 'part2'],
+          '1': ['part1', 'part2'],
+          '2': ['part1', 'part2'],
+          '3': ['part1', 'part2'],
+          '4': ['part1', 'part2'],
+          '5': ['part1', 'part2'],
+        }
+      : {
+          'front': ['part1_certificate', 'part2_abstract'],
+          '1': ['part1_background', 'part2_objectives'],
+          '2': ['part1_industry', 'part2_company'],
+          '3': ['part1_theory', 'part2_review'],
+          '4': ['part1_activities', 'part2_projects'],
+          '5': ['part1_technical', 'part2_soft'],
+          '6': ['part1_methodology', 'part2_findings'],
+          '7': ['part1_challenges', 'part2_solutions'],
+          '8': ['part1_recommendations', 'part2_future'],
+          '9': ['part1_conclusion', 'part2_references'],
+        };
 
     const parts = chapterParts[chapterKey] || ['part1', 'part2'];
     const contents: string[] = [];
@@ -725,7 +739,7 @@ const CreateReport = () => {
         
         const { data, error } = await supabase.functions.invoke('generate-report', {
           body: {
-            ...getGenerationPayload(formData),
+            ...getGenerationPayload(formData, reportKind),
             userId: user?.id,
             reportKind,
             chapter: chapterKey,
@@ -875,7 +889,7 @@ const CreateReport = () => {
             academic_year: formData.academicYear,
             topic_specialization: formData.topicSpecialization,
             report_kind: reportKind,
-            pages_count: clampPagesCount(formData.pagesCount),
+            pages_count: clampPagesCount(formData.pagesCount, reportKind),
             status: 'generating',
           })
           .select()
