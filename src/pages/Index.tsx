@@ -486,7 +486,7 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="container mx-auto px-4 py-20 bg-secondary/20 rounded-3xl my-8 border border-border/30">
+      <section id="how-it-works" className="container mx-auto px-4 py-20 bg-muted/40 rounded-3xl my-8 border border-border/60">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             How It Works
