@@ -331,7 +331,7 @@ const CreateReport = () => {
         internshipDuration: p.internshipDuration ?? prev.internshipDuration,
         academicYear: p.academicYear ?? prev.academicYear,
         topicSpecialization: p.topicSpecialization ?? prev.topicSpecialization,
-        pagesCount: p.pagesCount !== undefined ? clampPagesCount(p.pagesCount, reportKind) : prev.pagesCount,
+        pagesCount: p.pagesCount !== undefined ? clampPagesCount(p.pagesCount, kind) : prev.pagesCount,
       }));
       sessionStorage.removeItem('prefill_report_form');
       toast({ title: 'Details prefilled', description: 'We filled the form with your wizard answers. Review and generate.' });
