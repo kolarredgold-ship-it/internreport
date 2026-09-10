@@ -362,6 +362,12 @@ const CreateReport = () => {
               setResumingReport(true);
               setCurrentReportId(report.id);
               setChapterContent(savedContent);
+
+              const savedKind: ReportKind =
+                report.report_kind === 'project' || report.report_kind === 'thesis' || report.report_kind === 'internship'
+                  ? report.report_kind
+                  : 'internship';
+              setReportKind(savedKind);
               
               // Restore form data
               setFormData({
