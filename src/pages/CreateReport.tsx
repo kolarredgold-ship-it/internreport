@@ -345,7 +345,7 @@ const CreateReport = () => {
       // Find reports that have partial content saved
       const { data: reports } = await supabase
         .from('reports')
-        .select('id, report_content, student_name, register_number, course, college_name, university, guide_name, internship_title, company_name, company_location, internship_duration, academic_year, topic_specialization, pages_count')
+        .select('id, report_content, report_kind, student_name, register_number, course, college_name, university, guide_name, internship_title, company_name, company_location, internship_duration, academic_year, topic_specialization, pages_count')
         .eq('user_id', user?.id)
         .eq('status', 'generating')
         .order('updated_at', { ascending: false })
