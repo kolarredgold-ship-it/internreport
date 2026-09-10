@@ -55,12 +55,6 @@ serve(async (req) => {
       return json(403, { error: "Admin access required" });
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY not configured");
-      return json(500, { error: "Service temporarily unavailable" });
-    }
-
     const body = await req.json().catch(() => null);
     const productId = body?.productId;
     const title = typeof body?.title === "string" ? body.title.trim().slice(0, 300) : "";
@@ -69,51 +63,15 @@ serve(async (req) => {
       return json(400, { error: "A valid productId and title are required" });
     }
 
-    // Generate image using Lovable AI
-    const prompt = `Create a professional, modern digital product thumbnail/cover image for "${title}". The image should be a clean, vibrant, eye-catching product card design with bold typography showing the product name, use gradient colors, icons related to the product category, and a premium feel. Make it look like a digital marketplace product listing. 4:3 aspect ratio.`;
-
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [{ role: "user", content: prompt }],
-        modalities: ["image", "text"],
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI error:", aiResponse.status, errText);
-      if (aiResponse.status === 429) {
-        return json(429, { error: "Rate limited, please try again later" });
-      }
-      return json(502, { error: "Image generation failed, please try again" });
+    // No AI image models are used. Thumbnails come from a royalty-free stock source.
+    const stockUrl = `https://picsum.photos/seed/${encodeURIComponent(title)}/800/600`;
+    const stockResp = await fetch(stockUrl, { redirect: "follow" });
+    if (!stockResp.ok) {
+      return json(502, { error: "Could not fetch a thumbnail image" });
     }
+    const ext = "jpg";
+    const bytes = new Uint8Array(await stockResp.arrayBuffer());
 
-    const aiData = await aiResponse.json();
-    const imageData = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-    if (!imageData) {
-      return json(502, { error: "No image generated" });
-    }
-
-    // Extract base64 data and upload to storage
-    const base64Match = imageData.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
-    if (!base64Match) {
-      return json(502, { error: "Invalid image data received" });
-    }
-
-    const ext = base64Match[1];
-    const base64 = base64Match[2];
-    const binaryStr = atob(base64);
-    const bytes = new Uint8Array(binaryStr.length);
-    for (let i = 0; i < binaryStr.length; i++) {
-      bytes[i] = binaryStr.charCodeAt(i);
-    }
 
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error: uploadError } = await supabase.storage
