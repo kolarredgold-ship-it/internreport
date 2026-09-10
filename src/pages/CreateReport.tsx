@@ -312,7 +312,9 @@ const CreateReport = () => {
       const raw = sessionStorage.getItem('prefill_report_form');
       if (!raw) return;
       const p = JSON.parse(raw) || {};
+      let kind: ReportKind = 'internship';
       if (p.reportKind === 'project' || p.reportKind === 'thesis' || p.reportKind === 'internship') {
+        kind = p.reportKind;
         setReportKind(p.reportKind);
       }
       setFormData(prev => ({
@@ -329,7 +331,7 @@ const CreateReport = () => {
         internshipDuration: p.internshipDuration ?? prev.internshipDuration,
         academicYear: p.academicYear ?? prev.academicYear,
         topicSpecialization: p.topicSpecialization ?? prev.topicSpecialization,
-        pagesCount: p.pagesCount !== undefined ? clampPagesCount(p.pagesCount, reportKind) : prev.pagesCount,
+        pagesCount: p.pagesCount !== undefined ? clampPagesCount(p.pagesCount, kind) : prev.pagesCount,
       }));
       sessionStorage.removeItem('prefill_report_form');
       toast({ title: 'Details prefilled', description: 'We filled the form with your wizard answers. Review and generate.' });
@@ -343,7 +345,7 @@ const CreateReport = () => {
       // Find reports that have partial content saved
       const { data: reports } = await supabase
         .from('reports')
-        .select('id, report_content, student_name, register_number, course, college_name, university, guide_name, internship_title, company_name, company_location, internship_duration, academic_year, topic_specialization, pages_count')
+        .select('id, report_content, report_kind, student_name, register_number, course, college_name, university, guide_name, internship_title, company_name, company_location, internship_duration, academic_year, topic_specialization, pages_count')
         .eq('user_id', user?.id)
         .eq('status', 'generating')
         .order('updated_at', { ascending: false })
@@ -360,6 +362,12 @@ const CreateReport = () => {
               setResumingReport(true);
               setCurrentReportId(report.id);
               setChapterContent(savedContent);
+
+              const savedKind: ReportKind =
+                report.report_kind === 'project' || report.report_kind === 'thesis' || report.report_kind === 'internship'
+                  ? report.report_kind
+                  : 'internship';
+              setReportKind(savedKind);
               
               // Restore form data
               setFormData({
@@ -375,7 +383,7 @@ const CreateReport = () => {
                 internshipDuration: report.internship_duration,
                 academicYear: report.academic_year,
                 topicSpecialization: report.topic_specialization,
-                pagesCount: clampPagesCount(report.pages_count, reportKind),
+                pagesCount: clampPagesCount(report.pages_count, savedKind),
               });
 
               toast({
