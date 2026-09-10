@@ -383,7 +383,7 @@ const CreateReport = () => {
                 internshipDuration: report.internship_duration,
                 academicYear: report.academic_year,
                 topicSpecialization: report.topic_specialization,
-                pagesCount: clampPagesCount(report.pages_count, reportKind),
+                pagesCount: clampPagesCount(report.pages_count, savedKind),
               });
 
               toast({
