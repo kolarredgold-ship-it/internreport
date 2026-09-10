@@ -76,7 +76,7 @@ serve(async (req) => {
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const { error: uploadError } = await supabase.storage
       .from("product-images")
-      .upload(fileName, bytes, { contentType: `image/${ext}` });
+      .upload(fileName, bytes, { contentType: "image/jpeg" });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
