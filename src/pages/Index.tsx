@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award, Package, ArrowRight, Brain, MessageSquare, Code, Briefcase } from 'lucide-react';
+import { FileText, Shield, Zap, Download, CheckCircle2, GraduationCap, BookOpen, Clock, Star, AlertTriangle, Gift, IndianRupee, Sparkles, Users, Award, Package, ArrowRight, Brain, MessageSquare, Code, Briefcase, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Autoplay from 'embla-carousel-autoplay';
 import DemoReportGenerator from '@/components/DemoReportGenerator';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +28,50 @@ const Index = () => {
   const demoRef = useRef<HTMLDivElement>(null);
   const [showServerBusyDialog, setShowServerBusyDialog] = useState(false);
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [heroSlide, setHeroSlide] = useState(0);
+  const [heroPaused, setHeroPaused] = useState(false);
+  const heroTouchStart = useRef<number | null>(null);
+
+  const heroSlides = [{
+    icon: Briefcase,
+    eyebrow: 'Internship Report',
+    title: 'Turn your internship into a submission-ready report.',
+    description: 'Company profile, certificate, learning outcomes, chapters and annexures—structured for your university.',
+    tags: ['BBA', 'B.Com', 'MBA'],
+    to: '/generate/internship',
+    accent: 'text-accent',
+    iconSurface: 'bg-accent/15 text-accent'
+  }, {
+    icon: FileText,
+    eyebrow: 'Project Report',
+    title: 'Document your project with technical clarity.',
+    description: 'Present objectives, methodology, implementation, results and references in a polished academic format.',
+    tags: ['BCA', 'B.Tech', 'MCA'],
+    to: '/generate/project',
+    accent: 'text-info',
+    iconSurface: 'bg-info/15 text-info'
+  }, {
+    icon: BookOpen,
+    eyebrow: 'Thesis / Dissertation',
+    title: 'Build a rigorous thesis, chapter by chapter.',
+    description: 'Create research-focused front matter and chapters with your chosen structure for postgraduate submission.',
+    tags: ['M.Phil', 'M.Tech', 'PhD'],
+    to: '/generate/thesis',
+    accent: 'text-primary-foreground',
+    iconSurface: 'bg-primary-foreground/15 text-primary-foreground'
+  }];
+
+  useEffect(() => {
+    if (heroPaused) return;
+    const timer = window.setInterval(() => {
+      setHeroSlide(current => (current + 1) % heroSlides.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [heroPaused, heroSlides.length]);
+
+  const moveHero = (direction: number) => {
+    setHeroSlide(current => (current + direction + heroSlides.length) % heroSlides.length);
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -266,102 +310,99 @@ const Index = () => {
       </nav>
 
 
-      {/* Bento Hero */}
-      <section className="container mx-auto px-4 py-5 lg:py-7">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-5">
+      {/* Sliding hero */}
+      <section className="container mx-auto px-4 py-4 lg:py-6">
+        <div
+          className="relative overflow-hidden rounded-lg bg-primary text-primary-foreground shadow-xl animate-slide-up"
+          onMouseEnter={() => setHeroPaused(true)}
+          onMouseLeave={() => setHeroPaused(false)}
+          onFocus={() => setHeroPaused(true)}
+          onBlur={() => setHeroPaused(false)}
+          onTouchStart={event => { heroTouchStart.current = event.touches[0]?.clientX ?? null; }}
+          onTouchEnd={event => {
+            const start = heroTouchStart.current;
+            const end = event.changedTouches[0]?.clientX;
+            if (start !== null && end !== undefined && Math.abs(start - end) > 45) moveHero(start > end ? 1 : -1);
+            heroTouchStart.current = null;
+          }}
+          aria-roledescription="carousel"
+          aria-label="Report generation options"
+        >
+          <div className="relative min-h-[370px] sm:min-h-[330px] lg:min-h-[350px]">
+            {heroSlides.map((slide, index) => {
+              const position = index === heroSlide ? 'translate-x-0 opacity-100' : index < heroSlide ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0';
+              const SlideIcon = slide.icon;
+              return <div
+                key={slide.eyebrow}
+                className={`absolute inset-0 flex items-center transition-all duration-700 ease-out motion-reduce:transition-none ${position}`}
+                aria-hidden={index !== heroSlide}
+              >
+                <div className="grid w-full grid-cols-1 items-center gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_260px] lg:px-12">
+                  <div className="max-w-3xl">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${slide.iconSurface}`}>
+                        <SlideIcon className="h-5 w-5" />
+                      </div>
+                      <span className={`text-xs font-bold uppercase ${slide.accent}`}>{slide.eyebrow}</span>
+                    </div>
+                    <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+                      {slide.title}
+                    </h1>
+                    <p className="mt-4 max-w-2xl text-sm leading-relaxed text-primary-foreground/75 sm:text-base">
+                      {slide.description}
+                    </p>
+                    <div className="mt-6 flex flex-wrap items-center gap-2">
+                      <Button asChild className="bento-amber font-bold hover:opacity-90">
+                        <Link to={slide.to}>Generate now <ArrowRight className="h-4 w-4" /></Link>
+                      </Button>
+                      {slide.tags.map(tag => <span key={tag} className="rounded-full border border-primary-foreground/15 bg-primary-foreground/10 px-3 py-1.5 text-xs font-semibold">{tag}</span>)}
+                    </div>
+                  </div>
 
-          {/* Hero card */}
-          <div className="md:col-span-8 bento-dark p-5 md:p-7 flex flex-col justify-between animate-slide-up">
-            <div className="relative z-10">
-              <span className="inline-block px-3 py-1 rounded-full bg-secondary text-accent text-[11px] sm:text-xs font-bold tracking-wide mb-3 uppercase">
-                AI-Powered Generator
-              </span>
-              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-3">
-                Internship, Project &amp; Thesis Reports — <span className="text-accent">Generated in Minutes</span>
-              </h1>
-              <p className="text-sm md:text-base text-primary-foreground/75 max-w-lg mb-5">
-                University-compliant, plagiarism-free reports for BCA, BTech, MBA, BCom &amp; BBA students across India.
-              </p>
-              <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
-                <Link to="/generate">
-                  <Button size="default" className="w-full sm:w-auto bento-amber hover:opacity-90 font-bold">
-                    Start Your Report <ArrowRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </Link>
-                <Button size="default" variant="outline" className="w-full sm:w-auto bg-white/10 hover:bg-white/20 border-white/25 text-primary-foreground hover:text-primary-foreground" asChild>
-                  <a href="#how-it-works">How it works</a>
-                </Button>
-              </div>
-            </div>
-            <div className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 rounded-full -mr-16 -mt-16 md:-mr-20 md:-mt-20 blur-3xl opacity-60 bg-secondary pointer-events-none" />
+                  <div className="hidden border-l border-primary-foreground/15 pl-8 text-center lg:block">
+                    <div className="font-display text-3xl font-bold">10,000+</div>
+                    <div className="mt-1 text-xs uppercase text-primary-foreground/60">Students served</div>
+                    <div className="mt-5 flex items-center justify-center gap-1.5 text-accent">
+                      <Star className="h-4 w-4 fill-current" />
+                      <span className="font-bold">4.8/5 rating</span>
+                    </div>
+                    <p className="mt-4 text-xs leading-relaxed text-primary-foreground/60">University-ready DOCX<br />with instant download</p>
+                  </div>
+                </div>
+              </div>;
+            })}
           </div>
 
-          {/* Trust & resume card */}
-          <div className="md:col-span-4 bento-card p-5 flex flex-col justify-between animate-scale-in">
-            <div>
-              <h2 className="font-display font-bold text-lg mb-1">Trusted by thousands</h2>
-              <div className="flex items-center gap-2 mb-4">
-                <Star className="w-4 h-4 fill-current text-accent" />
-                <span className="font-bold text-base">4.8/5</span>
-                <span className="text-muted-foreground text-xs">Average rating</span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-display font-bold">10,000+</span>
-                  <span className="text-muted-foreground text-sm">Students</span>
-                </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-accent w-4/5" />
-                </div>
-                <p className="text-xs text-muted-foreground pt-1">
-                  ₹499 • 3 report generations • instant DOCX download
-                </p>
-              </div>
+          <div className="relative z-10 flex items-center justify-between border-t border-primary-foreground/10 px-4 py-3 sm:px-6">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => moveHero(-1)} aria-label="Previous report type">
+                <ChevronLeft />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => moveHero(1)} aria-label="Next report type">
+                <ChevronRight />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => setHeroPaused(value => !value)} aria-label={heroPaused ? 'Resume automatic slides' : 'Pause automatic slides'}>
+                {heroPaused ? <Play /> : <Pause />}
+              </Button>
             </div>
-            <div className="mt-5 flex flex-col gap-2">
-              <Link to="/my-reports">
-                <Button variant="outline" size="sm" className="w-full">My Reports</Button>
-              </Link>
+            <div className="flex items-center gap-2" role="tablist" aria-label="Choose report type">
+              {heroSlides.map((slide, index) => <Button
+                key={slide.eyebrow}
+                variant="ghost"
+                size="icon"
+                onClick={() => setHeroSlide(index)}
+                className={`h-9 transition-all ${index === heroSlide ? 'w-10 bg-accent text-accent-foreground hover:bg-accent/90' : 'w-9 text-primary-foreground/60 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
+                aria-label={`Show ${slide.eyebrow}`}
+                aria-selected={index === heroSlide}
+                role="tab"
+              >
+                <span className="text-xs font-bold">0{index + 1}</span>
+              </Button>)}
             </div>
           </div>
+        </div>
 
-          {/* Report type cards */}
-          {[{
-            icon: Briefcase,
-            title: 'Internship Report',
-            desc: 'Company-based reports with certificate, chapters & annexures.',
-            tags: ['BBA', 'B.Com', 'MBA'],
-            to: '/generate/internship'
-          }, {
-            icon: FileText,
-            title: 'Project Report',
-            desc: 'Final year & mini-project documentation with technical accuracy.',
-            tags: ['BCA', 'B.Tech', 'MCA'],
-            to: '/generate/project'
-          }, {
-            icon: BookOpen,
-            title: 'Thesis / Dissertation',
-            desc: 'Research-oriented formatting for PG, M.Phil & PhD submissions.',
-            tags: ['M.Phil', 'M.Tech', 'PhD'],
-            to: '/generate/thesis'
-          }].map((item, i) => <Link key={item.title} to={item.to} className="md:col-span-4 group bento-card p-5 block animate-scale-in" style={{
-            animationDelay: `${i * 80}ms`
-          }}>
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <item.icon className="w-5 h-5" />
-              </div>
-              <h2 className="font-display font-bold text-xl mb-2">{item.title}</h2>
-              <p className="text-sm text-muted-foreground mb-4">{item.desc}</p>
-              <div className="flex flex-wrap items-center gap-2">
-                {item.tags.map(t => <span key={t} className="text-[11px] font-semibold px-2.5 py-1 bg-muted text-muted-foreground rounded-full">{t}</span>)}
-                <span className="ml-auto inline-flex items-center gap-1 text-xs font-bold text-accent group-hover:translate-x-1 transition-transform">
-                  Start <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </Link>)}
-
-          {/* University strip */}
-          <div className="md:col-span-12 rounded-3xl bg-secondary text-secondary-foreground p-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+        <div className="mt-4 rounded-lg bg-secondary text-secondary-foreground p-4 flex flex-col md:flex-row items-center justify-between gap-3 text-sm">
             <p className="text-center md:text-left text-secondary-foreground/85">
               Built for <span className="font-bold text-secondary-foreground">Indian universities</span> — Bengaluru North University, VTU, JNTU, SPPU and more.
             </p>
@@ -370,7 +411,6 @@ const Index = () => {
               <Link to="/products" className="hover:text-accent transition-colors">Products</Link>
               <Link to="/blog" className="hover:text-accent transition-colors">Blog</Link>
             </div>
-          </div>
         </div>
       </section>
 
