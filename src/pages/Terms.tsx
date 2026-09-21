@@ -32,7 +32,12 @@ const Terms = () => {
             <CardTitle className="font-display text-3xl">Terms & Conditions</CardTitle>
           </CardHeader>
           <CardContent className="prose prose-gray max-w-none space-y-4">
-            <p className="text-muted-foreground">Last updated: February 2025</p>
+            <p className="text-muted-foreground">Last updated: September 21, 2026</p>
+
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+              <h2 className="font-display text-xl font-semibold mb-2">IMPORTANT PAYMENT TERMS</h2>
+              <p>Before making any payment, you must review the demo data and confirm that the service meets your requirements. All amounts paid to InternReport.in are non-refundable.</p>
+            </div>
 
             <h2 className="font-display text-xl font-semibold mt-6 mb-3">PART A: GENERAL TERMS AND CONDITIONS</h2>
             <p>This document/agreement/understanding is a computer-generated electronic record published in terms of Rule 3 of the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021 (amended from time to time) read with Information Technology Act, 2000 (amended from time to time) and does not require any physical or digital signatures.</p>
@@ -75,6 +80,9 @@ const Terms = () => {
             </ul>
 
             <h2 className="font-display text-xl font-semibold mt-6 mb-3">3. PAYMENT</h2>
+            <h3 className="font-display text-lg font-semibold mt-4 mb-2">Pre-payment review and non-refundable amount</h3>
+            <p>You must check the available demo data before making payment. By completing payment, you confirm that you have reviewed the demo and accepted the nature and expected format of the digital service. Every amount paid is final and non-refundable, including payments for report generation, generation credits, top-ups, and digital products.</p>
+
             <h3 className="font-display text-lg font-semibold mt-4 mb-2">3.1</h3>
             <p>Applicable fees for the provision of Services shall be levied by Razorpay from time to time. You agree that the fees shall be charged according to the manner, rates and frequency determined by Razorpay.</p>
 
@@ -179,7 +187,7 @@ const Terms = () => {
             <p>If a Facility Provider communicates to Razorpay the receipt of a Chargeback Request, You will be notified of the Chargeback. You agree that liability for Chargeback, whether domestic or international, under the Terms solely rests with You. You shall furnish the Chargeback Documents within three (3) calendar days of receiving notification.</p>
 
             <h4 className="font-semibold mt-4 mb-2">3. Refunds</h4>
-            <p>You agree and acknowledge that subject to availability of funds received in the Escrow Account, You are entitled to effect Refunds at Your sole discretion. All Refunds initiated by You shall be routed to the same payment method through which the Transaction was processed.</p>
+            <p>Payments made to InternReport.in are final and non-refundable. Customers must review the demo data before payment and ensure the selected service or digital product meets their requirements.</p>
 
             <h4 className="font-semibold mt-4 mb-2">4. Fraudulent Transactions</h4>
             <p>If Razorpay is intimated by a Facility Provider that a customer has reported an unauthorised debit of the customer's Payment Instrument ("Fraudulent Transaction"), Razorpay shall be entitled to suspend settlements to You during the pendency of inquiries and investigations.</p>

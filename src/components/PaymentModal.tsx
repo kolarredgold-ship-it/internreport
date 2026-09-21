@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Clock, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
-import paymentQrCode from '@/assets/payment-qr.jpg';
+import paymentQrCode from '@/assets/payment-qr-phonepe.jpeg.asset.json';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -245,7 +245,7 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, productId, userId, on
             <div className="flex justify-center">
               <div className="bg-white p-4 rounded-xl shadow-lg">
                 <img 
-                  src={paymentQrCode} 
+                  src={paymentQrCode.url} 
                   alt="Payment QR Code" 
                   className="w-64 h-64 object-contain"
                 />
@@ -257,6 +257,17 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, productId, userId, on
               <p className="text-3xl font-bold text-primary">₹{amount}</p>
               <p className="text-sm text-muted-foreground mt-1">
                 Scan with Google Pay, PhonePe, Paytm, or any UPI app
+              </p>
+            </div>
+
+            <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <p className="font-semibold text-foreground">Please check the demo data before making payment.</p>
+              <p className="text-destructive">The amount paid is non-refundable.</p>
+              <p className="text-muted-foreground">
+                By paying, you agree to our{' '}
+                <a href="/?demo=true" target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-2">demo</a>
+                {' '}and{' '}
+                <a href="/terms" target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-2">Terms &amp; Conditions</a>.
               </p>
             </div>
 
@@ -347,9 +358,10 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, productId, userId, on
 
             <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg text-sm">
               <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-              <p className="text-amber-800 dark:text-amber-200">
-                Your report will be activated within 24 hours after payment verification.
-              </p>
+              <div className="space-y-1 text-amber-800 dark:text-amber-200">
+                <p>Your report will be activated within 24 hours after payment verification.</p>
+                <p className="font-semibold">Payment is non-refundable. Please check the demo data before submitting.</p>
+              </div>
             </div>
 
             <Button 
