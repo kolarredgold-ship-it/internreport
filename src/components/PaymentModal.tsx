@@ -263,6 +263,17 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, productId, userId, on
             <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
               <p className="font-semibold text-foreground">Please check the demo data before making payment.</p>
               <p className="text-destructive">The amount paid is non-refundable.</p>
+              <p className="font-semibold text-foreground">
+                After payment, send the payment screenshot on WhatsApp to{' '}
+                <a
+                  href="https://wa.me/919738959525"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary underline underline-offset-2"
+                >
+                  9738959525
+                </a>.
+              </p>
               <p className="text-muted-foreground">
                 By paying, you agree to our{' '}
                 <a href="/?demo=true" target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-2">demo</a>
@@ -361,6 +372,17 @@ const PaymentModal = ({ isOpen, onClose, amount, reportId, productId, userId, on
               <div className="space-y-1 text-amber-800 dark:text-amber-200">
                 <p>Your report will be activated within 24 hours after payment verification.</p>
                 <p className="font-semibold">Payment is non-refundable. Please check the demo data before submitting.</p>
+                <p>
+                  After payment, send the screenshot on WhatsApp to{' '}
+                  <a
+                    href="https://wa.me/919738959525"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-semibold underline underline-offset-2"
+                  >
+                    9738959525
+                  </a>.
+                </p>
               </div>
             </div>
 
